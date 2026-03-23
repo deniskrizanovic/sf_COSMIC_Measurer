@@ -58,6 +58,12 @@ DB_DML = re.compile(
     re.IGNORECASE,
 )
 
+# EventBus.publish(listOrSingle) — platform event publish (COSMIC Write)
+EVENTBUS_PUBLISH = re.compile(
+    r"EventBus\.publish\s*\(\s*([^,)]+)",
+    re.IGNORECASE,
+)
+
 # Class name: public class ClassName or public with sharing class ClassName
 CLASS_NAME = re.compile(
     r"^\s*public\s+(?:with\s+sharing\s+|without\s+sharing\s+)?class\s+(\w+)",
@@ -539,6 +545,33 @@ def find_writes(source: str) -> list[RawMovement]:
         if var:
             obj = resolve_type(var.group(1))
             add(obj, dml, _line_number(source, m.start()))
+
+    # EventBus.publish(events) — infer data group from List<Event__e> / SObject list var
+    for m in EVENTBUS_PUBLISH.finditer(source):
+        if _apex_in_single_quoted_string(source, m.start()):
+            continue
+        line_start = source.rfind("\n", 0, m.start()) + 1
+        line_text = source[line_start : m.end()]
+        if "//" in line_text[: line_text.find(m.group(0))]:
+            continue
+        arg = m.group(1).strip().split(".")[-1]
+        var = re.match(r"(\w+)", arg)
+        if not var:
+            continue
+        obj = resolve_type(var.group(1))
+        if not obj or obj == "Unknown":
+            continue
+        line = _line_number(source, m.start())
+        dg = _infer_write_data_group_ref(obj, line, source, boundaries)
+        movements.append(
+            RawMovement(
+                movement_type="W",
+                data_group_ref=dg,
+                name=f"EventBus.publish {dg}",
+                order_hint=len(movements) + 1,
+                source_line=line,
+            )
+        )
 
     return movements
 

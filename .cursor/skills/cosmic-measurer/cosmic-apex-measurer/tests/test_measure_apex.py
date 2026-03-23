@@ -49,3 +49,21 @@ def test_BulkSurveyActionsBatch_has_entry_read_write(project_root):
     assert "R" in types
     assert "W" in types
     assert result["artifact"]["name"] == "BulkSurveyActionsBatch"
+
+
+def test_eventbus_publish_detected_as_write(tmp_path):
+    """EventBus.publish(list) is a Write; data group from List element type."""
+    src = """public class PlatformPub {
+    public static void go() {
+        List<Custom_Event__e> evts = new List<Custom_Event__e>();
+        EventBus.publish(evts);
+    }
+}"""
+    path = tmp_path / "PlatformPub.cls"
+    path.write_text(src, encoding="utf-8")
+    result = measure_file(path)
+    writes = [m for m in result["dataMovements"] if m["movementType"] == "W"]
+    assert any(
+        m["dataGroupRef"] == "Custom_Event__e" and "EventBus.publish" in m["name"]
+        for m in writes
+    )
