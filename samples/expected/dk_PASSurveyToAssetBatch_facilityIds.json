@@ -1,0 +1,144 @@
+{
+  "functionalProcessId": "<Id>",
+  "artifact": {
+    "type": "Apex",
+    "name": "dk_PASSurveyToAssetBatch"
+  },
+  "dataMovements": [
+    {
+      "name": "Receive facilityIds (Facility__c)",
+      "order": 1,
+      "movementType": "E",
+      "dataGroupRef": "Facility__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 35
+    },
+    {
+      "name": "Read Facility__c list",
+      "order": 2,
+      "movementType": "R",
+      "dataGroupRef": "Facility__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 659
+    },
+    {
+      "name": "Read Asset::Facility list",
+      "order": 3,
+      "movementType": "R",
+      "dataGroupRef": "Asset::Facility",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 674
+    },
+    {
+      "name": "Read Survey_Line_Item__c list",
+      "order": 4,
+      "movementType": "R",
+      "dataGroupRef": "Survey_Line_Item__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 691
+    },
+    {
+      "name": "Read Asset::Location list",
+      "order": 5,
+      "movementType": "R",
+      "dataGroupRef": "Asset::Location",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 388
+    },
+    {
+      "name": "Read Asset::Component list",
+      "order": 6,
+      "movementType": "R",
+      "dataGroupRef": "Asset::Component",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 414
+    },
+    {
+      "name": "Insert Asset::Location records",
+      "order": 7,
+      "movementType": "W",
+      "dataGroupRef": "Asset::Location",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 271,
+      "mergedFrom": [
+        {
+          "name": "Update Asset::Location records",
+          "sourceLine": 278
+        },
+        {
+          "name": "Update Asset::Location records",
+          "sourceLine": 406
+        }
+      ]
+    },
+    {
+      "name": "Insert Asset::Component records",
+      "order": 8,
+      "movementType": "W",
+      "dataGroupRef": "Asset::Component",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 350,
+      "mergedFrom": [
+        {
+          "name": "Update Asset::Component records",
+          "sourceLine": 357
+        },
+        {
+          "name": "Update Asset::Component records",
+          "sourceLine": 433
+        }
+      ]
+    },
+    {
+      "name": "Upsert Application_Log__c records",
+      "order": 9,
+      "movementType": "W",
+      "dataGroupRef": "Application_Log__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 73,
+      "viaClass": "ApplicationLogHandler"
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 10,
+      "movementType": "X",
+      "dataGroupRef": "User",
+      "implementationType": "apex",
+      "isApiCall": false
+    }
+  ],
+  "calledClassesNotFound": [
+    "COMPONENT_BATHROOM_OVERALL",
+    "COMPONENT_CONDITION_OVERALL",
+    "COMPONENT_CONDITION_OVERALL_KITCHEN",
+    "CONDITION_PREFIX",
+    "Component__c",
+    "Database",
+    "Decimal",
+    "Integer",
+    "Location__c",
+    "QUESTION_CONDITION",
+    "QUESTION_OVERALL_CONDITION",
+    "Question_Label__c",
+    "String"
+  ],
+  "recordTypeReadsExcludedFromCfp": [
+    {
+      "name": "Read RecordType list",
+      "sourceLine": 47
+    },
+    {
+      "name": "Read RecordType list",
+      "sourceLine": 686
+    }
+  ]
+}

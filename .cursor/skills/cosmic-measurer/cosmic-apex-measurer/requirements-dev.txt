@@ -1,0 +1,3 @@
+# Dev-only: run tests and coverage for cosmic-apex-measurer/scripts
+pytest>=8.0
+coverage[toml]>=7.4

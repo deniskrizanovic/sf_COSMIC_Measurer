@@ -1,0 +1,38 @@
+{
+  "functionalProcessId": "<Id>",
+  "artifact": { "type": "Apex", "name": "cfp_getDataMovements" },
+  "dataMovements": [
+    {
+      "name": "Receive fpId (Functional Process)",
+      "order": 1,
+      "movementType": "E",
+      "dataGroupRef": "cfp_FunctionalProcess__c",
+      "implementationType": "apex",
+      "isApiCall": false
+    },
+    {
+      "name": "Read cfp_Data_Movements__c list",
+      "order": 2,
+      "movementType": "R",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "apex",
+      "isApiCall": false
+    },
+    {
+      "name": "Return cfp_Data_Movements__c list",
+      "order": 3,
+      "movementType": "X",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "apex",
+      "isApiCall": false
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 4,
+      "movementType": "X",
+      "dataGroupRef": "User",
+      "implementationType": "apex",
+      "isApiCall": false
+    }
+  ]
+}
