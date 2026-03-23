@@ -69,7 +69,7 @@ def _traverse_callees(
             _, callee_movements = parse(callee_source)
             for m in callee_movements:
                 if m.movement_type in ("R", "W"):
-                    movements.append(dataclasses.replace(m, via_class=cls))
+                    movements.append(dataclasses.replace(m, via_artifact=cls))
         finally:
             visited.discard(cls)
 

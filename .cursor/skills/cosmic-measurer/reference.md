@@ -38,7 +38,7 @@ All measurer skills produce this structure:
 
 - **movementType**: Must be exactly `E`, `R`, `X`, or `W`
 - **dataGroupRef**: Salesforce object API name (e.g. `Account`, `cfp_Data_Movements__c`), or a composite `ObjectApiName::RecordTypeDeveloperName` when the movement is scoped to a record type (e.g. `Asset::Location`). Use `ObjectApiName::*` when record types apply but the DeveloperName could not be resolved. Resolution to cfp_DataGroups__c Id happens at post time.
-- **implementationType**: `apex` = custom code; `ootb` = standard Salesforce; `config` = declarative
+- **implementationType**: `apex` = custom code; `flow` = declarative flow; `ootb` = standard Salesforce; `config` = declarative (non-flow)
 - **isApiCall**: `true` if movement involves external API (REST, callout)
 - **sourceLine** (optional): Apex line number for traceability
 - **mergedFrom** (optional): For Writes: list of `{name, sourceLine}` for operations merged into this movement (COSMIC: multiple DML to same data group = 1 Write). Use for inspection/audit.
@@ -72,7 +72,7 @@ Every **functional process** includes **one additional** Exit (**X**) as the **f
 
 **Apex:** `build_output` (`movements.py`) keeps all parser-derived movements (including `return` exits), then **appends** this row. If the parser finds no Exit (e.g. batch `execute` returns void), the output still has this single **`Errors/notifications`** X.
 
-Future artifact skills (Flow, layout, …) must **append** the same movement to `dataMovements` (adjust `implementationType` to match the artifact).
+**Flow:** `build_output` (`shared/output.py`) appends this row with `implementationType: "flow"` after all parsed entries, reads, writes, and output-variable exits.
 
 ---
 

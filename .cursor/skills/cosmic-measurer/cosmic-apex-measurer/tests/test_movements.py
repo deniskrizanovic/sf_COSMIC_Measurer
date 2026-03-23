@@ -2,7 +2,7 @@
 
 import json
 
-from parser import RawMovement
+from shared.models import RawMovement
 
 from movements import (
     CosmicMeasureOutput,
@@ -112,7 +112,7 @@ def test_to_json_movement_merged_and_via():
         "Insert Foo__c records",
         1,
         source_line=9,
-        via_class="Helper",
+        via_artifact="Helper",
     )
     row = to_json_movement(
         m,
@@ -121,7 +121,7 @@ def test_to_json_movement_merged_and_via():
     )
     assert row["sourceLine"] == 9
     assert row["mergedFrom"] == [{"name": "Update Foo__c records", "sourceLine": 10}]
-    assert row["viaClass"] == "Helper"
+    assert row["viaArtifact"] == "Helper"
 
 
 def test_build_output_custom_implementation_and_called_not_found():
@@ -208,17 +208,15 @@ def test_to_human_summary_all_note_branches():
                 "dataGroupRef": "H",
                 "implementationType": "apex",
                 "isApiCall": False,
-                "viaClass": "Other",
+                "viaArtifact": "Other",
             },
         ],
-        "calledClassesNotFound": ["String"],
     }
     text = to_human_summary(out)
     assert "1 E" in text
     assert "1 R" in text
     assert "Merged writes" in text
-    assert "Callee traversal" in text
-    assert "Not found" in text
+    assert "Artifact traversal" in text
     assert "Canonical exit" in text
 
 
@@ -244,15 +242,13 @@ def test_to_table_with_via_merged_and_not_found():
                 "implementationType": "apex",
                 "isApiCall": False,
                 "sourceLine": 5,
-                "viaClass": "Helper",
+                "viaArtifact": "Helper",
                 "mergedFrom": [{"name": "u", "sourceLine": 6}],
             },
         ],
-        "calledClassesNotFound": ["MissingCls"],
     }
     text = to_table(out)
     assert "| 1 | W | Z__c |" in text
     assert "Helper" in text
     assert "u (L6)" in text
-    assert "Called classes not found: MissingCls" in text
     assert "Functional size" in text
