@@ -5,26 +5,20 @@ Scope: single entry point per class (batch constructor+execute vs @AuraEnabled/@
 """
 
 import re
-from dataclasses import dataclass
+import sys
+from pathlib import Path
 from typing import Optional
 
-# Sentinel DeveloperName when record types are in play but unresolved (never merges with qualified RT rows).
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+_COSMIC_MEASURER_DIR = _SCRIPTS_DIR.parent.parent
+if str(_COSMIC_MEASURER_DIR) not in sys.path:
+    sys.path.insert(0, str(_COSMIC_MEASURER_DIR))
+
+from shared.models import RawMovement  # noqa: E402
+
 RT_UNSPECIFIED = "*"
 
-
-# Static method call: ClassName.methodName(
 STATIC_CALL = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([a-zA-Z0-9_]+)\s*\(")
-
-
-@dataclass
-class RawMovement:
-    movement_type: str  # E, R, W, X
-    data_group_ref: str
-    name: str
-    order_hint: int  # for ordering
-    source_line: Optional[int] = None
-    execution_order: Optional[int] = None  # for batch: call order in execute()
-    via_class: Optional[str] = None  # when movement comes from traversed callee
 
 
 # SOQL: [SELECT ... FROM ObjectName ...] — object after FROM

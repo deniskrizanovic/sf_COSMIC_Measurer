@@ -1,0 +1,7 @@
+[run]
+source = scripts
+
+[report]
+fail_under = 95
+exclude_lines =
+    if __name__ == .__main__.:

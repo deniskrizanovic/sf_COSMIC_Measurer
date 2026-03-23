@@ -64,13 +64,13 @@ def test_find_class_file_skips_missing_base_and_finds_match(tmp_path):
     assert find_class_file("TraverseHelper", [missing, helper_dir]) == helper_dir / "TraverseHelper.cls"
 
 
-def test_measure_file_traverses_helper_via_class(tmp_path):
+def test_measure_file_traverses_helper_via_artifact(tmp_path):
     (tmp_path / "TraverseCaller.cls").write_text(CALLER_SRC, encoding="utf-8")
     (tmp_path / "TraverseHelper.cls").write_text(HELPER_SRC, encoding="utf-8")
 
     out = measure_file(tmp_path / "TraverseCaller.cls", search_paths=[tmp_path])
     assert "MissingCallee" in (out.get("calledClassesNotFound") or [])
-    via = [m for m in out["dataMovements"] if m.get("viaClass") == "TraverseHelper"]
+    via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "TraverseHelper"]
     assert any(m["movementType"] == "R" for m in via)
     assert any(m["movementType"] == "W" for m in via)
 
@@ -98,7 +98,7 @@ def test_traverse_skips_class_already_in_visited(tmp_path):
         {"TraverseHelper"},
         "TraverseCaller",
     )
-    assert not any(getattr(m, "via_class", None) == "TraverseHelper" for m in movements)
+    assert not any(getattr(m, "via_artifact", None) == "TraverseHelper" for m in movements)
     assert "MissingCallee" in not_found
 
 
@@ -113,7 +113,7 @@ def test_measure_file_relative_search_paths_resolved(project_root, tmp_path):
             tmp_path / "TraverseCaller.cls",
             search_paths=[Path(rel_name)],
         )
-        assert any(m.get("viaClass") == "TraverseHelper" for m in out["dataMovements"])
+        assert any(m.get("viaArtifact") == "TraverseHelper" for m in out["dataMovements"])
     finally:
         shutil.rmtree(search_dir, ignore_errors=True)
 
@@ -263,4 +263,4 @@ def test_main_no_traverse(monkeypatch, capsys, tmp_path):
     )
     assert measure_apex.main() == 0
     data = json.loads(capsys.readouterr().out)
-    assert not any(m.get("viaClass") == "TraverseHelper" for m in data["dataMovements"])
+    assert not any(m.get("viaArtifact") == "TraverseHelper" for m in data["dataMovements"])

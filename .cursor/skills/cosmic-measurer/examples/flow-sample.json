@@ -1,0 +1,49 @@
+{
+  "functionalProcessId": "<Id>",
+  "artifact": {
+    "type": "Flow",
+    "name": "cfp_createCRUDLwithRelatedLists"
+  },
+  "dataMovements": [
+    {
+      "name": "Receive recordId (cfp_FunctionalProcess__c)",
+      "order": 1,
+      "movementType": "E",
+      "dataGroupRef": "cfp_FunctionalProcess__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Read cfp_DataGroups__c (getDatagroups)",
+      "order": 2,
+      "movementType": "R",
+      "dataGroupRef": "cfp_DataGroups__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)",
+      "order": 3,
+      "movementType": "R",
+      "dataGroupRef": "cfp_FunctionalProcess__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Create cfp_Data_Movements__c (createDMs)",
+      "order": 4,
+      "movementType": "W",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 5,
+      "movementType": "X",
+      "dataGroupRef": "User",
+      "implementationType": "flow",
+      "isApiCall": false
+    }
+  ]
+}

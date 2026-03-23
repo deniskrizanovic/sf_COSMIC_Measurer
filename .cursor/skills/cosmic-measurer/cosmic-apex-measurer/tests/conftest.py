@@ -1,4 +1,4 @@
-"""Pytest setup: put scripts/ on sys.path so tests can import measure_apex, parser, movements."""
+"""Pytest setup: put scripts/ and cosmic-measurer/ on sys.path."""
 
 import sys
 from pathlib import Path
@@ -7,14 +7,16 @@ import pytest
 
 _COSMIC_APEX_ROOT = Path(__file__).resolve().parent.parent
 _SCRIPTS = _COSMIC_APEX_ROOT / "scripts"
-if str(_SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(_SCRIPTS))
+_COSMIC_MEASURER = _COSMIC_APEX_ROOT.parent
+
+for p in [str(_SCRIPTS), str(_COSMIC_MEASURER)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 
 @pytest.fixture(scope="session")
 def project_root() -> Path:
     """Repo root: samples/ and force-app/ live here."""
-    # cosmic-apex-measurer -> cosmic-measurer -> skills -> .cursor -> project
     return _COSMIC_APEX_ROOT.parent.parent.parent.parent
 
 
