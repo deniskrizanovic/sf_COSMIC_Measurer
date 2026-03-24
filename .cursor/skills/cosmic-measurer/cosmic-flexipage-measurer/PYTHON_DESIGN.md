@@ -9,7 +9,8 @@
 - `scripts/measure_flexipage.py`
   - CLI entry point.
   - Calls parser, then `shared.output.build_output(...)`.
-  - Supports `--json`, `-o`, and `--fp-id`.
+  - Supports `--json`, `-o`, `--fp-id`, and `--no-resolve-lwc-candidates`.
+  - Resolves tab-bound LWC candidates by default and inlines their movements.
 
 ## Rule Set (v1)
 

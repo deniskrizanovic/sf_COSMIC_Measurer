@@ -211,20 +211,6 @@ def measure_lwc_bundle(
             )
             order_hint_start += 10000
 
-    # If callers require W and static+Apex traversal did not find one,
-    # keep a conservative write candidate for imperative Apex invocations.
-    if imports and required_movement_types and "W" in required_movement_types:
-        has_write = any(m.movement_type == "W" for m in movements)
-        if not has_write:
-            movements.append(
-                RawMovement(
-                    movement_type="W",
-                    data_group_ref="Unknown",
-                    name="Potential write via imperative Apex call",
-                    order_hint=order_hint_start + 1,
-                )
-            )
-
     output = build_output(
         "LWC",
         bundle_name,

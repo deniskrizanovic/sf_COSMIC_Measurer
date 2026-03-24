@@ -20,7 +20,7 @@ Produce a COSMIC measurement for one FlexiPage metadata artifact focused on page
 - Extract page context (`masterLabel`, `sobjectType`, `type`).
 - Detect configured page actions (`force:highlightsPanel`) and surface them as investigation notes only.
 - Detect record field bindings (`Record.*`) and dynamic related lists for Read/Exit candidates.
-- Detect tab-bound LWCs and emit delegated `lwcCandidateMeasurements` entries for follow-up measurement.
+- Detect tab-bound LWCs, measure them inline via the LWC measurer by default, and still emit `lwcCandidateMeasurements` for traceability.
 - Build ordered movements using shared output logic and append canonical final exit (`Errors/notifications`).
 - Output JSON to stdout or file.
 
@@ -29,6 +29,7 @@ CLI:
 ```bash
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml -o out.json --fp-id 001xxx
+python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json --no-resolve-lwc-candidates
 ```
 
 ## Validation
@@ -36,19 +37,22 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 - `movementType` must be one of `E`, `R`, `W`, `X`.
 - FlexiPage action config does not create counted E/W rows in this skill version.
 - Configured actions appear in notes (`traversalWarnings`) for follow-up as separate functional processes.
-- Tab-bound LWCs are emitted as delegated candidates with `requiredMovementTypes` including `W`.
+- Tab-bound LWCs are traversed by default and inlined into merged movement ordering.
+- `lwcCandidateMeasurements` remain in output for traceability and follow-up validation.
 - Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: User`).
 - Data movement ordering and dedup rely on shared COSMIC output module.
 - Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `samples/expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
 
 ## Output
 
-Human summary:
+Human summary (default, table-first with roll-up totals):
 
-- Functional size with E/R/W/X counts and total CFP.
-- Notes about canonical exit and action follow-up items.
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `isApiCall`), including inlined tab-bound LWC movements.
+- Present a second compact table for totals (`E`, `R`, `W`, `X`, `Total CFP`).
+- Include short notes for canonical exit and action follow-up items.
+- Present merged roll-up totals (FlexiPage + traversed LWC movements) as the default total view.
 
-JSON:
+JSON (optional / export-oriented):
 
 ```json
 {
@@ -76,3 +80,11 @@ JSON:
   ]
 }
 ```
+
+Default response behavior:
+
+- If the user asks to "measure" a FlexiPage without specifying format, return table-first output.
+- Default to merged roll-up totals (FlexiPage + traversed tab-bound LWC movements).
+- Traverse tab-bound LWCs by default before producing totals.
+- Use `--no-resolve-lwc-candidates` to skip inline LWC traversal when needed.
+- Include JSON only when explicitly requested (for example: "as JSON", "for posting", or "export").
