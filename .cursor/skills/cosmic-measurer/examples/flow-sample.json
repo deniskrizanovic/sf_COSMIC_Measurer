@@ -41,7 +41,7 @@
       "name": "Errors/notifications",
       "order": 5,
       "movementType": "X",
-      "dataGroupRef": "User",
+      "dataGroupRef": "status/errors/etc",
       "implementationType": "flow",
       "isApiCall": false
     }

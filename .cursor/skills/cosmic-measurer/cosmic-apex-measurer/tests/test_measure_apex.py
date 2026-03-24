@@ -27,7 +27,7 @@ def test_cfp_getDataMovements_matches_golden(project_root):
 
 
 def test_canonical_exit_is_final_row(project_root):
-    """Every FP ends with one X: Errors/notifications (User)."""
+    """Every FP ends with one X: Errors/notifications (status/errors/etc)."""
     sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     result = measure_file(sample)
     dm = result["dataMovements"]

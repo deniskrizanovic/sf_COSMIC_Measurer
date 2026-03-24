@@ -67,7 +67,7 @@ Every **functional process** includes **one additional** Exit (**X**) as the **f
 |-------|--------|
 | **name** | `Errors/notifications` |
 | **movementType** | `X` |
-| **dataGroupRef** | `User` (user-visible errors and notifications; remap in your org’s COSMIC data-group model if needed) |
+| **dataGroupRef** | `status/errors/etc` (user-visible errors and notifications; remap in your org’s COSMIC data-group model if needed) |
 | **order** | Last — always after all other movements for that FP |
 
 **Apex:** `build_output` (`movements.py`) keeps all parser-derived movements (including `return` exits), then **appends** this row. If the parser finds no Exit (e.g. batch `execute` returns void), the output still has this single **`Errors/notifications`** X.

@@ -13,7 +13,7 @@ def test_measure_lwc_bundle_sample(project_root: Path):
     assert result["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
     assert result["dataMovements"][-1]["name"] == "Errors/notifications"
     assert result["dataMovements"][-1]["movementType"] == "X"
-    assert result["dataMovements"][-1]["dataGroupRef"] == "User"
+    assert result["dataMovements"][-1]["dataGroupRef"] == "status/errors/etc"
 
 
 def test_measure_lwc_required_types_validation(project_root: Path):

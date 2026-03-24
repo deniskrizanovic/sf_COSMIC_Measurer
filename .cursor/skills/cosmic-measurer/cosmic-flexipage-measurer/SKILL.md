@@ -39,7 +39,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 - Configured actions appear in notes (`traversalWarnings`) for follow-up as separate functional processes.
 - Tab-bound LWCs are traversed by default and inlined into merged movement ordering.
 - `lwcCandidateMeasurements` remain in output for traceability and follow-up validation.
-- Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: User`).
+- Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: status/errors/etc`).
 - Data movement ordering and dedup rely on shared COSMIC output module.
 - Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
 
@@ -63,7 +63,7 @@ JSON (optional / export-oriented):
     { "name": "Read related list cfp_functionalsteps__r", "order": 2, "movementType": "R", "dataGroupRef": "cfp_functionalsteps__c", "implementationType": "flexipage", "isApiCall": false },
     { "name": "Display page record (cfp_FunctionalProcess__c)", "order": 3, "movementType": "X", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flexipage", "isApiCall": false },
     { "name": "Display related list cfp_functionalsteps__r", "order": 4, "movementType": "X", "dataGroupRef": "cfp_functionalsteps__c", "implementationType": "flexipage", "isApiCall": false },
-    { "name": "Errors/notifications", "order": 5, "movementType": "X", "dataGroupRef": "User", "implementationType": "flexipage", "isApiCall": false }
+    { "name": "Errors/notifications", "order": 5, "movementType": "X", "dataGroupRef": "status/errors/etc", "implementationType": "flexipage", "isApiCall": false }
   ],
   "traversalWarnings": [
     "Investigate configured page actions as separate functional processes: Delete, cfp_FunctionalProcess__c.Create_CRUDL"
