@@ -8,5 +8,7 @@ When executing the `commit-push-done` command workflow:
 1. Run the full unit test suite for the repository before the workflow is considered complete.
 2. Never proceed to merge/push cleanup steps if any unit test fails.
 3. If the repository test command is ambiguous, stop and ask the user for the exact unit test command, then run it.
+4. After unit tests pass, run per-measurer coverage for Apex, Flow, FlexiPage, and LWC measurers and output each total coverage percentage.
+5. Never proceed to merge/push cleanup steps if any required coverage command fails.
 
 Do not mark the workflow as successful unless all unit tests have passed in the current branch state.
