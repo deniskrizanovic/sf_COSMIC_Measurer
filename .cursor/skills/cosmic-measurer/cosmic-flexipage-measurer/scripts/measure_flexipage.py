@@ -25,6 +25,37 @@ from flexipage_parser import (  # noqa: E402
 from shared.output import build_output, to_human_summary, to_json_string, to_table  # noqa: E402
 
 
+def _build_lwc_candidate_outputs(
+    artifact_name: str,
+    tab_bindings: list,
+    fp_id: str,
+) -> list[dict]:
+    candidates: list[dict] = []
+    for binding in tab_bindings:
+        if binding.target_component_kind != "lwc" or not binding.target_component_name:
+            continue
+        candidates.append(
+            {
+                "functionalProcessId": fp_id,
+                "artifact": {
+                    "type": "LWC",
+                    "name": binding.target_component_name,
+                },
+                "sourceArtifact": {
+                    "type": "FlexiPage",
+                    "name": artifact_name,
+                },
+                "tabContext": {
+                    "identifier": binding.tab_identifier,
+                    "title": binding.tab_title,
+                },
+                "requiredMovementTypes": ["W"],
+                "notes": "Run dedicated lwc-measurer to extract concrete E/R/X/W movements.",
+            }
+        )
+    return candidates
+
+
 def _build_action_candidate_outputs(
     artifact_name: str,
     sobject_type: str,
@@ -89,6 +120,14 @@ def measure_file(
             output.setdefault("traversalWarnings", []).append(
                 "Tab-component bindings: " + ", ".join(readable_bindings)
             )
+    lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
+    if lwc_candidates:
+        output["lwcCandidateMeasurements"] = lwc_candidates
+        lwc_names = ", ".join(candidate["artifact"]["name"] for candidate in lwc_candidates)
+        output.setdefault("traversalWarnings", []).append(
+            "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: "
+            f"{lwc_names}"
+        )
     return output
 
 

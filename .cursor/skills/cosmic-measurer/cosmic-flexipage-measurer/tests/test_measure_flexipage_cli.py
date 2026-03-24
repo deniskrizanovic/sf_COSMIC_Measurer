@@ -70,6 +70,14 @@ def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
         "Visualiser -> lwc(cfp_FunctionalProcessVisualiser)" in item
         for item in warnings
     )
+    assert any(
+        "Delegate tab-bound LWCs to lwc-measurer" in item
+        for item in warnings
+    )
+    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
+    assert len(lwc_candidates) == 1
+    assert lwc_candidates[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
+    assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
 
 
 def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
@@ -198,3 +206,12 @@ def test_cli_tab_component_binding_warning(monkeypatch, capsys, tmp_path):
         "Tab-component bindings: Visualiser -> lwc(cfp_FunctionalProcessVisualiser)" in item
         for item in warnings
     )
+    assert any(
+        "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: "
+        "cfp_FunctionalProcessVisualiser" in item
+        for item in warnings
+    )
+    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
+    assert len(lwc_candidates) == 1
+    assert lwc_candidates[0]["artifact"]["type"] == "LWC"
+    assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
