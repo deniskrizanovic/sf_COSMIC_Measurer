@@ -130,3 +130,88 @@ def test_measure_sample_flow_golden_file(project_root):
     result = measure_file(sample)
     expected = json.loads(expected_path.read_text(encoding="utf-8"))
     assert result == expected
+
+
+def test_measure_flow_includes_screen_entries_and_exits(tmp_path):
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <screens>
+        <name>ReviewAccount</name>
+        <fields>
+            <name>acctInput</name>
+            <fieldType>InputField</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+        <fields>
+            <name>acctDisplay</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    f = tmp_path / "ScreenFlow.flow-meta.xml"
+    f.write_text(xml, encoding="utf-8")
+
+    result = measure_file(f)
+    entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
+    exits = [m for m in result["dataMovements"] if m["movementType"] == "X"]
+    assert any("Screen input" in e["name"] for e in entries)
+    assert any("Screen display" in x["name"] for x in exits)
+    assert exits[-1]["name"] == CANONICAL_EXIT_NAME
+
+
+def test_measure_flow_mixed_preserves_type_order(tmp_path):
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <recordLookups>
+        <name>getAccount</name>
+        <label>getAccount</label>
+        <object>Account</object>
+    </recordLookups>
+    <recordCreates>
+        <name>createContact</name>
+        <label>createContact</label>
+        <object>Contact</object>
+    </recordCreates>
+    <screens>
+        <name>ReviewData</name>
+        <fields>
+            <name>acctInput</name>
+            <fieldType>InputField</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+        <fields>
+            <name>acctDisplay</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    f = tmp_path / "MixedFlow.flow-meta.xml"
+    f.write_text(xml, encoding="utf-8")
+
+    result = measure_file(f)
+    types = [m["movementType"] for m in result["dataMovements"]]
+    first_r = types.index("R")
+    first_w = types.index("W")
+    first_x = types.index("X")
+    assert first_r > 0
+    assert first_w > first_r
+    assert first_x > first_w
+    assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME

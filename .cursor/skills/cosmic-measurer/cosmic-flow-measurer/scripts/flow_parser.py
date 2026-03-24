@@ -5,6 +5,7 @@ Extracts COSMIC data movements: Entry (E), Read (R), Write (W), Exit (X).
 
 import sys
 import xml.etree.ElementTree as ET
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -21,6 +22,7 @@ NS = {"sf": "http://soap.sforce.com/2006/04/metadata"}
 PRIMITIVE_DATA_TYPES = frozenset({
     "String", "Number", "Currency", "Boolean", "Date", "DateTime",
 })
+MERGE_FIELD_PATTERN = re.compile(r"\{!([^}]+)\}")
 
 
 @dataclass
@@ -238,6 +240,149 @@ def find_exits(variables: dict[str, VariableInfo]) -> list[RawMovement]:
     return movements
 
 
+def _lookup_object_map(root: ET.Element) -> dict[str, str]:
+    """Build recordLookup name -> object map."""
+    result: dict[str, str] = {}
+    for rl in root.findall("sf:recordLookups", NS):
+        name = _find_text(rl, "name")
+        obj = _find_text(rl, "object")
+        if name and obj:
+            result[name] = obj
+    return result
+
+
+def _resolve_data_group_ref(
+    ref: str,
+    variables: dict[str, VariableInfo],
+    lookup_objects: dict[str, str],
+    component_bindings: dict[str, str],
+) -> Optional[str]:
+    """Resolve elementReference-like value to an SObject data group."""
+    token = ref.strip()
+    if not token:
+        return None
+    base = token.split(".", 1)[0]
+
+    if base in variables and variables[base].object_type:
+        return variables[base].object_type
+    if base in lookup_objects:
+        return lookup_objects[base]
+    if base in component_bindings:
+        return component_bindings[base]
+    if base.endswith("__c"):
+        return base
+    return None
+
+
+def _screen_component_table_bindings(
+    screen_el: ET.Element,
+    variables: dict[str, VariableInfo],
+    lookup_objects: dict[str, str],
+) -> dict[str, str]:
+    """Map screen component field name -> data group for table-like bindings."""
+    bindings: dict[str, str] = {}
+    for field in screen_el.findall(".//sf:fields", NS):
+        if _find_text(field, "fieldType") != "ComponentInstance":
+            continue
+        field_name = _find_text(field, "name")
+        if not field_name:
+            continue
+
+        bound_group: Optional[str] = None
+        for param in field.findall("sf:inputParameters", NS):
+            pname = _find_text(param, "name")
+            if pname != "tableData":
+                continue
+            value_el = param.find("sf:value", NS)
+            if value_el is None:
+                continue
+            ref = _find_text(value_el, "elementReference")
+            if not ref:
+                continue
+            bound_group = _resolve_data_group_ref(
+                ref, variables, lookup_objects, component_bindings={}
+            )
+            if bound_group:
+                break
+        if bound_group:
+            bindings[field_name] = bound_group
+
+    return bindings
+
+
+def find_screen_movements(
+    root: ET.Element, variables: dict[str, VariableInfo]
+) -> tuple[list[RawMovement], list[RawMovement]]:
+    """Extract screen-based Entry and Exit movements per distinct data group."""
+    entries: list[RawMovement] = []
+    exits: list[RawMovement] = []
+
+    entry_hint = 0
+    exit_hint = 0
+    lookup_objects = _lookup_object_map(root)
+
+    for screen_idx, screen_el in enumerate(root.findall("sf:screens", NS), start=1):
+        screen_name = _find_text(screen_el, "name") or f"Screen {screen_idx}"
+        component_bindings = _screen_component_table_bindings(
+            screen_el, variables, lookup_objects
+        )
+
+        entry_data_groups: set[str] = set()
+        exit_data_groups: set[str] = set()
+
+        for field in screen_el.findall(".//sf:fields", NS):
+            field_type = (_find_text(field, "fieldType") or "").strip()
+            refs = [
+                ref.text.strip()
+                for ref in field.findall(".//sf:elementReference", NS)
+                if ref.text and ref.text.strip()
+            ]
+            field_text = _find_text(field, "fieldText") or ""
+            refs.extend(match.strip() for match in MERGE_FIELD_PATTERN.findall(field_text) if match.strip())
+            resolved_data_groups = {
+                resolved
+                for ref in refs
+                if (resolved := _resolve_data_group_ref(
+                    ref, variables, lookup_objects, component_bindings
+                ))
+            }
+            if not resolved_data_groups:
+                continue
+
+            is_entry_field = field_type == "InputField"
+            if field_type == "ComponentInstance":
+                has_output_storage = (
+                    (_find_text(field, "storeOutputAutomatically") or "").lower() == "true"
+                )
+                is_entry_field = has_output_storage
+
+            is_exit_field = field_type in {"DisplayText", "ComponentInstance"}
+
+            if is_entry_field:
+                entry_data_groups.update(resolved_data_groups)
+            if is_exit_field:
+                exit_data_groups.update(resolved_data_groups)
+
+        for dg in sorted(entry_data_groups):
+            entry_hint += 1
+            entries.append(RawMovement(
+                movement_type="E",
+                data_group_ref=dg,
+                name=f"Screen input ({screen_name}) ({dg})",
+                order_hint=entry_hint,
+            ))
+        for dg in sorted(exit_data_groups):
+            exit_hint += 1
+            exits.append(RawMovement(
+                movement_type="X",
+                data_group_ref=dg,
+                name=f"Screen display ({screen_name}) ({dg})",
+                order_hint=exit_hint,
+            ))
+
+    return entries, exits
+
+
 def parse_flow(
     source: str, filename: str = ""
 ) -> tuple[FlowMetadata, list[RawMovement]]:
@@ -247,8 +392,9 @@ def parse_flow(
     variables = extract_variables(root)
 
     entries = find_entries(root, metadata, variables)
+    screen_entries, screen_exits = find_screen_movements(root, variables)
     reads = find_record_lookups(root)
     writes = find_record_mutations(root, variables)
     exits = find_exits(variables)
 
-    return metadata, entries + reads + writes + exits
+    return metadata, entries + screen_entries + reads + writes + exits + screen_exits
