@@ -16,7 +16,7 @@
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_Sub_Milestone__c}</leftValue>
+                                    <leftValue>{!Record.Sub_Milestone__c}</leftValue>
                                     <operator>EQUAL</operator>
                                     <rightValue>SUPW2 Requested</rightValue>
                                 </criteria>
@@ -26,13 +26,13 @@
                                     <rightValue>0</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_Work_Priority__r.Name}</leftValue>
+                                    <leftValue>{!Record.Work_Priority__r.Name}</leftValue>
                                     <operator>NE</operator>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.ParentWorkOrder.SUI_Record_Type_developer_Name__c}</leftValue>
+                                    <leftValue>{!Record.ParentWorkOrder.Record_Type_developer_Name__c}</leftValue>
                                     <operator>NE</operator>
-                                    <rightValue>SUI_Jobs</rightValue>
+                                    <rightValue>Jobs</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -46,19 +46,19 @@
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
+                                    <leftValue>{!Record.Approval_Indicator__c}</leftValue>
                                     <operator>EQUAL</operator>
                                     <rightValue>Not Applicable</rightValue>
                                 </criteria>
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>SUI_Maintenance</rightValue>
+                                    <rightValue>Maintenance</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Edit_Request</value>
+                            <value>WorkOrder.Edit_Request</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2</booleanFilter>
                                 <criteria>
@@ -67,21 +67,21 @@
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
+                                    <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>SUI_Maintenance</rightValue>
+                                    <rightValue>Maintenance</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Add_Comment</value>
+                            <value>WorkOrder.Add_Comment</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Manage_Work_Order</value>
+                            <value>WorkOrder.Manage_Work_Order</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2 AND 3 AND 4 AND 5</booleanFilter>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_EOT_Request_Status__c}</leftValue>
+                                    <leftValue>{!Record.EOT_Request_Status__c}</leftValue>
                                     <operator>NE</operator>
                                     <rightValue>Requested</rightValue>
                                 </criteria>
@@ -101,14 +101,14 @@
                                     <rightValue>Payment Made</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_Supplementary_Works_Indicator__c}</leftValue>
+                                    <leftValue>{!Record.Supplementary_Works_Indicator__c}</leftValue>
                                     <operator>NE</operator>
                                     <rightValue>In-Review</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Create_Ad_hoc_Assessment</value>
+                            <value>WorkOrder.Create_Ad_hoc_Assessment</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2 AND 3 AND 4 AND 5</booleanFilter>
                                 <criteria>
@@ -139,7 +139,7 @@
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Raise_Access_Issue</value>
+                            <value>WorkOrder.Raise_Access_Issue</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2</booleanFilter>
                                 <criteria>
@@ -148,19 +148,19 @@
                                     <rightValue>On-hold</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_AI_Raised_By__r.FirstName}</leftValue>
+                                    <leftValue>{!Record.AI_Raised_By__r.FirstName}</leftValue>
                                     <operator>EQUAL</operator>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Create_Child_WO_Association</value>
+                            <value>WorkOrder.Create_Child_WO_Association</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Create_Warranty</value>
+                            <value>WorkOrder.Create_Warranty</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Report_Visible_Damage</value>
+                            <value>WorkOrder.Report_Visible_Damage</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2 AND 3 AND 4</booleanFilter>
                                 <criteria>
@@ -174,7 +174,7 @@
                                     <rightValue>Payment Made</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.SUI_VD_Identified_By__c}</leftValue>
+                                    <leftValue>{!Record.VD_Identified_By__c}</leftValue>
                                     <operator>EQUAL</operator>
                                 </criteria>
                                 <criteria>
@@ -185,7 +185,7 @@
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.SUI_Create_Credit_Note</value>
+                            <value>WorkOrder.Create_Credit_Note</value>
                             <visibilityRule>
                                 <booleanFilter>(1 OR 2) AND (3 OR 5) AND 4</booleanFilter>
                                 <criteria>
@@ -201,7 +201,7 @@
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>SUI_Maintenance</rightValue>
+                                    <rightValue>Maintenance</rightValue>
                                 </criteria>
                                 <criteria>
                                     <leftValue>{!Record.Contract_Type__c}</leftValue>
@@ -211,7 +211,7 @@
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>SUI_Programmed</rightValue>
+                                    <rightValue>Programmed</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -304,12 +304,12 @@
                 <visibilityRule>
                     <booleanFilter>((1 AND 2 AND (3 OR 4 OR 5)) OR (6 AND 2 AND NOT(7) AND (3 OR 4 OR 5)) OR (6 AND 2 AND 7 AND (4 OR 5)) )</booleanFilter>
                     <criteria>
-                        <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
+                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
                         <operator>EQUAL</operator>
-                        <rightValue>SUI_Maintenance</rightValue>
+                        <rightValue>Maintenance</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Supplementary_Works_Indicator__c}</leftValue>
+                        <leftValue>{!Record.Supplementary_Works_Indicator__c}</leftValue>
                         <operator>NE</operator>
                         <rightValue>In-Review</rightValue>
                     </criteria>
@@ -319,24 +319,24 @@
                         <rightValue>Raised</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Sub_Milestone__c}</leftValue>
+                        <leftValue>{!Record.Sub_Milestone__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Commenced Work</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Sub_Milestone__c}</leftValue>
+                        <leftValue>{!Record.Sub_Milestone__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Resume Work</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
+                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
                         <operator>EQUAL</operator>
-                        <rightValue>SUI_Programmed</rightValue>
+                        <rightValue>Programmed</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.ParentWorkOrder.SUI_Record_Type_developer_Name__c}</leftValue>
+                        <leftValue>{!Record.ParentWorkOrder.Record_Type_developer_Name__c}</leftValue>
                         <operator>CONTAINS</operator>
-                        <rightValue>SUI_Jobs</rightValue>
+                        <rightValue>Jobs</rightValue>
                     </criteria>
                 </visibilityRule>
             </componentInstance>
@@ -353,24 +353,24 @@
                         <rightValue>Closed</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Works_Closed_Reason__c}</leftValue>
+                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Access Issue - Work NOT commenced</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Works_Closed_Reason__c}</leftValue>
+                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Access Issue - After Work commenced</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Works_Closed_Reason__c}</leftValue>
+                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>No work undertaken/required</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
+                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
                         <operator>EQUAL</operator>
-                        <rightValue>SUI_Maintenance</rightValue>
+                        <rightValue>Maintenance</rightValue>
                     </criteria>
                 </visibilityRule>
             </componentInstance>
@@ -421,7 +421,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Access_Issue_Details</value>
+                    <value>WorkOrder.Access_Issue_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord2</identifier>
@@ -439,7 +439,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Access_Issue_NCAT_Details</value>
+                    <value>WorkOrder.Access_Issue_NCAT_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord3</identifier>
@@ -457,7 +457,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Access_Issue_Appointment_Details</value>
+                    <value>WorkOrder.Access_Issue_Appointment_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord4</identifier>
@@ -479,7 +479,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>flowName</name>
-                    <value>SUI_Work_Order_Display_Warranties</value>
+                    <value>Work_Order_Display_Warranties</value>
                 </componentInstanceProperties>
                 <componentName>flowruntime:interview</componentName>
                 <identifier>flowruntime_interview</identifier>
@@ -501,7 +501,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Visible_Damage_Details</value>
+                    <value>WorkOrder.Visible_Damage_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord</identifier>
@@ -519,7 +519,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Visible_Damage_NCAT_Details</value>
+                    <value>WorkOrder.Visible_Damage_NCAT_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord5</identifier>
@@ -537,7 +537,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Visible_Damage_Tenant_Details</value>
+                    <value>WorkOrder.Visible_Damage_Tenant_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord6</identifier>
@@ -555,7 +555,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Visible_Damage_Recovery_Details</value>
+                    <value>WorkOrder.Visible_Damage_Recovery_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord8</identifier>
@@ -573,7 +573,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.SUI_Visible_Damage_Debt_Recovery_Details</value>
+                    <value>WorkOrder.Visible_Damage_Debt_Recovery_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord7</identifier>
@@ -595,7 +595,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>flowName</name>
-                    <value>SUI_Associations_Show_Work_Order_Associations</value>
+                    <value>Associations_Show_Work_Order_Associations</value>
                 </componentInstanceProperties>
                 <componentName>flowruntime:interview</componentName>
                 <identifier>flowruntime_interview2</identifier>
@@ -1150,7 +1150,7 @@
                 <identifier>flexipage_richText4</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Supplementary Request</rightValue>
                     </criteria>
@@ -1171,7 +1171,7 @@
                 <identifier>flexipage_richText3</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>EoT Request</rightValue>
                     </criteria>
@@ -1192,7 +1192,7 @@
                 <identifier>flexipage_richText</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Issuing Work Order</rightValue>
                     </criteria>
@@ -1255,7 +1255,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>Case.SUI_Related_Case</value>
+                    <value>Case.Related_Case</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord9</identifier>
