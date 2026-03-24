@@ -253,6 +253,7 @@ def extract_tab_bound_component_movements(
     """Build tab-derived movements for non-LWC tab targets and warnings."""
     movements: list[RawMovement] = []
     warnings: list[str] = []
+    movement_order_hint = 1000
 
     for binding in extract_tab_component_bindings(root):
         if binding.target_component_kind == "lwc":
@@ -274,7 +275,7 @@ def extract_tab_bound_component_movements(
                     movement_type="R",
                     data_group_ref=data_group,
                     name=f"Read related list {related_list_api_name}{suffix}",
-                    order_hint=1000,
+                    order_hint=movement_order_hint,
                 )
             )
             movements.append(
@@ -282,9 +283,10 @@ def extract_tab_bound_component_movements(
                     movement_type="X",
                     data_group_ref=data_group,
                     name=f"Display related list {related_list_api_name}{suffix}",
-                    order_hint=1001,
+                    order_hint=movement_order_hint + 1,
                 )
             )
+            movement_order_hint += 2
             continue
 
         if component_name == "flowruntime:interview":
@@ -294,9 +296,10 @@ def extract_tab_bound_component_movements(
                     movement_type="X",
                     data_group_ref=f"Flow:{flow_name}",
                     name=f"Display flow interview {flow_name}{suffix}",
-                    order_hint=1002,
+                    order_hint=movement_order_hint,
                 )
             )
+            movement_order_hint += 1
             warnings.append(
                 f"Tab component {binding.tab_title or binding.tab_identifier} (flowruntime:interview) inferred as X only; inspect flow for additional E/W"
             )
@@ -310,7 +313,7 @@ def extract_tab_bound_component_movements(
                     movement_type="R",
                     data_group_ref=data_group_ref,
                     name=f"Read related record {record_title}{suffix}",
-                    order_hint=1003,
+                    order_hint=movement_order_hint,
                 )
             )
             movements.append(
@@ -318,9 +321,10 @@ def extract_tab_bound_component_movements(
                     movement_type="X",
                     data_group_ref=data_group_ref,
                     name=f"Display related record {record_title}{suffix}",
-                    order_hint=1004,
+                    order_hint=movement_order_hint + 1,
                 )
             )
+            movement_order_hint += 2
             if used_fallback:
                 warnings.append(
                     f"Tab component {binding.tab_title or binding.tab_identifier} (console:relatedRecord) fell back to dataGroupRef {sobject_type}"

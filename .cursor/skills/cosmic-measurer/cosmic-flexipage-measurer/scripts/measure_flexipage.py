@@ -101,40 +101,52 @@ def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
                 promoted.append(remaining.pop(index))
                 break
 
-    # Keep related-list read/display pairs adjacent (R then X) for traceability.
-    paired_related_rows: list[dict] = []
-    used_ids: set[int] = set()
-    for idx, row in enumerate(remaining):
-        if idx in used_ids:
-            continue
-        if row.get("movementType") != "R":
-            continue
-        row_name = str(row.get("name") or "")
-        if not row_name.startswith("Read related list "):
-            continue
+    def pair_rows_by_prefix(
+        rows: list[dict],
+        read_prefix: str,
+        display_prefix: str,
+    ) -> tuple[list[dict], list[dict]]:
+        paired_rows: list[dict] = []
+        used_ids: set[int] = set()
+        for idx, row in enumerate(rows):
+            if idx in used_ids or row.get("movementType") != "R":
+                continue
+            row_name = str(row.get("name") or "")
+            if not row_name.startswith(read_prefix):
+                continue
 
-        paired_related_rows.append(row)
-        used_ids.add(idx)
+            paired_rows.append(row)
+            used_ids.add(idx)
 
-        match_index: Optional[int] = None
-        for candidate_idx, candidate in enumerate(remaining):
-            if candidate_idx in used_ids:
-                continue
-            if candidate.get("movementType") != "X":
-                continue
-            if candidate.get("dataGroupRef") != row.get("dataGroupRef"):
-                continue
-            candidate_name = str(candidate.get("name") or "")
-            if not candidate_name.startswith("Display related list "):
-                continue
-            match_index = candidate_idx
-            break
-        if match_index is not None:
-            paired_related_rows.append(remaining[match_index])
-            used_ids.add(match_index)
+            match_index: Optional[int] = None
+            for candidate_idx, candidate in enumerate(rows):
+                if candidate_idx in used_ids:
+                    continue
+                if candidate.get("movementType") != "X":
+                    continue
+                if candidate.get("dataGroupRef") != row.get("dataGroupRef"):
+                    continue
+                candidate_name = str(candidate.get("name") or "")
+                if not candidate_name.startswith(display_prefix):
+                    continue
+                if candidate_name.removeprefix(display_prefix) != row_name.removeprefix(read_prefix):
+                    continue
+                match_index = candidate_idx
+                break
+            if match_index is not None:
+                paired_rows.append(rows[match_index])
+                used_ids.add(match_index)
 
-    leftovers = [row for idx, row in enumerate(remaining) if idx not in used_ids]
-    ordered_rows = promoted + paired_related_rows + leftovers
+        unpaired_rows = [row for idx, row in enumerate(rows) if idx not in used_ids]
+        return paired_rows, unpaired_rows
+
+    paired_related_lists, remaining_after_related_lists = pair_rows_by_prefix(
+        remaining, "Read related list ", "Display related list "
+    )
+    paired_related_records, leftovers = pair_rows_by_prefix(
+        remaining_after_related_lists, "Read related record ", "Display related record "
+    )
+    ordered_rows = promoted + paired_related_lists + paired_related_records + leftovers
     if canonical_exit is not None:
         ordered_rows.append(canonical_exit)
 
