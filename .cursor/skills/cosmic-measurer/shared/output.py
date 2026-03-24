@@ -50,9 +50,9 @@ def order_movements(movements: list[RawMovement]) -> list[tuple[RawMovement, lis
     def sort_key(m: RawMovement) -> tuple:
         type_ord = TYPE_ORDER.get(m.movement_type, 1)
         exec_ord = m.execution_order if m.execution_order is not None else 999999
-        line_ord = m.source_line if m.source_line is not None else 999999
         hint = m.order_hint
-        return (type_ord, exec_ord, line_ord, hint)
+        line_ord = m.source_line if m.source_line is not None else 999999
+        return (type_ord, exec_ord, hint, line_ord)
 
     ordered = sorted(movements, key=sort_key)
 
