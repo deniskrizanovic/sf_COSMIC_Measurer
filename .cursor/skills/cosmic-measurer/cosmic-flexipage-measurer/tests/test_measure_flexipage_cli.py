@@ -548,3 +548,109 @@ def test_cli_no_resolve_lwc_candidates_opt_out(monkeypatch, capsys, project_root
     assert "resolvedLwcMeasurements" not in payload
     movement_names = [row["name"] for row in payload.get("dataMovements") or []]
     assert all(not name.endswith("| tab:Visualiser") for name in movement_names)
+
+
+def test_cli_resolves_flow_candidates_by_default(monkeypatch, capsys, project_root, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>flowName</name>
+                    <value>cfp_createCRUDLwithRelatedLists</value>
+                </componentInstanceProperties>
+                <componentName>flowruntime:interview</componentName>
+                <identifier>flowruntime_interview</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-flow</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-flow</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Flow Tab</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabFlow</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    flow_sample_dir = project_root / "samples" / "flows"
+    if not flow_sample_dir.exists():
+        return
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "measure_flexipage",
+            str(page_file),
+            "--json",
+            "--flow-search-paths",
+            str(flow_sample_dir),
+        ],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    flow_candidates = payload.get("flowCandidateMeasurements") or []
+    assert len(flow_candidates) == 1
+    assert flow_candidates[0]["artifact"]["name"] == "cfp_createCRUDLwithRelatedLists"
+    resolved = payload.get("resolvedFlowMeasurements") or []
+    assert len(resolved) == 1
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert any(name.endswith("| tab:Flow Tab") for name in movement_names)
+    assert movement_names[-1] == "Errors/notifications"
+
+
+def test_cli_no_resolve_flow_candidates_opt_out(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>flowName</name>
+                    <value>SomeFlow</value>
+                </componentInstanceProperties>
+                <componentName>flowruntime:interview</componentName>
+                <identifier>flowruntime_interview</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-flow</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-flow</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Flow Tab</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabFlow</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["measure_flexipage", str(page_file), "--json", "--no-resolve-flow-candidates"],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    flow_candidates = payload.get("flowCandidateMeasurements") or []
+    assert len(flow_candidates) == 1
+    assert "resolvedFlowMeasurements" not in payload

@@ -251,6 +251,65 @@ def _resolve_lwc_candidates(
     return resolved
 
 
+def _find_flow_file(flow_name: str, search_paths: list[Path]) -> Optional[Path]:
+    candidate_filenames = (
+        f"{flow_name}.flow-meta.xml",
+        f"{flow_name}.flow",
+    )
+    for base in search_paths:
+        if not base.exists():
+            continue
+        for filename in candidate_filenames:
+            direct_match = base / filename
+            if direct_match.exists() and direct_match.is_file():
+                return direct_match
+            for match in base.rglob(filename):
+                if match.is_file():
+                    return match
+    return None
+
+
+def _resolve_flow_candidates(
+    flow_candidates: list[dict],
+    *,
+    flow_search_paths: list[Path],
+    apex_search_paths: list[Path],
+) -> list[dict]:
+    if not flow_candidates:
+        return []
+
+    flow_scripts_dir = _COSMIC_MEASURER_DIR / "cosmic-flow-measurer" / "scripts"
+    if str(flow_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(flow_scripts_dir))
+    from measure_flow import measure_file as measure_flow_file  # type: ignore
+
+    resolved: list[dict] = []
+    for candidate in flow_candidates:
+        artifact = candidate.get("artifact") or {}
+        flow_name = artifact.get("name")
+        if not flow_name:
+            continue
+        flow_file = _find_flow_file(flow_name, flow_search_paths)
+        if flow_file is None:
+            resolved.append(
+                {
+                    "artifact": {"type": "Flow", "name": flow_name},
+                    "traversalWarnings": [f"Unable to resolve Flow metadata for {flow_name}"],
+                }
+            )
+            continue
+        result = measure_flow_file(
+            flow_file,
+            fp_id=candidate.get("functionalProcessId", "<Id>"),
+            apex_search_paths=apex_search_paths,
+            include_invocable_apex=True,
+        )
+        result["sourceArtifact"] = candidate.get("sourceArtifact")
+        result["tabContext"] = candidate.get("tabContext")
+        resolved.append(result)
+    return resolved
+
+
 def _build_lwc_candidate_outputs(
     artifact_name: str,
     tab_bindings: list,
@@ -308,6 +367,39 @@ def _build_lwc_candidate_outputs(
     return candidates
 
 
+def _build_flow_candidate_outputs(
+    artifact_name: str,
+    tab_bindings: list,
+    fp_id: str,
+) -> list[dict]:
+    candidates: list[dict] = []
+    for binding in tab_bindings:
+        if binding.target_component_name != "flowruntime:interview":
+            continue
+        flow_name = (binding.target_component_properties or {}).get("flowName", "").strip()
+        if not flow_name:
+            continue
+        candidates.append(
+            {
+                "functionalProcessId": fp_id,
+                "artifact": {
+                    "type": "Flow",
+                    "name": flow_name,
+                },
+                "sourceArtifact": {
+                    "type": "FlexiPage",
+                    "name": artifact_name,
+                },
+                "tabContext": {
+                    "identifier": binding.tab_identifier,
+                    "title": binding.tab_title,
+                },
+                "notes": "Run dedicated flow-measurer to extract concrete E/R/W/X movements.",
+            }
+        )
+    return candidates
+
+
 def _build_lwc_tbc_data_movements(lwc_candidates: list[dict]) -> list[dict]:
     key_counts: dict[tuple[str, str], int] = {}
     for candidate in lwc_candidates:
@@ -346,6 +438,52 @@ def _build_lwc_tbc_data_movements(lwc_candidates: list[dict]) -> list[dict]:
     return placeholder_rows
 
 
+def _inline_resolved_flow_tab_movements(output: dict, resolved_flow_measurements: list[dict]) -> None:
+    rows = output.get("dataMovements") or []
+    filtered_rows: list[dict] = []
+    flow_placeholder_names: set[str] = set()
+    for resolved in resolved_flow_measurements:
+        tab_context = resolved.get("tabContext") or {}
+        tab_name = (tab_context.get("title") or tab_context.get("identifier") or "").strip()
+        flow_name = ((resolved.get("artifact") or {}).get("name") or "").strip()
+        if tab_name and flow_name:
+            flow_placeholder_names.add(f"Display flow interview {flow_name} | tab:{tab_name}")
+        elif flow_name:
+            flow_placeholder_names.add(f"Display flow interview {flow_name}")
+
+    for row in rows:
+        if _is_errors_notifications_row(row):
+            continue
+        if row.get("movementType") == "X" and str(row.get("name") or "") in flow_placeholder_names:
+            continue
+        filtered_rows.append(row)
+
+    for resolved in resolved_flow_measurements:
+        tab_context = resolved.get("tabContext") or {}
+        tab_title = (tab_context.get("title") or tab_context.get("identifier") or "").strip()
+        tab_suffix = f" | tab:{tab_title}" if tab_title else ""
+        for row in resolved.get("dataMovements") or []:
+            if _is_errors_notifications_row(row):
+                continue
+            merged_row = dict(row)
+            merged_row["name"] = f"{merged_row.get('name', '')}{tab_suffix}"
+            filtered_rows.append(merged_row)
+
+    filtered_rows.append(
+        {
+            "name": CANONICAL_EXIT_NAME,
+            "order": 0,
+            "movementType": "X",
+            "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
+            "implementationType": "flexipage",
+            "isApiCall": False,
+        }
+    )
+    for idx, row in enumerate(filtered_rows, start=1):
+        row["order"] = idx
+    output["dataMovements"] = filtered_rows
+
+
 def _build_action_candidate_outputs(
     artifact_name: str,
     sobject_type: str,
@@ -373,7 +511,9 @@ def measure_file(
     synthetic_trigger_entry: bool = True,
     include_action_candidates: bool = False,
     resolve_lwc_candidates: bool = True,
+    resolve_flow_candidates: bool = True,
     lwc_search_paths: Optional[list[Path]] = None,
+    flow_search_paths: Optional[list[Path]] = None,
     apex_search_paths: Optional[list[Path]] = None,
     deduplicate_movements: bool = True,
 ) -> dict:
@@ -424,6 +564,7 @@ def measure_file(
     for warning in tab_component_warnings:
         output.setdefault("traversalWarnings", []).append(warning)
     lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
+    flow_candidates = _build_flow_candidate_outputs(metadata.name, tab_bindings, fp_id)
     if lwc_candidates:
         output["lwcCandidateMeasurements"] = lwc_candidates
         output["dataMovements"] = (output.get("dataMovements") or []) + _build_lwc_tbc_data_movements(
@@ -442,6 +583,36 @@ def measure_file(
             )
             output["resolvedLwcMeasurements"] = resolved_lwc_measurements
             _inline_resolved_lwc_tab_movements(output, resolved_lwc_measurements)
+    if flow_candidates:
+        output["flowCandidateMeasurements"] = flow_candidates
+        flow_names = ", ".join(candidate["artifact"]["name"] for candidate in flow_candidates)
+        output.setdefault("traversalWarnings", []).append(
+            "Delegate tab-bound Flows to flow-measurer for concrete E/R/W/X movements: "
+            f"{flow_names}"
+        )
+        if resolve_flow_candidates:
+            resolved_flow_measurements = _resolve_flow_candidates(
+                flow_candidates,
+                flow_search_paths=flow_search_paths or [],
+                apex_search_paths=apex_search_paths or [],
+            )
+            output["resolvedFlowMeasurements"] = resolved_flow_measurements
+            _inline_resolved_flow_tab_movements(output, resolved_flow_measurements)
+            unresolved_flow_names = sorted(
+                {
+                    (item.get("artifact") or {}).get("name", "")
+                    for item in resolved_flow_measurements
+                    if item.get("traversalWarnings")
+                }
+            )
+            if unresolved_flow_names:
+                output.setdefault("traversalWarnings", []).append(
+                    "Unable to resolve tab-bound Flow metadata: " + ", ".join(unresolved_flow_names)
+                )
+        else:
+            output.setdefault("traversalWarnings", []).append(
+                "Flow candidate resolution disabled (--no-resolve-flow-candidates)"
+            )
     if deduplicate_movements:
         _deduplicate_data_movements(output)
     return output
@@ -475,6 +646,11 @@ def main() -> int:
         help="Disable resolving lwcCandidateMeasurements via standalone cosmic-lwc-measurer",
     )
     parser.add_argument(
+        "--no-resolve-flow-candidates",
+        action="store_true",
+        help="Disable resolving flowCandidateMeasurements via standalone cosmic-flow-measurer",
+    )
+    parser.add_argument(
         "--lwc-search-paths",
         metavar="DIR",
         default="samples,force-app/main/default/lwc",
@@ -487,12 +663,19 @@ def main() -> int:
         help="Comma-separated dirs for LWC imported Apex class resolution",
     )
     parser.add_argument(
+        "--flow-search-paths",
+        metavar="DIR",
+        default="samples,force-app/main/default/flows",
+        help="Comma-separated dirs to resolve Flow metadata files",
+    )
+    parser.add_argument(
         "--no-dedupe-movements",
         action="store_true",
         help="Disable deduplication of repeated movements",
     )
     args = parser.parse_args()
     lwc_search_paths = _parse_search_paths(args.lwc_search_paths)
+    flow_search_paths = _parse_search_paths(args.flow_search_paths)
     apex_search_paths = _parse_search_paths(args.apex_search_paths)
 
     results: list[dict] = []
@@ -512,7 +695,9 @@ def main() -> int:
                 synthetic_trigger_entry=not args.no_synthetic_trigger_e,
                 include_action_candidates=args.include_action_candidates,
                 resolve_lwc_candidates=not args.no_resolve_lwc_candidates,
+                resolve_flow_candidates=not args.no_resolve_flow_candidates,
                 lwc_search_paths=lwc_search_paths,
+                flow_search_paths=flow_search_paths,
                 apex_search_paths=apex_search_paths,
                 deduplicate_movements=not args.no_dedupe_movements,
             )

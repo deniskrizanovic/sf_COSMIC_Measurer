@@ -21,6 +21,7 @@ Produce a COSMIC measurement for one FlexiPage metadata artifact focused on page
 - Detect configured page actions (`force:highlightsPanel`) and surface them as investigation notes only.
 - Detect record field bindings (`Record.*`) and dynamic related lists for Read/Exit candidates.
 - Detect tab-bound LWCs, measure them inline via the LWC measurer by default, and still emit `lwcCandidateMeasurements` for traceability.
+- Detect tab-bound Flow interviews (`flowruntime:interview`), measure them inline via the Flow measurer by default, and emit `flowCandidateMeasurements` for traceability.
 - Build ordered movements using shared output logic and append canonical final exit (`Errors/notifications`).
 - Output JSON to stdout or file.
 
@@ -30,6 +31,7 @@ CLI:
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml -o out.json --fp-id 001xxx
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json --no-resolve-lwc-candidates
+python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json --no-resolve-flow-candidates
 ```
 
 ## Validation
@@ -38,7 +40,9 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 - FlexiPage action config does not create counted E/W rows in this skill version.
 - Configured actions appear in notes (`traversalWarnings`) for follow-up as separate functional processes.
 - Tab-bound LWCs are traversed by default and inlined into merged movement ordering.
+- Tab-bound Flow interviews are traversed by default and inlined into merged movement ordering.
 - `lwcCandidateMeasurements` remain in output for traceability and follow-up validation.
+- `flowCandidateMeasurements` remain in output for traceability and follow-up validation.
 - Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: status/errors/etc`).
 - Data movement ordering and dedup rely on shared COSMIC output module.
 - Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
@@ -47,7 +51,10 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 
 Human summary (default, table-first with roll-up totals):
 
+- Run the script first and use its produced movement rows as the single source of truth for human output ordering.
 - Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `isApiCall`), including inlined tab-bound LWC movements.
+- Do not collapse, regroup, or re-sort movements (for example, never present all `R` rows first and `X` rows later unless that is exactly what the script emitted).
+- Do not omit inferred or placeholder rows emitted by the script (for example tab-bound `tbc` inspection rows) in full-output mode.
 - Present a second compact table for totals (`E`, `R`, `W`, `X`, `Total CFP`).
 - Include short notes for canonical exit and action follow-up items.
 - Present merged roll-up totals (FlexiPage + traversed LWC movements) as the default total view.
@@ -88,7 +95,11 @@ Default response behavior:
   - movement table (ordered rows),
   - totals table (`E`, `R`, `W`, `X`, `Total CFP`),
   - all notes/warnings (including canonical final exit and follow-up investigation notes).
+- In full-output mode, the assistant must mirror script output ordering and row cardinality exactly for movement rows (no manual re-interpretation).
 - Default to merged roll-up totals (FlexiPage + traversed tab-bound LWC movements).
+- Default to merged roll-up totals (FlexiPage + traversed tab-bound LWC/Flow movements).
 - Traverse tab-bound LWCs by default before producing totals.
+- Traverse tab-bound Flows by default before producing totals.
 - Use `--no-resolve-lwc-candidates` to skip inline LWC traversal when needed.
+- Use `--no-resolve-flow-candidates` to skip inline Flow traversal when needed.
 - Include JSON only when explicitly requested (for example: "as JSON", "for posting", or "export").
