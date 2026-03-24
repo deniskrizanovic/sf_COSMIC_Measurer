@@ -19,6 +19,7 @@ for path_entry in [str(_SCRIPT_DIR), str(_COSMIC_MEASURER_DIR)]:
 from flexipage_parser import (  # noqa: E402
     build_synthetic_action_entry,
     build_synthetic_page_trigger_entry,
+    extract_tab_bound_component_movements,
     extract_tab_component_bindings,
     parse_flexipage,
     parse_xml,
@@ -140,6 +141,42 @@ def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
     for idx, row in enumerate(ordered_rows, start=1):
         row["order"] = idx
     output["dataMovements"] = ordered_rows
+
+
+def _normalize_name_for_dedup(name: str) -> str:
+    tab_delimiter = " | tab:"
+    if tab_delimiter in name:
+        return name.split(tab_delimiter, 1)[0].strip()
+    return name.strip()
+
+
+def _deduplicate_data_movements(output: dict) -> None:
+    rows = output.get("dataMovements") or []
+    if not rows:
+        return
+
+    canonical_exit = next((row for row in rows if _is_errors_notifications_row(row)), None)
+    non_canonical_rows = [row for row in rows if not _is_errors_notifications_row(row)]
+
+    unique_rows: list[dict] = []
+    seen_keys: set[tuple[str, str, str]] = set()
+    for row in non_canonical_rows:
+        key = (
+            str(row.get("movementType") or ""),
+            str(row.get("dataGroupRef") or ""),
+            _normalize_name_for_dedup(str(row.get("name") or "")),
+        )
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        unique_rows.append(row)
+
+    if canonical_exit is not None:
+        unique_rows.append(canonical_exit)
+
+    for idx, row in enumerate(unique_rows, start=1):
+        row["order"] = idx
+    output["dataMovements"] = unique_rows
 
 
 def _parse_search_paths(csv_paths: str) -> list[Path]:
@@ -288,10 +325,17 @@ def measure_file(
     resolve_lwc_candidates: bool = True,
     lwc_search_paths: Optional[list[Path]] = None,
     apex_search_paths: Optional[list[Path]] = None,
+    deduplicate_movements: bool = False,
 ) -> dict:
     source = path.read_text(encoding="utf-8", errors="replace")
+    root = parse_xml(source)
     metadata, movements, actions, tab_labels = parse_flexipage(source, filename=path.name)
-    tab_bindings = extract_tab_component_bindings(parse_xml(source))
+    tab_bindings = extract_tab_component_bindings(root)
+    tab_component_movements, tab_component_warnings = extract_tab_bound_component_movements(
+        root, metadata.sobject_type
+    )
+    if tab_component_movements:
+        movements = movements + tab_component_movements
     if synthetic_trigger_entry:
         movements = [build_synthetic_page_trigger_entry(metadata.sobject_type)] + movements
     output = build_output(
@@ -327,6 +371,8 @@ def measure_file(
             output.setdefault("traversalWarnings", []).append(
                 "Tab-component bindings: " + ", ".join(readable_bindings)
             )
+    for warning in tab_component_warnings:
+        output.setdefault("traversalWarnings", []).append(warning)
     lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
     if lwc_candidates:
         output["lwcCandidateMeasurements"] = lwc_candidates
@@ -343,6 +389,8 @@ def measure_file(
             )
             output["resolvedLwcMeasurements"] = resolved_lwc_measurements
             _inline_resolved_lwc_tab_movements(output, resolved_lwc_measurements)
+    if deduplicate_movements:
+        _deduplicate_data_movements(output)
     return output
 
 
@@ -385,6 +433,11 @@ def main() -> int:
         default="samples,force-app/main/default/classes,src/classes",
         help="Comma-separated dirs for LWC imported Apex class resolution",
     )
+    parser.add_argument(
+        "--dedupe-movements",
+        action="store_true",
+        help="Deduplicate repeated movements by type, data group, and base name (ignoring tab suffix)",
+    )
     args = parser.parse_args()
     lwc_search_paths = _parse_search_paths(args.lwc_search_paths)
     apex_search_paths = _parse_search_paths(args.apex_search_paths)
@@ -408,6 +461,7 @@ def main() -> int:
                 resolve_lwc_candidates=not args.no_resolve_lwc_candidates,
                 lwc_search_paths=lwc_search_paths,
                 apex_search_paths=apex_search_paths,
+                deduplicate_movements=args.dedupe_movements,
             )
         except ValueError as exc:
             print(f"Error: {candidate}: {exc}", file=sys.stderr)

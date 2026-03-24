@@ -36,6 +36,13 @@ class TabComponentBinding:
     body_facet_name: str
     target_component_name: Optional[str]
     target_component_kind: str
+    target_component_properties: dict[str, str]
+
+
+@dataclass
+class TabTargetComponent:
+    component_name: Optional[str]
+    properties: dict[str, str]
 
 
 def _find_text(element: ET.Element, tag: str) -> Optional[str]:
@@ -151,26 +158,39 @@ def _classify_component_kind(component_name: Optional[str]) -> str:
     return "aura" if ":" in component_name else "lwc"
 
 
-def _build_facet_component_index(root: ET.Element) -> dict[str, Optional[str]]:
-    facet_targets: dict[str, Optional[str]] = {}
+def _extract_component_properties(component: ET.Element) -> dict[str, str]:
+    properties: dict[str, str] = {}
+    for prop in component.findall("sf:componentInstanceProperties", NS):
+        prop_name = _find_text(prop, "name")
+        prop_value = _find_text(prop, "value")
+        if prop_name and prop_value:
+            properties[prop_name] = prop_value
+    return properties
+
+
+def _build_facet_component_index(root: ET.Element) -> dict[str, list[TabTargetComponent]]:
+    facet_targets: dict[str, list[TabTargetComponent]] = {}
     for region in root.findall("sf:flexiPageRegions", NS):
         region_name = _find_text(region, "name")
         if not region_name:
             continue
-        first_component_name: Optional[str] = None
+        components: list[TabTargetComponent] = []
         for item in region.findall("sf:itemInstances", NS):
             component = item.find("sf:componentInstance", NS)
             if component is None:
                 continue
-            first_component_name = _find_text(component, "componentName")
-            if first_component_name:
-                break
-        facet_targets[region_name] = first_component_name
+            components.append(
+                TabTargetComponent(
+                    component_name=_find_text(component, "componentName"),
+                    properties=_extract_component_properties(component),
+                )
+            )
+        facet_targets[region_name] = components
     return facet_targets
 
 
 def extract_tab_component_bindings(root: ET.Element) -> list[TabComponentBinding]:
-    """Resolve each tab body facet to the first target component and classify kind."""
+    """Resolve each tab body facet to all target components and classify kind."""
     bindings: list[TabComponentBinding] = []
     facet_component_index = _build_facet_component_index(root)
     for component in root.findall(".//sf:componentInstance", NS):
@@ -180,17 +200,138 @@ def extract_tab_component_bindings(root: ET.Element) -> list[TabComponentBinding
         body_facet_name = _extract_component_property(component, "body")
         if not body_facet_name:
             continue
-        target_component_name = facet_component_index.get(body_facet_name)
-        bindings.append(
-            TabComponentBinding(
-                tab_identifier=_find_text(component, "identifier") or "unknownTab",
-                tab_title=_extract_component_property(component, "title"),
-                body_facet_name=body_facet_name,
-                target_component_name=target_component_name,
-                target_component_kind=_classify_component_kind(target_component_name),
+        target_components = facet_component_index.get(body_facet_name) or []
+        if not target_components:
+            bindings.append(
+                TabComponentBinding(
+                    tab_identifier=_find_text(component, "identifier") or "unknownTab",
+                    tab_title=_extract_component_property(component, "title"),
+                    body_facet_name=body_facet_name,
+                    target_component_name=None,
+                    target_component_kind="unknown",
+                    target_component_properties={},
+                )
             )
-        )
+            continue
+        for target_component in target_components:
+            target_component_name = target_component.component_name
+            bindings.append(
+                TabComponentBinding(
+                    tab_identifier=_find_text(component, "identifier") or "unknownTab",
+                    tab_title=_extract_component_property(component, "title"),
+                    body_facet_name=body_facet_name,
+                    target_component_name=target_component_name,
+                    target_component_kind=_classify_component_kind(target_component_name),
+                    target_component_properties=target_component.properties,
+                )
+            )
     return bindings
+
+
+def _tab_suffix(binding: TabComponentBinding) -> str:
+    tab_name = binding.tab_title or binding.tab_identifier
+    return f" | tab:{tab_name}"
+
+
+def _infer_related_record_data_group(
+    properties: dict[str, str], sobject_type: str
+) -> tuple[str, bool]:
+    lookup_field = properties.get("lookupFieldName", "").strip()
+    if "." in lookup_field:
+        return lookup_field.split(".", 1)[0], False
+    if lookup_field and lookup_field != "Id":
+        return lookup_field, False
+    action_name = properties.get("updateQuickActionName", "").strip()
+    if "." in action_name:
+        return action_name.split(".", 1)[0], False
+    return sobject_type, True
+
+
+def extract_tab_bound_component_movements(
+    root: ET.Element, sobject_type: str
+) -> tuple[list[RawMovement], list[str]]:
+    """Build tab-derived movements for non-LWC tab targets and warnings."""
+    movements: list[RawMovement] = []
+    warnings: list[str] = []
+
+    for binding in extract_tab_component_bindings(root):
+        if binding.target_component_kind == "lwc":
+            continue
+        component_name = binding.target_component_name or ""
+        properties = binding.target_component_properties
+        suffix = _tab_suffix(binding)
+
+        if component_name in ("force:relatedListSingleContainer", "lst:dynamicRelatedList"):
+            related_list_api_name = properties.get("relatedListApiName", "").strip()
+            if not related_list_api_name:
+                warnings.append(
+                    f"Tab component {binding.tab_title or binding.tab_identifier} ({component_name}) is missing relatedListApiName"
+                )
+                continue
+            data_group = _normalize_related_list_to_data_group(related_list_api_name)
+            movements.append(
+                RawMovement(
+                    movement_type="R",
+                    data_group_ref=data_group,
+                    name=f"Read related list {related_list_api_name}{suffix}",
+                    order_hint=1000,
+                )
+            )
+            movements.append(
+                RawMovement(
+                    movement_type="X",
+                    data_group_ref=data_group,
+                    name=f"Display related list {related_list_api_name}{suffix}",
+                    order_hint=1001,
+                )
+            )
+            continue
+
+        if component_name == "flowruntime:interview":
+            flow_name = properties.get("flowName", "").strip() or "unknownFlow"
+            movements.append(
+                RawMovement(
+                    movement_type="X",
+                    data_group_ref=f"Flow:{flow_name}",
+                    name=f"Display flow interview {flow_name}{suffix}",
+                    order_hint=1002,
+                )
+            )
+            warnings.append(
+                f"Tab component {binding.tab_title or binding.tab_identifier} (flowruntime:interview) inferred as X only; inspect flow for additional E/W"
+            )
+            continue
+
+        if component_name == "console:relatedRecord":
+            data_group_ref, used_fallback = _infer_related_record_data_group(properties, sobject_type)
+            record_title = properties.get("titleFieldName", "").strip() or "related record details"
+            movements.append(
+                RawMovement(
+                    movement_type="R",
+                    data_group_ref=data_group_ref,
+                    name=f"Read related record {record_title}{suffix}",
+                    order_hint=1003,
+                )
+            )
+            movements.append(
+                RawMovement(
+                    movement_type="X",
+                    data_group_ref=data_group_ref,
+                    name=f"Display related record {record_title}{suffix}",
+                    order_hint=1004,
+                )
+            )
+            if used_fallback:
+                warnings.append(
+                    f"Tab component {binding.tab_title or binding.tab_identifier} (console:relatedRecord) fell back to dataGroupRef {sobject_type}"
+                )
+            continue
+
+        warnings.append(
+            f"Unsupported tab component {binding.tab_title or binding.tab_identifier}: {component_name or 'unknown component'}"
+        )
+
+    return movements, warnings
 
 
 def find_reads_from_page(

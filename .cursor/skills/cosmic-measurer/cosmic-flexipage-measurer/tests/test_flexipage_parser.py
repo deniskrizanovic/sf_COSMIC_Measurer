@@ -10,6 +10,7 @@ from flexipage_parser import (
     extract_highlights_actions,
     extract_record_field_bindings,
     extract_tab_labels,
+    extract_tab_bound_component_movements,
     find_exits_from_page,
     find_reads_from_page,
     parse_flexipage,
@@ -286,3 +287,91 @@ def test_build_synthetic_action_entry():
     assert entry.movement_type == "E"
     assert entry.data_group_ref == "Account"
     assert entry.name == "Trigger action Delete"
+
+
+def test_extract_tab_bound_component_movements_for_supported_components():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>rlContacts</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-list</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>flowName</name>
+                    <value>SampleFlow</value>
+                </componentInstanceProperties>
+                <componentName>flowruntime:interview</componentName>
+                <identifier>flowInterview</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-flow</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>lookupFieldName</name>
+                    <value>WorkOrder.Id</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>titleFieldName</name>
+                    <value>Access Issue Details</value>
+                </componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-list</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>ContactsTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabContacts</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-flow</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>FlowTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabFlow</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>RelatedTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabRelated</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    movements, warnings = extract_tab_bound_component_movements(root, "WorkOrder")
+
+    movement_names = [movement.name for movement in movements]
+    assert "Read related list Contacts | tab:ContactsTab" in movement_names
+    assert "Display related list Contacts | tab:ContactsTab" in movement_names
+    assert "Display flow interview SampleFlow | tab:FlowTab" in movement_names
+    assert "Read related record Access Issue Details | tab:RelatedTab" in movement_names
+    assert "Display related record Access Issue Details | tab:RelatedTab" in movement_names
+    assert any("inferred as X only" in warning for warning in warnings)
