@@ -80,7 +80,6 @@ def test_measure_lwc_sample_matches_golden(project_root: Path):
     bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
     expected_path = (
         project_root
-        / "samples"
         / "expected"
         / "cfp_FunctionalProcessVisualiser.lwc.expected.json"
     )

@@ -39,7 +39,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-lwc-measurer/scripts/measure_lwc.p
 - Output always includes canonical final Exit `Errors/notifications` (`dataGroupRef: User`).
 - Apex-imported rows include `viaArtifact` and use `implementationType: apex`.
 - Missing Apex classes do not fail measurement; they are reported in `traversalWarnings`.
-- Regression sample: `samples/cfp_FunctionalProcessVisualiser` against `samples/expected/cfp_FunctionalProcessVisualiser.lwc.expected.json`.
+- Regression sample: `samples/cfp_FunctionalProcessVisualiser` against `expected/cfp_FunctionalProcessVisualiser.lwc.expected.json`.
 
 ## Output
 

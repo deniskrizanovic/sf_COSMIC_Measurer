@@ -99,7 +99,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-apex-measurer/tests/test_measure_a
 ## Validation
 
 - **Schema**: Every `movementType` is exactly `E`, `R`, `X`, or `W`; `dataGroupRef` uses object API names and optional `::RecordTypeDeveloperName` / `::*` suffixes as in [reference.md](../reference.md).
-- **Regression**: For [samples/cfp_getDataMovements.cls](../../../samples/cfp_getDataMovements.cls), expect **1 E, 1 R, 2 X** (one return, then **Errors/notifications** last); compare output to [samples/expected/cfp_getDataMovements.expected.json](../../../samples/expected/cfp_getDataMovements.expected.json).
+- **Regression**: For [samples/cfp_getDataMovements.cls](../../../samples/cfp_getDataMovements.cls), expect **1 E, 1 R, 2 X** (one return, then **Errors/notifications** last); compare output to [expected/cfp_getDataMovements.expected.json](../../../expected/cfp_getDataMovements.expected.json).
 - **Canonical exit**: Last movement is always **Errors/notifications** (`User`); CFP includes parser exits plus this X.
 - **Multi-process**: If `--list-entry-points` shows more than one candidate, do not silently pick one — confirm with the user.
 - **Deduplication**: Confirm merged Writes to the same data group appear as a single `W` in `dataMovements` when applying the merge rules above.

@@ -124,7 +124,7 @@ def test_measure_sample_flow_artifact_type(project_root):
 def test_measure_sample_flow_golden_file(project_root):
     """Regression test: full output must match golden expected JSON."""
     sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
-    expected_path = project_root / "samples" / "expected" / "cfp_createCRUDLwithRelatedLists.expected.json"
+    expected_path = project_root / "expected" / "cfp_createCRUDLwithRelatedLists.expected.json"
     if not sample.exists() or not expected_path.exists():
         pytest.skip("Sample flow or golden file not found")
     result = measure_file(sample)

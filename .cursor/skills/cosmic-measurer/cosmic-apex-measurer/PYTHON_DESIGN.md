@@ -166,7 +166,7 @@ When param is `Id` or `List<Id>`, infer `dataGroupRef` by:
 
 ```bash
 python scripts/measure_apex.py samples/cfp_getDataMovements.cls -o /tmp/out.json
-diff samples/expected/cfp_getDataMovements.expected.json /tmp/out.json
+diff expected/cfp_getDataMovements.expected.json /tmp/out.json
 ```
 
 Or in pytest: assert JSON output matches golden (with `functionalProcessId` normalized).

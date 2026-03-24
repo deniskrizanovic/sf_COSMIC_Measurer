@@ -111,7 +111,7 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 
 **Workflow**: For each phase, run the skill against the corresponding sample, produce JSON, and verify the output matches expected data movements. Add FlexiPage and Page Layout samples when their phases start if not present.
 
-**Expected outputs** (golden files): Store expected JSON in `samples/expected/` (e.g., `cfp_getDataMovements.expected.json`, `cfp_createCRUDLwithRelatedLists.expected.json`) for regression testing.
+**Expected outputs** (golden files): Store expected JSON in `expected/` (e.g., `cfp_getDataMovements.expected.json`, `cfp_createCRUDLwithRelatedLists.expected.json`) for regression testing.
 
 ---
 

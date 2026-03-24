@@ -94,7 +94,7 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
 ## Validation
 
 - **Schema**: Every `movementType` is exactly `E`, `R`, `X`, or `W`; `dataGroupRef` uses object API names as in [reference.md](../reference.md).
-- **Regression**: For [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](../../../samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml), compare output to [samples/expected/cfp_createCRUDLwithRelatedLists.expected.json](../../../samples/expected/cfp_createCRUDLwithRelatedLists.expected.json).
+- **Regression**: For [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](../../../samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml), compare output to [expected/cfp_createCRUDLwithRelatedLists.expected.json](../../../expected/cfp_createCRUDLwithRelatedLists.expected.json).
 - **Canonical exit**: Last movement is always Errors/notifications (User).
 - **Deduplication**: Confirm merged Writes to the same data group appear as a single W.
 

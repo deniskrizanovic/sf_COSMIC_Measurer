@@ -27,7 +27,7 @@ todos:
     content: Implement find_exits() for output variables (isOutput=true SObject vars). Canonical Errors/notifications exit via shared build_output. Write ~3 exit tests.
     status: completed
   - id: golden-file
-    content: Create samples/expected/cfp_createCRUDLwithRelatedLists.expected.json. Write regression test comparing measure_flow output against golden file.
+    content: Create expected/cfp_createCRUDLwithRelatedLists.expected.json. Write regression test comparing measure_flow output against golden file.
     status: completed
   - id: update-reference
     content: Update reference.md implementationType docs to include 'flow' value. Create examples/flow-sample.json with sample output.
@@ -278,7 +278,7 @@ Flags: `-o`, `--fp-id`, `--json` (same as Apex). No `--entry-point` needed (flow
 
 ### Golden file for sample flow
 
-Create `samples/expected/cfp_createCRUDLwithRelatedLists.expected.json` with the expected measurement of the [sample flow](samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml).
+Create `expected/cfp_createCRUDLwithRelatedLists.expected.json` with the expected measurement of the [sample flow](samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml).
 
 Expected movements for the sample (Screen Flow measuring COSMIC itself):
 

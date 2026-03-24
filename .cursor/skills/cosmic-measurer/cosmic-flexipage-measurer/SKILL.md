@@ -41,7 +41,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 - `lwcCandidateMeasurements` remain in output for traceability and follow-up validation.
 - Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: User`).
 - Data movement ordering and dedup rely on shared COSMIC output module.
-- Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `samples/expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
+- Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
 
 ## Output
 
