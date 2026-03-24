@@ -30,6 +30,12 @@ class DynamicRelatedList:
 
 
 @dataclass
+class PathComponent:
+    identifier: str
+    region_name: Optional[str]
+
+
+@dataclass
 class TabComponentBinding:
     tab_identifier: str
     tab_title: Optional[str]
@@ -78,6 +84,26 @@ def _extract_component_property(component: ET.Element, prop_name: str) -> Option
         if value:
             return value
     return None
+
+
+def extract_path_components(root: ET.Element) -> list[PathComponent]:
+    """Extract configured runtime_sales_pathassistant:pathAssistant components."""
+    path_components: list[PathComponent] = []
+    for region in root.findall("sf:flexiPageRegions", NS):
+        region_name = _find_text(region, "name")
+        for item in region.findall("sf:itemInstances", NS):
+            component = item.find("sf:componentInstance", NS)
+            if component is None:
+                continue
+            if _find_text(component, "componentName") != "runtime_sales_pathassistant:pathAssistant":
+                continue
+            path_components.append(
+                PathComponent(
+                    identifier=_find_text(component, "identifier") or "unknownPath",
+                    region_name=region_name,
+                )
+            )
+    return path_components
 
 
 def parse_xml(source: str) -> ET.Element:
@@ -500,6 +526,39 @@ def find_exits_from_page(
     return exits
 
 
+def build_path_component_movements(
+    sobject_type: str,
+    path_components: list[PathComponent],
+) -> list[RawMovement]:
+    """Build explicit Read/Exit movements for configured Path components."""
+    movements: list[RawMovement] = []
+    hint = 3000
+    for path_component in path_components:
+        context_bits: list[str] = []
+        if path_component.region_name:
+            context_bits.append(f"region:{path_component.region_name}")
+        context_bits.append(f"id:{path_component.identifier}")
+        context = f" ({', '.join(context_bits)})"
+        movements.append(
+            RawMovement(
+                movement_type="R",
+                data_group_ref=sobject_type,
+                name=f"Read path state ({sobject_type}){context}",
+                order_hint=hint,
+            )
+        )
+        movements.append(
+            RawMovement(
+                movement_type="X",
+                data_group_ref=sobject_type,
+                name=f"Display path state ({sobject_type}){context}",
+                order_hint=hint + 1,
+            )
+        )
+        hint += 2
+    return movements
+
+
 def build_synthetic_page_trigger_entry(sobject_type: str) -> RawMovement:
     """Synthetic COSMIC trigger entry for page-open functional process."""
     return RawMovement(
@@ -551,6 +610,7 @@ def parse_flexipage(
     actions = extract_highlights_actions(root)
     has_highlights = has_highlights_panel(root)
     tab_labels = extract_tab_labels(root)
+    path_components = extract_path_components(root)
 
     # Record pages inherently read and display the primary record even when fieldItem
     # bindings are not explicitly present (e.g., force:detailPanel-driven layouts).
@@ -576,4 +636,5 @@ def parse_flexipage(
         if has_primary_record_context
         else []
     )
-    return metadata, reads + primary_record_edits + exits, actions, tab_labels
+    path_movements = build_path_component_movements(metadata.sobject_type, path_components)
+    return metadata, reads + primary_record_edits + path_movements + exits, actions, tab_labels

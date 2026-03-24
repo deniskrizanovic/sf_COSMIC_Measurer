@@ -2,12 +2,14 @@
 
 from conftest import make_flexipage_xml
 from flexipage_parser import (
+    build_path_component_movements,
     build_synthetic_action_entry,
     build_synthetic_page_trigger_entry,
     extract_tab_component_bindings,
     extract_dynamic_related_lists,
     extract_flexipage_metadata,
     extract_highlights_actions,
+    extract_path_components,
     extract_record_field_bindings,
     extract_sidebar_component_movements,
     extract_tab_labels,
@@ -76,6 +78,51 @@ def test_extract_dynamic_related_lists():
     assert len(related_lists) == 1
     assert related_lists[0].related_list_api_name == "Contacts"
     assert related_lists[0].parent_field_api_name == "Account.Id"
+
+
+def test_extract_path_components():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>runtime_sales_pathassistant:pathAssistant</componentName>
+                <identifier>runtime_sales_pathassistant_pathAssistant</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    path_components = extract_path_components(root)
+    assert len(path_components) == 1
+    assert path_components[0].identifier == "runtime_sales_pathassistant_pathAssistant"
+    assert path_components[0].region_name == "header"
+
+
+def test_build_path_component_movements_emits_read_and_display_pair():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>runtime_sales_pathassistant:pathAssistant</componentName>
+                <identifier>runtime_sales_pathassistant_pathAssistant</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    path_components = extract_path_components(root)
+    movements = build_path_component_movements("WorkOrder", path_components)
+    assert [movement.name for movement in movements] == [
+        "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)",
+        "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)",
+    ]
+    assert [movement.movement_type for movement in movements] == ["R", "X"]
 
 
 def test_extract_highlights_actions():
@@ -297,6 +344,29 @@ def test_parse_flexipage():
     assert any(m.movement_type == "X" for m in movements)
     assert any(m.name == "Read highlights panel fields (Account)" for m in movements)
     assert any(m.name == "Display highlights panel fields (Account)" for m in movements)
+
+
+def test_parse_flexipage_includes_path_read_and_display_movements():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>runtime_sales_pathassistant:pathAssistant</componentName>
+                <identifier>runtime_sales_pathassistant_pathAssistant</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    _, movements, _, _ = parse_flexipage(xml, filename="WorkOrder.flexipage-meta.xml")
+    names_in_order = [movement.name for movement in movements]
+    read_name = "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)"
+    display_name = "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)"
+    assert read_name in names_in_order
+    assert display_name in names_in_order
+    assert names_in_order.index(display_name) == names_in_order.index(read_name) + 1
 
 
 def test_build_synthetic_page_trigger_entry():

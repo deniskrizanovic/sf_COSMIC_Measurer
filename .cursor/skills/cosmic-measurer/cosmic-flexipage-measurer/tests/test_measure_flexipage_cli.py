@@ -752,3 +752,30 @@ def test_cli_includes_sidebar_related_record_movements(monkeypatch, capsys, tmp_
         if row.get("name") == "Read related record Request Details"
     )
     assert read_row["dataGroupRef"] == "Case"
+
+
+def test_cli_includes_path_component_read_and_display_rows(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>runtime_sales_pathassistant:pathAssistant</componentName>
+                <identifier>runtime_sales_pathassistant_pathAssistant</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>header</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    path_rows = [
+        row
+        for row in payload.get("dataMovements") or []
+        if "path state (Account) (region:header, id:runtime_sales_pathassistant_pathAssistant)"
+        in row.get("name", "")
+    ]
+    assert len(path_rows) == 2
+    assert [row["movementType"] for row in path_rows] == ["R", "X"]
