@@ -139,6 +139,14 @@ def extract_highlights_actions(root: ET.Element) -> list[str]:
     return actions
 
 
+def has_highlights_panel(root: ET.Element) -> bool:
+    """Return True when force:highlightsPanel is configured on the page."""
+    for component in root.findall(".//sf:componentInstance", NS):
+        if _find_text(component, "componentName") == "force:highlightsPanel":
+            return True
+    return False
+
+
 def extract_tab_labels(root: ET.Element) -> list[str]:
     """Extract tab labels from flexipage:tab component instances."""
     labels: list[str] = []
@@ -396,6 +404,8 @@ def find_reads_from_page(
     sobject_type: str,
     record_fields: list[str],
     related_lists: list[DynamicRelatedList],
+    *,
+    include_highlights_panel: bool = False,
 ) -> list[RawMovement]:
     reads: list[RawMovement] = []
     hint = 0
@@ -411,6 +421,16 @@ def find_reads_from_page(
                 order_hint=hint,
             )
         )
+        if include_highlights_panel:
+            hint += 1
+            reads.append(
+                RawMovement(
+                    movement_type="R",
+                    data_group_ref=sobject_type,
+                    name=f"Read highlights panel fields ({sobject_type})",
+                    order_hint=hint,
+                )
+            )
     for rl in related_lists:
         if not rl.related_list_api_name:
             continue
@@ -434,6 +454,8 @@ def find_exits_from_page(
     sobject_type: str,
     record_fields: list[str],
     related_lists: list[DynamicRelatedList],
+    *,
+    include_highlights_panel: bool = False,
 ) -> list[RawMovement]:
     exits: list[RawMovement] = []
     hint = 0
@@ -449,6 +471,16 @@ def find_exits_from_page(
                 order_hint=hint,
             )
         )
+        if include_highlights_panel:
+            hint += 1
+            exits.append(
+                RawMovement(
+                    movement_type="X",
+                    data_group_ref=sobject_type,
+                    name=f"Display highlights panel fields ({sobject_type})",
+                    order_hint=hint,
+                )
+            )
     for rl in related_lists:
         if not rl.related_list_api_name:
             continue
@@ -507,13 +539,24 @@ def parse_flexipage(
     record_fields = extract_record_field_bindings(root)
     related_lists = extract_dynamic_related_lists(root)
     actions = extract_highlights_actions(root)
+    has_highlights = has_highlights_panel(root)
     tab_labels = extract_tab_labels(root)
 
     # Record pages inherently read and display the primary record even when fieldItem
     # bindings are not explicitly present (e.g., force:detailPanel-driven layouts).
     has_primary_record_context = bool(record_fields) or metadata.page_type == "RecordPage"
     primary_record_binding = ["Record.Id"] if has_primary_record_context else []
-    reads = find_reads_from_page(metadata.sobject_type, primary_record_binding, related_lists)
-    exits = find_exits_from_page(metadata.sobject_type, primary_record_binding, related_lists)
+    reads = find_reads_from_page(
+        metadata.sobject_type,
+        primary_record_binding,
+        related_lists,
+        include_highlights_panel=has_highlights,
+    )
+    exits = find_exits_from_page(
+        metadata.sobject_type,
+        primary_record_binding,
+        related_lists,
+        include_highlights_panel=has_highlights,
+    )
     edits = [build_primary_record_edit_entry(metadata.sobject_type)] if has_primary_record_context else []
     return metadata, reads + edits + exits, actions, tab_labels

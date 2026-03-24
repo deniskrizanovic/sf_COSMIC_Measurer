@@ -18,6 +18,7 @@ Produce a COSMIC measurement for one FlexiPage metadata artifact focused on page
 
 - Parse one `.flexipage-meta.xml` file.
 - Extract page context (`masterLabel`, `sobjectType`, `type`).
+- Detect `force:highlightsPanel` and count explicit highlights display movements (`R` + `X`) for the primary record.
 - Detect configured page actions (`force:highlightsPanel`) and surface them as investigation notes only.
 - Detect record field bindings (`Record.*`) and dynamic related lists for Read/Exit candidates.
 - Detect tab-bound LWCs, measure them inline via the LWC measurer by default, and still emit `lwcCandidateMeasurements` for traceability.
@@ -37,6 +38,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 ## Validation
 
 - `movementType` must be one of `E`, `R`, `W`, `X`.
+- `force:highlightsPanel` contributes explicit `R` and `X` rows for highlighted primary-record values.
 - FlexiPage action config does not create counted E/W rows in this skill version.
 - Configured actions appear in notes (`traversalWarnings`) for follow-up as separate functional processes.
 - Tab-bound LWCs are traversed by default and inlined into merged movement ordering.
