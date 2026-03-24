@@ -15,10 +15,10 @@
 
 ## Rule Set (v1)
 
-- Entry (E): actions from `force:highlightsPanel` (`actionNames`).
-- Read (R): page record field bindings (`Record.*`) and dynamic related lists.
-- Write (W): action names that imply mutation (`create/new/add/update/edit/delete/remove`).
-- Exit (X): displayed page record fields and dynamic related lists.
+- Entry (E): page-open trigger for record pages (plus optional action candidate outputs when requested).
+- Read (R): page record read, explicit highlights-panel field read, and dynamic related lists.
+- Write (W): no direct highlights-panel write rows in default FlexiPage measurement.
+- Exit (X): page record display, explicit highlights-panel field display, and dynamic related lists.
 - Canonical final exit (`Errors/notifications`) is appended by shared output.
 
 ## Known Limits

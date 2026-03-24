@@ -12,6 +12,7 @@ from flexipage_parser import (
     extract_sidebar_component_movements,
     extract_tab_labels,
     extract_tab_bound_component_movements,
+    has_highlights_panel,
     find_exits_from_page,
     find_reads_from_page,
     parse_flexipage,
@@ -99,6 +100,22 @@ def test_extract_highlights_actions():
     root = parse_xml(xml)
     actions = extract_highlights_actions(root)
     assert actions == ["New", "Account.Create_Something"]
+
+
+def test_has_highlights_panel():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:highlightsPanel</componentName>
+                <identifier>force_highlightsPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body)
+    root = parse_xml(xml)
+    assert has_highlights_panel(root) is True
 
 
 def test_extract_tab_labels():
@@ -274,6 +291,8 @@ def test_parse_flexipage():
     assert tab_labels == []
     assert any(m.movement_type == "R" for m in movements)
     assert any(m.movement_type == "X" for m in movements)
+    assert any(m.name == "Read highlights panel fields (Account)" for m in movements)
+    assert any(m.name == "Display highlights panel fields (Account)" for m in movements)
 
 
 def test_build_synthetic_page_trigger_entry():

@@ -151,6 +151,69 @@ def test_cli_include_action_candidates(monkeypatch, capsys, tmp_path):
     assert candidates[0]["artifact"]["type"] == "FlexiPageAction"
 
 
+def test_cli_counts_highlights_panel_as_explicit_read_and_display(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances><fieldInstance><fieldItem>Record.Name</fieldItem></fieldInstance></itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:highlightsPanel</componentName>
+                <identifier>force_highlightsPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["measure_flexipage", str(page_file), "--json", "--no-synthetic-trigger-e"],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert "Read highlights panel fields (Account)" in movement_names
+    assert "Display highlights panel fields (Account)" in movement_names
+
+
+def test_cli_places_highlights_rows_directly_after_primary_four(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances><fieldInstance><fieldItem>Record.Name</fieldItem></fieldInstance></itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentName>force:highlightsPanel</componentName>
+                <identifier>force_highlightsPanel</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert [row["name"] for row in payload["dataMovements"][:8]] == [
+        "Open record page (Account)",
+        "Read page record (Account)",
+        "Display page record (Account)",
+        "Edit page record (Account)",
+        "Read highlights panel fields (Account)",
+        "Display highlights panel fields (Account)",
+        "Read related list Contacts",
+        "Display related list Contacts",
+    ]
+
+
 def test_cli_places_primary_record_r_x_e_at_top(monkeypatch, capsys, tmp_path):
     body = """
     <flexiPageRegions>

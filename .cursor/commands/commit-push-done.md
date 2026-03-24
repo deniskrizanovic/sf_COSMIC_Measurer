@@ -43,13 +43,13 @@ If commit fails (e.g. hooks), fix issues and create a new commit. Never use `--n
 
 ## Step 4: Run Unit Tests (Required)
 
-Run the full unit test suite for this repository. Do not run a partial subset.
+Run the full unit test suite for this repository using this exact command:
 
-Use the project-appropriate command (examples: `npm test`, `pytest`, `go test ./...`, `sf apex run test --test-level RunLocalTests`).
+```bash
+python3 -m pytest ".cursor/skills/cosmic-measurer"
+```
 
-If tests fail, stop this workflow, fix the failures on the feature branch, and re-run all unit tests until they pass.
-
-If no valid unit test command is known for this repository, stop and ask the user for the correct command before proceeding.
+If tests fail, stop this workflow, fix the failures on the feature branch, and re-run the full command until it passes.
 
 ## Step 5: Push
 

@@ -141,13 +141,18 @@ def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
         unpaired_rows = [row for idx, row in enumerate(rows) if idx not in used_ids]
         return paired_rows, unpaired_rows
 
+    paired_highlights, remaining_after_highlights = pair_rows_by_prefix(
+        remaining,
+        "Read highlights panel fields ",
+        "Display highlights panel fields ",
+    )
     paired_related_lists, remaining_after_related_lists = pair_rows_by_prefix(
-        remaining, "Read related list ", "Display related list "
+        remaining_after_highlights, "Read related list ", "Display related list "
     )
     paired_related_records, leftovers = pair_rows_by_prefix(
         remaining_after_related_lists, "Read related record ", "Display related record "
     )
-    ordered_rows = promoted + paired_related_lists + paired_related_records + leftovers
+    ordered_rows = promoted + paired_highlights + paired_related_lists + paired_related_records + leftovers
     if canonical_exit is not None:
         ordered_rows.append(canonical_exit)
 
