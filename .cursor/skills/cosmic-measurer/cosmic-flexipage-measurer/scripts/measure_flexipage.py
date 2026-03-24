@@ -92,6 +92,7 @@ def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
         ("R", f"Read page record ({sobject_type})"),
         ("X", f"Display page record ({sobject_type})"),
         ("E", f"Edit page record ({sobject_type})"),
+        ("W", f"Write page record ({sobject_type})"),
     ]
 
     promoted: list[dict] = []
