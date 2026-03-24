@@ -41,24 +41,13 @@ Never use the `--trailer` switch with `git commit` in this workflow.
 
 If commit fails (e.g. hooks), fix issues and create a new commit. Never use `--no-verify` unless the user explicitly asks.
 
-## Step 4: Verify Commit Message Has No Trailers
-
-```bash
-git show -s --format=%B HEAD
-```
-
-If the commit message contains forbidden trailer-like lines (for example `Made-with:`):
-- Stop immediately
-- Do not push or merge
-- Recreate the commit message without trailer lines
-
-## Step 5: Push
+## Step 4: Push
 
 ```bash
 git push -u origin $(git branch --show-current)
 ```
 
-## Step 6: Switch to Main & Pull
+## Step 5: Switch to Main & Pull
 
 ```bash
 git checkout main
@@ -67,7 +56,7 @@ git pull origin main
 
 Use `master` instead of `main` if that is the default branch.
 
-## Step 7: Merge Feature Branch into Main
+## Step 6: Merge Feature Branch into Main
 
 ```bash
 git merge <feature-branch-name> --no-ff -m "Merge branch '<feature-branch-name>'"
@@ -75,13 +64,13 @@ git merge <feature-branch-name> --no-ff -m "Merge branch '<feature-branch-name>'
 
 Use the branch name from Step 1. Resolve any merge conflicts if they occur.
 
-## Step 8: Push Main
+## Step 7: Push Main
 
 ```bash
 git push origin main
 ```
 
-## Step 9: Delete the Feature Branch
+## Step 8: Delete the Feature Branch
 
 ```bash
 git branch -d <feature-branch-name>
