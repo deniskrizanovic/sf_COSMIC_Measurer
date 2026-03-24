@@ -41,7 +41,7 @@ Never use the `--trailer` switch with `git commit` in this workflow.
 
 If commit fails (e.g. hooks), fix issues and create a new commit. Never use `--no-verify` unless the user explicitly asks.
 
-## Step 4: Run Unit Tests (Required)
+## Step 4: Run Unit Tests + Per-Measurer Coverage (Required)
 
 Run the full unit test suite for this repository using this exact command:
 
@@ -50,6 +50,17 @@ python3 -m pytest ".cursor/skills/cosmic-measurer"
 ```
 
 If tests fail, stop this workflow, fix the failures on the feature branch, and re-run the full command until it passes.
+
+Then run per-measurer coverage and report each total coverage percentage in output:
+
+```bash
+python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-apex-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-apex-measurer/scripts" --cov-report=term
+python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-flow-measurer/scripts" --cov-report=term
+python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts" --cov-report=term
+python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-lwc-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-lwc-measurer/scripts" --cov-report=term
+```
+
+If any coverage run fails, stop the workflow and fix the issue before proceeding.
 
 ## Step 5: Push
 
