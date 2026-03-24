@@ -38,6 +38,27 @@ def mark_invocable_apex_rows(rows: list[dict[str, Any]]) -> None:
             row["implementationType"] = "apex"
 
 
+def filter_framework_class_names(class_names: list[str]) -> list[str]:
+    """Keep likely custom Apex classes; drop framework/system pseudo-classes."""
+    framework = {
+        "Database",
+        "System",
+        "String",
+        "Integer",
+        "Boolean",
+        "Long",
+        "Double",
+        "Decimal",
+        "Id",
+        "List",
+        "Set",
+        "Map",
+        "Object",
+        "SObject",
+    }
+    return [name for name in class_names if name not in framework]
+
+
 def _load_apex_measurer_helpers() -> tuple[Any, Any]:
     """
     Import Apex measurer functions lazily to avoid hard coupling at module import.
@@ -64,6 +85,7 @@ def measure_file(
     )
     movements = list(flow_movements)
     missing_apex_classes: list[str] = []
+    traversal_warnings: list[str] = []
 
     if include_invocable_apex and invocable_apex_calls:
         find_class_file, measure_apex_file = _load_apex_measurer_helpers()
@@ -82,6 +104,15 @@ def measure_file(
                 search_paths=search_paths,
                 traverse=True,
             )
+            called_not_found = filter_framework_class_names(
+                apex_output.get("calledClassesNotFound") or []
+            )
+            if called_not_found:
+                traversal_warnings.append(
+                    "WARNING: Apex traversal failed for "
+                    f"{call.action_name} ({call.element_name}) -> "
+                    + ", ".join(sorted(set(called_not_found)))
+                )
             movements.extend(
                 apex_rows_to_raw_movements(
                     apex_output["dataMovements"],
@@ -101,6 +132,8 @@ def measure_file(
     mark_invocable_apex_rows(output["dataMovements"])
     if missing_apex_classes:
         output["invocableApexClassesNotFound"] = sorted(set(missing_apex_classes))
+    if traversal_warnings:
+        output["traversalWarnings"] = sorted(set(traversal_warnings))
     return output
 
 

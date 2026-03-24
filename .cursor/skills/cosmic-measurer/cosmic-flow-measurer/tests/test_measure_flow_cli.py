@@ -144,6 +144,8 @@ def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
     via_rows = [m for m in data["dataMovements"] if m.get("viaArtifact")]
     assert via_rows
     assert all(m["implementationType"] == "apex" for m in via_rows)
+    warnings = data.get("traversalWarnings") or []
+    assert any("SUI_RunValidationBatch" in w for w in warnings)
 
 
 def test_cli_missing_invocable_apex_class_reports_json(monkeypatch, capsys, tmp_path):

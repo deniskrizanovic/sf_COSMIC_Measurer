@@ -27,6 +27,7 @@ class DataMovementRowOptional(DataMovementRow, total=False):
     sourceLine: int
     mergedFrom: list[dict[str, Any]]
     viaArtifact: str
+    isAsync: bool
 
 
 class CosmicMeasureOutputCore(TypedDict):
@@ -36,7 +37,7 @@ class CosmicMeasureOutputCore(TypedDict):
 
 
 class CosmicMeasureOutput(CosmicMeasureOutputCore, total=False):
-    pass
+    traversalWarnings: list[str]
 
 
 TYPE_ORDER = {"E": 0, "R": 1, "W": 2, "X": 3}
@@ -103,6 +104,8 @@ def to_json_movement(
         out["mergedFrom"] = merged_from
     if m.via_artifact:
         out["viaArtifact"] = m.via_artifact
+    if m.is_async:
+        out["isAsync"] = True
     return out
 
 
@@ -186,6 +189,11 @@ def to_human_summary(output: CosmicMeasureOutput) -> str:
             "**Artifact traversal:** Movements with Via include R/W merged from "
             "traversed artifacts."
         )
+    if any(m.get("isAsync") for m in rows):
+        notes.append("**Async traversal:** Rows marked `isAsync=true` are asynchronous handoffs.")
+    warnings = output.get("traversalWarnings") or []
+    for warning in warnings:
+        notes.append(f"**Warning:** {warning}")
     notes.append(
         "**Canonical exit:** Last movement is always X — Errors/notifications "
         f"(`{CANONICAL_EXIT_DATA_GROUP_REF}`), after any artifact-derived exits."

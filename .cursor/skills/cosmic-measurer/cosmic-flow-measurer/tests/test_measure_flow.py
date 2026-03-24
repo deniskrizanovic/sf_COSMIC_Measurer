@@ -228,6 +228,8 @@ def test_measure_flow_merges_invocable_apex_from_sample(project_root):
     assert via_rows, "Expected merged movements from invocable Apex"
     assert any(m["movementType"] in {"E", "R", "X"} for m in via_rows)
     assert all(m["implementationType"] == "apex" for m in via_rows)
+    warnings = result.get("traversalWarnings") or []
+    assert any("SUI_RunValidationBatch" in w for w in warnings)
     assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME
 
 

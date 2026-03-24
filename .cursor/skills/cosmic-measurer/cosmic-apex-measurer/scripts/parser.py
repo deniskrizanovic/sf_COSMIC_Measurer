@@ -19,6 +19,18 @@ from shared.models import RawMovement  # noqa: E402
 RT_UNSPECIFIED = "*"
 
 STATIC_CALL = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([a-zA-Z0-9_]+)\s*\(")
+EXECUTE_BATCH_NEW = re.compile(
+    r"Database\.executeBatch\s*\(\s*new\s+([A-Z][a-zA-Z0-9_]*)\s*\(",
+    re.IGNORECASE,
+)
+ENQUEUE_JOB_NEW = re.compile(
+    r"System\.enqueueJob\s*\(\s*new\s+([A-Z][a-zA-Z0-9_]*)\s*\(",
+    re.IGNORECASE,
+)
+SYSTEM_SCHEDULE_NEW = re.compile(
+    r"System\.schedule\s*\(\s*[^,]+,\s*[^,]+,\s*new\s+([A-Z][a-zA-Z0-9_]*)\s*\(",
+    re.IGNORECASE | re.DOTALL,
+)
 
 
 # SOQL: [SELECT ... FROM ObjectName ...] — object after FROM
@@ -237,6 +249,21 @@ def extract_class_name(source: str) -> str:
 def find_static_calls(source: str) -> set[str]:
     """Return unique class names from static method calls (ClassName.methodName)."""
     return {m.group(1) for m in STATIC_CALL.finditer(source)}
+
+
+def find_execute_batch_calls(source: str) -> set[str]:
+    """Return unique batch class names from Database.executeBatch(new ClassName(...))."""
+    return {m.group(1) for m in EXECUTE_BATCH_NEW.finditer(source)}
+
+
+def find_enqueue_job_calls(source: str) -> set[str]:
+    """Return unique queueable class names from System.enqueueJob(new ClassName(...))."""
+    return {m.group(1) for m in ENQUEUE_JOB_NEW.finditer(source)}
+
+
+def find_system_schedule_calls(source: str) -> set[str]:
+    """Return unique schedulable class names from System.schedule(..., new ClassName(...))."""
+    return {m.group(1) for m in SYSTEM_SCHEDULE_NEW.finditer(source)}
 
 
 def _line_number(source: str, pos: int) -> int:

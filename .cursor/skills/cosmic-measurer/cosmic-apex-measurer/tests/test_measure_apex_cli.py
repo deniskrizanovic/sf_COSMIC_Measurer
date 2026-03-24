@@ -28,6 +28,62 @@ public class TraverseHelper {
 }
 """
 
+BATCH_CALLER_SRC = """
+public class BatchCaller {
+    public static void run() {
+        Id jobId = Database.executeBatch(new AsyncBatchWorker());
+    }
+}
+"""
+
+ASYNC_BATCH_WORKER_SRC = """
+public class AsyncBatchWorker implements Database.Batchable<SObject> {
+    public Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator([SELECT Id FROM Account WHERE Id != null]);
+    }
+    public void execute(Database.BatchableContext bc, List<SObject> scope) {
+        List<Contact> rows = new List<Contact>();
+        update rows;
+    }
+    public void finish(Database.BatchableContext bc) {
+    }
+}
+"""
+
+QUEUEABLE_CALLER_SRC = """
+public class QueueableCaller {
+    public static void run() {
+        Id jobId = System.enqueueJob(new AsyncQueueableWorker());
+    }
+}
+"""
+
+ASYNC_QUEUEABLE_WORKER_SRC = """
+public class AsyncQueueableWorker implements Queueable {
+    public void execute(QueueableContext context) {
+        List<Account> rows = [SELECT Id FROM Account WHERE Id != null];
+        update rows;
+    }
+}
+"""
+
+SCHEDULE_CALLER_SRC = """
+public class ScheduleCaller {
+    public static void run() {
+        String id = System.schedule('Nightly', '0 0 2 * * ?', new AsyncSchedulableWorker());
+    }
+}
+"""
+
+ASYNC_SCHEDULABLE_WORKER_SRC = """
+public class AsyncSchedulableWorker implements Schedulable {
+    public void execute(SchedulableContext context) {
+        List<Contact> rows = [SELECT Id FROM Contact WHERE Id != null];
+        update rows;
+    }
+}
+"""
+
 SELF_LOOP_SRC = """
 public class SelfLoop {
     public static void run() {
@@ -73,6 +129,42 @@ def test_measure_file_traverses_helper_via_artifact(tmp_path):
     via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "TraverseHelper"]
     assert any(m["movementType"] == "R" for m in via)
     assert any(m["movementType"] == "W" for m in via)
+
+
+def test_measure_file_traverses_execute_batch_as_async(tmp_path):
+    (tmp_path / "BatchCaller.cls").write_text(BATCH_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncBatchWorker.cls").write_text(ASYNC_BATCH_WORKER_SRC, encoding="utf-8")
+
+    out = measure_file(tmp_path / "BatchCaller.cls", search_paths=[tmp_path])
+    via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncBatchWorker"]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
+
+
+def test_measure_file_traverses_enqueue_job_as_async(tmp_path):
+    (tmp_path / "QueueableCaller.cls").write_text(QUEUEABLE_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncQueueableWorker.cls").write_text(
+        ASYNC_QUEUEABLE_WORKER_SRC, encoding="utf-8"
+    )
+
+    out = measure_file(tmp_path / "QueueableCaller.cls", search_paths=[tmp_path])
+    via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncQueueableWorker"]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
+
+
+def test_measure_file_traverses_system_schedule_as_async(tmp_path):
+    (tmp_path / "ScheduleCaller.cls").write_text(SCHEDULE_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncSchedulableWorker.cls").write_text(
+        ASYNC_SCHEDULABLE_WORKER_SRC, encoding="utf-8"
+    )
+
+    out = measure_file(tmp_path / "ScheduleCaller.cls", search_paths=[tmp_path])
+    via = [
+        m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncSchedulableWorker"
+    ]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
 
 
 def test_measure_file_skips_self_static_call(tmp_path):

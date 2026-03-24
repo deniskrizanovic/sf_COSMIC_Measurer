@@ -6,8 +6,11 @@ from parser import (
     _infer_object_from_param,
     extract_class_name,
     find_entries,
+    find_enqueue_job_calls,
     find_exits,
+    find_execute_batch_calls,
     find_reads,
+    find_system_schedule_calls,
     find_writes,
     format_data_group_ref,
     get_entry_points,
@@ -35,6 +38,39 @@ public class RT {
 """
     reads = find_reads(src)
     assert any(r.data_group_ref == "Asset::Location" for r in reads)
+
+
+def test_find_execute_batch_calls_detects_batch_class():
+    src = """
+public class Caller {
+    public static void run() {
+        Id jobId = Database.executeBatch(new MyBatch('q', null));
+    }
+}
+"""
+    assert find_execute_batch_calls(src) == {"MyBatch"}
+
+
+def test_find_enqueue_job_calls_detects_queueable_class():
+    src = """
+public class Caller {
+    public static void run() {
+        Id jobId = System.enqueueJob(new MyQueueableWorker());
+    }
+}
+"""
+    assert find_enqueue_job_calls(src) == {"MyQueueableWorker"}
+
+
+def test_find_system_schedule_calls_detects_schedulable_class():
+    src = """
+public class Caller {
+    public static void run() {
+        String id = System.schedule('Nightly', '0 0 2 * * ?', new MySchedulableWorker());
+    }
+}
+"""
+    assert find_system_schedule_calls(src) == {"MySchedulableWorker"}
 
 
 def test_find_writes_skips_insert_keyword_inside_string_literal():

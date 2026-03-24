@@ -17,7 +17,15 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if _SCRIPT_DIR not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
-from parser import RawMovement, get_entry_points, parse, find_static_calls
+from parser import (
+    RawMovement,
+    find_enqueue_job_calls,
+    find_execute_batch_calls,
+    find_static_calls,
+    find_system_schedule_calls,
+    get_entry_points,
+    parse,
+)
 from movements import (
     CosmicMeasureOutput,
     build_output,
@@ -51,6 +59,9 @@ def _traverse_callees(
     """Parse callees, merge R/W movements, return (merged_movements, called_not_found)."""
     called_not_found: set[str] = set()
     callee_classes = find_static_calls(source)
+    async_batch_classes = find_execute_batch_calls(source)
+    async_queueable_classes = find_enqueue_job_calls(source)
+    async_schedulable_classes = find_system_schedule_calls(source)
 
     for cls in callee_classes:
         if cls == current_class:
@@ -70,6 +81,75 @@ def _traverse_callees(
             for m in callee_movements:
                 if m.movement_type in ("R", "W"):
                     movements.append(dataclasses.replace(m, via_artifact=cls))
+        finally:
+            visited.discard(cls)
+
+    for cls in async_batch_classes:
+        if cls == current_class:
+            continue
+        if cls in visited:
+            continue
+
+        cls_path = find_class_file(cls, search_paths)
+        if cls_path is None:
+            called_not_found.add(cls)
+            continue
+
+        visited.add(cls)
+        try:
+            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
+            _, callee_movements = parse(callee_source)
+            for m in callee_movements:
+                if m.movement_type in ("R", "W"):
+                    movements.append(
+                        dataclasses.replace(m, via_artifact=cls, is_async=True)
+                    )
+        finally:
+            visited.discard(cls)
+
+    for cls in async_queueable_classes:
+        if cls == current_class:
+            continue
+        if cls in visited:
+            continue
+
+        cls_path = find_class_file(cls, search_paths)
+        if cls_path is None:
+            called_not_found.add(cls)
+            continue
+
+        visited.add(cls)
+        try:
+            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
+            _, callee_movements = parse(callee_source)
+            for m in callee_movements:
+                if m.movement_type in ("R", "W"):
+                    movements.append(
+                        dataclasses.replace(m, via_artifact=cls, is_async=True)
+                    )
+        finally:
+            visited.discard(cls)
+
+    for cls in async_schedulable_classes:
+        if cls == current_class:
+            continue
+        if cls in visited:
+            continue
+
+        cls_path = find_class_file(cls, search_paths)
+        if cls_path is None:
+            called_not_found.add(cls)
+            continue
+
+        visited.add(cls)
+        try:
+            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
+            _, callee_movements = parse(callee_source)
+            for m in callee_movements:
+                if m.movement_type in ("R", "W"):
+                    movements.append(
+                        dataclasses.replace(m, via_artifact=cls, is_async=True)
+                    )
         finally:
             visited.discard(cls)
 
