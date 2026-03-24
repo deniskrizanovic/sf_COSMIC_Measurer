@@ -106,6 +106,44 @@ Useful flags:
 - `--no-resolve-lwc-candidates`
 - `--no-resolve-flow-candidates`
 
+## Example: Table-based FlexiPage output
+
+Command:
+
+```bash
+python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py \
+  samples/flexipages/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml
+```
+
+**cfp_FunctionalProcess_Record_Page** (FlexiPage)
+
+| Order | Type | Name | Data group | LineNumber | Via | Merged |
+|-------|------|------|------------|------------|-----|--------|
+| 1 | E | Open record page (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 2 | R | Read page record (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 3 | X | Display page record (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 4 | E | Edit page record (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 5 | W | Write page record (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 6 | R | Read highlights panel fields (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 7 | X | Display highlights panel fields (cfp_FunctionalProcess__c) | cfp_FunctionalProcess__c | - | - | - |
+| 8 | R | Read related list cfp_functionalsteps__r | cfp_functionalsteps__c | - | - | - |
+| 9 | X | Display related list cfp_functionalsteps__r | cfp_functionalsteps__c | - | - | - |
+| 10 | X | Inspect LWC cfp_FunctionalProcessVisualiser data movements (TBC) on tab Visualiser | tbc | - | - | - |
+| 11 | E | Receive fpId (Functional Process) | tab:Visualiser | cfp_FunctionalProcess__c | 7 | cfp_getDataMovements | - |
+| 12 | R | Read cfp_Data_Movements__c list | tab:Visualiser | cfp_Data_Movements__c | 9 | cfp_getDataMovements | - |
+| 13 | X | Display LWC output to user | tab:Visualiser | cfp_Data_Movements__c | - | - | - |
+| 14 | X | Errors/notifications | status/errors/etc | - | - | - |
+
+**Functional size:** 3 E + 4 R + 1 W + 6 X = **14 CFP**
+
+**Notes:**
+- **Artifact traversal:** Movements with Via include R/W merged from traversed artifacts.
+- **Warning:** Investigate configured page actions as separate functional processes: Delete, cfp_FunctionalProcess__c.Create_CRUDL, cfp_FunctionalProcess__c.cfp_Add_Email_Notification, cfp_FunctionalProcess__c.cfp_Create_ReadDisplayPair
+- **Warning:** Tab-aware notes: page contains tabs = Listview, metadataView, Visualiser
+- **Warning:** Tab-component bindings: Listview -> aura(lst:dynamicRelatedList), metadataView -> aura(lst:dynamicRelatedList), Visualiser -> lwc(cfp_FunctionalProcessVisualiser)
+- **Warning:** Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: cfp_FunctionalProcessVisualiser
+- **Canonical exit:** Last movement is always X - Errors/notifications (`status/errors/etc`), after any artifact-derived exits.
+
 ### LWC
 
 ```bash
