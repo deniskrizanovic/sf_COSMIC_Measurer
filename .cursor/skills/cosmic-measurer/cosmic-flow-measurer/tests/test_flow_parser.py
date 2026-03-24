@@ -746,7 +746,7 @@ def test_find_invocable_apex_calls_detects_action_call():
     <actionCalls>
         <name>CallValidation</name>
         <label>Call Validation</label>
-        <actionName>SUI_InvokeRunValidation</actionName>
+        <actionName>InvokeRunValidation</actionName>
         <actionType>apex</actionType>
     </actionCalls>
     """
@@ -756,7 +756,7 @@ def test_find_invocable_apex_calls_detects_action_call():
     assert len(calls) == 1
     call = calls[0]
     assert isinstance(call, InvocableApexCall)
-    assert call.action_name == "SUI_InvokeRunValidation"
+    assert call.action_name == "InvokeRunValidation"
     assert call.element_name == "CallValidation"
 
 
@@ -765,7 +765,7 @@ def test_parse_flow_with_invocables_returns_calls():
     <actionCalls>
         <name>CallValidation</name>
         <label>Call Validation</label>
-        <actionName>SUI_InvokeRunValidation</actionName>
+        <actionName>InvokeRunValidation</actionName>
         <actionType>apex</actionType>
     </actionCalls>
     <recordLookups>
@@ -779,4 +779,4 @@ def test_parse_flow_with_invocables_returns_calls():
     assert meta.name == "MyFlow"
     assert any(m.movement_type == "R" for m in movements)
     assert len(calls) == 1
-    assert calls[0].action_name == "SUI_InvokeRunValidation"
+    assert calls[0].action_name == "InvokeRunValidation"

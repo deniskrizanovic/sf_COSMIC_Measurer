@@ -8,13 +8,13 @@
 * @version        1.0
 * @created        16-02-2024
 * @modified       YYYY-MM-DD
-* @testClass      SUI_ManageContrctAreaRelatdObjShare_Test
+* @testClass      ManageContrctAreaRelatdObjShare_Test
 * ──────────────────────────────────────────────────────────────────────────────────────────────────
 * @changes
 * ─────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 
-public with sharing class SUI_ManageContractAreaRelatedObjectShare {
+public with sharing class ManageContractAreaRelatedObjectShare {
 
     //This method takes the required parameters to create sObject_Share records
     @InvocableMethod
@@ -64,7 +64,7 @@ public with sharing class SUI_ManageContractAreaRelatedObjectShare {
         try{
             insert objectShareRecordsToCreate;
         }catch(exception ex){
-            ApplicationLogHandler.addLog('SUI_ManageContractAreaRelatedObjectShare','craeteSobjectShareRecord',ex);
+            ApplicationLogHandler.addLog('ManageContractAreaRelatedObjectShare','craeteSobjectShareRecord',ex);
             ApplicationLogHandler.saveLog();
         }
     }
