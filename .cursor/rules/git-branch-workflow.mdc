@@ -15,3 +15,8 @@ Before making any code edits, check the current git branch:
 3. If already on a feature branch: proceed with edits
 
 Skip this check only if the workspace is not a git repo (`git rev-parse --is-inside-work-tree` ≠ true).
+
+Before any push or merge step in a commit workflow:
+
+1. Run `git show -s --format=%B HEAD`
+2. If commit message contains forbidden trailer-style lines (for example `Made-with:`), stop and fix the commit message before pushing/merging.
