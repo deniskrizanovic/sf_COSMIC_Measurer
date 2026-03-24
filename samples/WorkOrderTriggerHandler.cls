@@ -40,7 +40,7 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
         profileNameCWO = [SELECT Id, Name 
                           FROM Profile 
                           WHERE Id = :UserInfo.getProfileId()].Name;        
-        isIntegrationUser = FeatureManagement.checkPermission('SUI_IntegrationPermission');
+        isIntegrationUser = FeatureManagement.checkPermission('IntegrationPermission');
     }
     
     public override void beforeUpdate(sObject so) {
@@ -48,12 +48,12 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
         WorkOrder oldWO = oldWorkOrderMap.get(so.Id);
         WorkOrder newWO = newWorkOrderMap.get(so.Id);
 
-        Boolean isRestrict = Boolean.valueOf(System.Label.SUI_WO_Closed_RestrictEdit);
+        Boolean isRestrict = Boolean.valueOf(System.Label.WO_Closed_RestrictEdit);
         if(isRestrict){
 
             if((oldWO.IsClosed || oldWO.Status == 'Works Completed') && 
-                (oldWO.SUI_Current_Milestone_Value__c == newWO.SUI_Current_Milestone_Value__c) &&
-                !oldWO.SUI_Record_Type_developer_Name__c.equals('SUI_Jobs')){
+                (oldWO.Current_Milestone_Value__c == newWO.Current_Milestone_Value__c) &&
+                !oldWO.Record_Type_developer_Name__c.equals('Jobs')){
 
             
                 //Start: 'Edit of closed Work order' related changes
@@ -64,10 +64,10 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
                 WorkOrder oldWorkOrderRec; 
                 WorkOrder newWorkOrderRec;
                 
-                String allowedProfilesList = System.Label.SUI_WO_Closed_AllowedProfiles;
-                String allowedFieldsList = System.Label.SUI_WO_Closed_AllowedFields + ',' + System.Label.SUI_WO_Closed_AllowedFields1;
+                String allowedProfilesList = System.Label.WO_Closed_AllowedProfiles;
+                String allowedFieldsList = System.Label.WO_Closed_AllowedFields + ',' + System.Label.WO_Closed_AllowedFields1;
                 System.debug('1allowedFieldsList'+allowedFieldsList);
-                String warningMessage = System.Label.SUI_WO_Closed_WarningMessage;
+                String warningMessage = System.Label.WO_Closed_WarningMessage;
                 
                 allowedProfiles = new List<String>(allowedProfilesList.split(','));
                 allowedFields = new List<String>(allowedFieldsList.split(','));
@@ -102,19 +102,19 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
     //BulkAfter method
     public override void bulkAfter() {
         if(Trigger.isUpdate){
-            Id scopingRecordTypeId = SObjectType.WorkOrder.getRecordTypeInfosByDeveloperName().get('SUI_Scoping').getRecordTypeId();
+            Id scopingRecordTypeId = SObjectType.WorkOrder.getRecordTypeInfosByDeveloperName().get('Scoping').getRecordTypeId();
             
             //Build a set of Work Orders whose Comments need to recalculate their shares
             Set<Id> recalculateCommentShares = new Set<Id>();
             for(Id i : newWorkOrderMap.keyset()){
                 //If Linked Contractor has changed, sharing needs to be recalculated
-                if(newWorkOrderMap.get(i).SUI_Linked_Contractor__c != oldWorkOrderMap.get(i).SUI_Linked_Contractor__c){
+                if(newWorkOrderMap.get(i).Linked_Contractor__c != oldWorkOrderMap.get(i).Linked_Contractor__c){
                     recalculateCommentShares.add(i);
                     //If record type = Scoping then add ParentWorkOrder as well.
                     if(newWorkOrderMap.get(i).recordTypeId == scopingRecordTypeId && newWorkOrderMap.get(i).parentWorkOrderId != null) recalculateCommentShares.add(newWorkOrderMap.get(i).parentWorkOrderId);
                 }
             }
-            if(recalculateCommentShares.size() > 0) SUI_CommentSharingUtility.recalculate('WorkOrder',recalculateCommentshares);
+            if(recalculateCommentShares.size() > 0) CommentSharingUtility.recalculate('WorkOrder',recalculateCommentshares);
         }
     }
     
@@ -130,9 +130,9 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
                             WHERE EntityDefinition.QualifiedApiName = 'WorkOrder' 
                             AND (DataType LIKE 'Roll-Up Summary%')];
             String scopingrecordType = GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING;
-            for(Workorder wo: [SELECT Id, ParentWorkOrderId, SUI_Record_Type_developer_Name__c
+            for(Workorder wo: [SELECT Id, ParentWorkOrderId, Record_Type_developer_Name__c
                                FROM WorkOrder 
-                               WHERE SUI_Record_Type_developer_Name__c =: scopingrecordType
+                               WHERE Record_Type_developer_Name__c =: scopingrecordType
                                AND ParentWorkOrderId IN :newWorkOrderList
                                AND ParentWorkOrderId != null
                               ])
@@ -147,7 +147,7 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
     
     public void fieldUpdateValidationForIntegrationUser(WorkOrder newWorkOrder){
         // Check if trigger switch is enabled or disabled
-        If(!SUI_Validation_Trigger_Switch__mdt.getInstance('SUI_WorkOrder_IntegrationUser_Validation').SUI_Enabled__c){
+        If(!Validation_Trigger_Switch__mdt.getInstance('WorkOrder_IntegrationUser_Validation').Enabled__c){
             return;
         }
         
@@ -159,18 +159,18 @@ public without sharing class WorkOrderTriggerHandler extends TriggerHandler{
         } 
         
         if (newWorkOrder.Status == GlobalConstants.WORK_ORDER_STATUS_RAISED &&
-            newWorkOrder.SUI_Skip_Validation__c == false && newWorkOrder.SUI_Issued_Date__c == null &&
-            newWorkOrder.SUI_Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING
+            newWorkOrder.Skip_Validation__c == false && newWorkOrder.Issued_Date__c == null &&
+            newWorkOrder.Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING
            ){
                Map<String, Object> oldMap = oldWorkOrder.getPopulatedFieldsAsMap().clone();
                Map<String, Object> newMap = newWorkOrder.getPopulatedFieldsAsMap().clone(); 
                
-               List<SUI_Editable_Fields_For_Integration_User__mdt> edfList = SUI_Editable_Fields_For_Integration_User__mdt.getAll().values();
+               List<Editable_Fields_For_Integration_User__mdt> edfList = Editable_Fields_For_Integration_User__mdt.getAll().values();
                //Removing fields that shouldn't be compared
-               For(SUI_Editable_Fields_For_Integration_User__mdt edf : edfList){
-                   System.debug('edf.SUI_Field_API_Name__c:IN'+edf.SUI_Field_API_Name__c);
-                   oldMap.remove(edf.SUI_Field_API_Name__c);
-                   newMap.remove(edf.SUI_Field_API_Name__c);
+               For(Editable_Fields_For_Integration_User__mdt edf : edfList){
+                   System.debug('edf.Field_API_Name__c:IN'+edf.Field_API_Name__c);
+                   oldMap.remove(edf.Field_API_Name__c);
+                   newMap.remove(edf.Field_API_Name__c);
                }
                
                List<String> rollUpFieldNames = new List<String>();

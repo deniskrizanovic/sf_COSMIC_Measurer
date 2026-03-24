@@ -124,8 +124,8 @@ def test_cli_sample_flow(monkeypatch, capsys, project_root):
 
 
 def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
-    flow_sample = project_root / "samples" / "SUI_Program_Validation_Commencement_Process.flow"
-    apex_sample = project_root / "samples" / "SUI_InvokeRunValidation.cls"
+    flow_sample = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
+    apex_sample = project_root / "samples" / "InvokeRunValidation.cls"
     if not flow_sample.exists() or not apex_sample.exists():
         return
     monkeypatch.setattr(
@@ -144,7 +144,7 @@ def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
     via_rows = [m for m in data["dataMovements"] if m.get("viaArtifact")]
     assert via_rows
     assert all(m["implementationType"] == "apex" for m in via_rows)
-    assert "SUI_InvokeRunValidation" not in (data.get("invocableApexClassesNotFound") or [])
+    assert "InvokeRunValidation" not in (data.get("invocableApexClassesNotFound") or [])
 
 
 def test_cli_missing_invocable_apex_class_reports_json(monkeypatch, capsys, tmp_path):

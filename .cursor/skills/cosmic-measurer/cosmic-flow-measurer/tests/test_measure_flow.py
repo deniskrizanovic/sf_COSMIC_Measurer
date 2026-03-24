@@ -218,8 +218,8 @@ def test_measure_flow_mixed_preserves_type_order(tmp_path):
 
 
 def test_measure_flow_merges_invocable_apex_from_sample(project_root):
-    flow_path = project_root / "samples" / "SUI_Program_Validation_Commencement_Process.flow"
-    apex_path = project_root / "samples" / "SUI_InvokeRunValidation.cls"
+    flow_path = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
+    apex_path = project_root / "samples" / "InvokeRunValidation.cls"
     if not flow_path.exists() or not apex_path.exists():
         pytest.skip("Flow/Apex sample files not found")
 
@@ -228,20 +228,20 @@ def test_measure_flow_merges_invocable_apex_from_sample(project_root):
     assert via_rows, "Expected merged movements from invocable Apex"
     assert any(m["movementType"] in {"E", "R", "X"} for m in via_rows)
     assert all(m["implementationType"] == "apex" for m in via_rows)
-    assert "SUI_InvokeRunValidation" not in (result.get("invocableApexClassesNotFound") or [])
+    assert "InvokeRunValidation" not in (result.get("invocableApexClassesNotFound") or [])
     assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME
 
 
 def test_measure_flow_trigger_entry_precedes_invocable_apex_entries(project_root):
-    flow_path = project_root / "samples" / "SUI_Program_Validation_Commencement_Process.flow"
-    apex_path = project_root / "samples" / "SUI_InvokeRunValidation.cls"
+    flow_path = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
+    apex_path = project_root / "samples" / "InvokeRunValidation.cls"
     if not flow_path.exists() or not apex_path.exists():
         pytest.skip("Flow/Apex sample files not found")
 
     result = measure_file(flow_path, apex_search_paths=[project_root / "samples"])
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     assert entries, "Expected at least one Entry movement"
-    assert entries[0]["name"] == "Trigger record (SUI_Program__c)"
+    assert entries[0]["name"] == "Trigger record (Program__c)"
     assert any(
         m["name"] == "Receive programIds (Program__c)" and m.get("viaArtifact")
         for m in entries[1:]
