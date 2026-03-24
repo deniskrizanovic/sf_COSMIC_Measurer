@@ -9,8 +9,9 @@
 - `scripts/measure_flexipage.py`
   - CLI entry point.
   - Calls parser, then `shared.output.build_output(...)`.
-  - Supports `--json`, `-o`, `--fp-id`, and `--no-resolve-lwc-candidates`.
+  - Supports `--json`, `-o`, `--fp-id`, `--no-resolve-lwc-candidates`, and `--no-resolve-flow-candidates`.
   - Resolves tab-bound LWC candidates by default and inlines their movements.
+  - Resolves tab-bound Flow interview candidates by default and inlines their movements.
 
 ## Rule Set (v1)
 
