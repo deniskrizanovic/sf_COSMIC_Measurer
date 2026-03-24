@@ -37,6 +37,8 @@ Example: `fix: remove org-specific user refs from dashboard for deployability`
 git commit -m "<type>[scope]: <description>"
 ```
 
+Never use the `--trailer` switch with `git commit` in this workflow.
+
 If commit fails (e.g. hooks), fix issues and create a new commit. Never use `--no-verify` unless the user explicitly asks.
 
 ## Step 4: Push
