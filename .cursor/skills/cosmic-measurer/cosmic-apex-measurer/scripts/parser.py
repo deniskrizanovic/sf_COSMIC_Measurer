@@ -612,7 +612,7 @@ def _collect_entry_point_params(source: str) -> list[tuple[str, str, int]]:
             ptype, pname = pm.group(1), pm.group(2)
             if "BatchableContext" in ptype or "QueueableContext" in ptype:
                 continue
-            if "List<" in ptype and "sObject" in ptype.lower():
+            if "List<" in ptype and "sobject" in ptype.lower():
                 continue
             if ptype and ptype.upper() in ("STRING", "INTEGER", "BOOLEAN"):
                 continue

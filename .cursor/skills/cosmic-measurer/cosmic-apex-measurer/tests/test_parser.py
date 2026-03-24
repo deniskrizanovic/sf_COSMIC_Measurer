@@ -1,9 +1,14 @@
 """Unit tests for parser.py with minimal Apex-shaped strings."""
 
 from parser import (
+    _apply_execution_order,
     _collect_entry_point_params,
+    _extract_bracket_block,
     _get_entry_point_method_names,
+    _infer_record_type_from_method_name,
+    _infer_record_type_from_soql_body,
     _infer_object_from_param,
+    _line_number,
     extract_class_name,
     find_entries,
     find_enqueue_job_calls,
@@ -429,3 +434,158 @@ public class F {
     _, movements = parse(src, entry_param_filter="fpId")
     es = [m for m in movements if m.movement_type == "E"]
     assert len(es) == 1
+
+
+def test_infer_list_id_generic_ids_to_custom_object():
+    src = "public class X { }"
+    assert _infer_object_from_param("regionIds", "List<Id>", src) == "Region__c"
+
+
+def test_infer_set_id_generic_ids_to_custom_object():
+    src = "public class X { }"
+    assert _infer_object_from_param("regionIds", "Set<Id>", src) == "Region__c"
+
+
+def test_extract_bracket_block_invalid_or_unbalanced_returns_empty():
+    assert _extract_bracket_block("SELECT Id FROM Account", 0) == ""
+    assert _extract_bracket_block("[SELECT Id FROM Account", 0) == ""
+
+
+def test_find_writes_ignores_dml_in_apex_escaped_single_quote_string():
+    src = """
+public class Esc {
+    void run() {
+        String msg = 'it''s safe to say insert should not count';
+        List<Foo__c> rows = new List<Foo__c>();
+        insert rows;
+    }
+}
+"""
+    writes = find_writes(src)
+    assert len(writes) == 1
+    assert writes[0].data_group_ref == "Foo__c"
+
+
+def test_find_reads_unspecified_record_type_when_bind_unresolved():
+    src = """
+public class RTFallback {
+    void queryByRt(Id unknownRecordTypeId) {
+        List<Asset> assets = [
+            SELECT Id FROM Asset WHERE RecordTypeId = :unknownRecordTypeId
+        ];
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Asset::*" for r in reads)
+
+
+def test_find_reads_parametric_record_type_expands_from_call_sites():
+    src = """
+public class RTCalls {
+    private static final String LOCATION_RT = 'Location';
+    public void queryByRt(String extId, Id rtId) {
+        List<Asset> assets = [
+            SELECT Id FROM Asset WHERE RecordTypeId = :rtId
+        ];
+    }
+    void run() {
+        String extId = 'A1';
+        Id locationRecordTypeId;
+        queryByRt(extId, locationRecordTypeId);
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Asset::Location" for r in reads)
+
+
+def test_infer_record_type_from_method_name_ignores_short_constant_stem():
+    src = """
+public class RTNames {
+    private static final String A_RT = 'TooShort';
+    private static final String LOCATION_RT = 'Location';
+}
+"""
+    assert _infer_record_type_from_method_name("processLocationInserts", src) == "Location"
+
+
+def test_infer_record_type_from_soql_literal_variants_and_unresolved_bind():
+    src = "public class R { private static final String LOCATION_RT = 'Location'; }"
+    soql_single = "SELECT Id FROM Asset WHERE RecordType.DeveloperName = 'Location'"
+    soql_double = 'SELECT Id FROM Asset WHERE RecordType.DeveloperName = "Component"'
+    soql_unresolved = "SELECT Id FROM Asset WHERE RecordTypeId = :missingRtId"
+    assert _infer_record_type_from_soql_body(soql_single, src) == "Location"
+    assert _infer_record_type_from_soql_body(soql_double, src) == "Component"
+    assert _infer_record_type_from_soql_body(soql_unresolved, src) is None
+
+
+def test_find_writes_eventbus_skips_string_comment_invalid_and_unknown():
+    src = """
+public class PubSkips {
+    void run() {
+        String msg = 'EventBus.publish(fake)';
+        // EventBus.publish(events);
+        EventBus.publish(new Custom_Event__e());
+        EventBus.publish(unknownVar);
+    }
+}
+"""
+    assert find_writes(src) == []
+
+
+def test_collect_entry_params_skips_list_sobject_on_non_batch_entry_point():
+    src = """
+public class SObjSkip {
+    public static void run(List<SObject> scope, Id surveyId) { }
+}
+"""
+    coll = _collect_entry_point_params(src)
+    assert not any(p[0] == "scope" for p in coll)
+    assert any(p[0] == "surveyId" for p in coll)
+
+
+def test_find_exits_skips_empty_and_framework_and_set_returns():
+    src = """
+public class ExitSkips {
+    @AuraEnabled public static List<> badList() { return null; }
+    @AuraEnabled public static Set<Account> accountSet() { return null; }
+    @AuraEnabled public static Database dbObj() { return null; }
+    @AuraEnabled public static Object genericObj() { return null; }
+}
+"""
+    assert find_exits(src) == []
+
+
+def test_parse_skips_constructor_signature_from_method_scan():
+    src = """
+public class CtorName {
+    public CtorName() { }
+    public static void run(Id accountId) { }
+}
+"""
+    _, movements = parse(src)
+    entries = [m for m in movements if m.movement_type == "E"]
+    assert len(entries) == 1
+    assert entries[0].name.startswith("Receive accountId")
+
+
+def test_parse_batch_with_blank_source_line_read_keeps_execution_order_none():
+    src = """
+public class BatchBlankLine implements Database.Batchable {
+    public BatchBlankLine() { loadAccounts(); }
+    void loadAccounts() {
+        List<Account> rows = [SELECT Id FROM Account WHERE Id != null];
+    }
+    public Database.QueryLocator start(Database.BatchableContext bc) { return null; }
+    public void execute(Database.BatchableContext bc, List<SObject> scope) { }
+    public void finish(Database.BatchableContext bc) { }
+}
+"""
+    class_name, movements = parse(src)
+    read = next(m for m in movements if m.movement_type == "R")
+    read.source_line = None
+    read.execution_order = None
+    _apply_execution_order(src, movements, class_name)
+    assert read.execution_order is None
+    assert _line_number(src, src.find("List<Account>")) > 0
