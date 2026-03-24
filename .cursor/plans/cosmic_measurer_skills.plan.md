@@ -100,13 +100,13 @@ flowchart TB
 Use artifacts in [samples/](samples/) as test cases for each skill. Generated output must be validated against expected results.
 
 
-| Artifact      | Path                                                                                                                                                   | Use for              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
-| Apex (simple) | [samples/cfp_getDataMovements.cls](samples/cfp_getDataMovements.cls)                                                                                   | cosmic-apex-measurer |
-| Apex (batch)  | [samples/BulkSurveyActionsBatch.cls](samples/BulkSurveyActionsBatch.cls), [samples/dk_PASSurveyToAssetBatch.cls](samples/dk_PASSurveyToAssetBatch.cls) | cosmic-apex-measurer |
-| Flow          | [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml)                                         | cosmic-flow-measurer |
+| Artifact      | Path                                                                                                                                                   | Use for                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| Apex (simple) | [samples/cfp_getDataMovements.cls](samples/cfp_getDataMovements.cls)                                                                                   | cosmic-apex-measurer      |
+| Apex (batch)  | [samples/BulkSurveyActionsBatch.cls](samples/BulkSurveyActionsBatch.cls), [samples/dk_PASSurveyToAssetBatch.cls](samples/dk_PASSurveyToAssetBatch.cls) | cosmic-apex-measurer      |
+| Flow          | [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml)                                         | cosmic-flow-measurer      |
 | FlexiPage     | Add sample (for example, `samples/Account_Record_Page.flexipage-meta.xml`) in Phase 4                                                                  | cosmic-flexipage-measurer |
-| Page Layout   | Add sample layout metadata XML in Phase 5                                                                                                                | cosmic-layout-measurer |
+| Page Layout   | Add sample layout metadata XML in Phase 5                                                                                                              | cosmic-layout-measurer    |
 
 
 **Workflow**: For each phase, run the skill against the corresponding sample, produce JSON, and verify the output matches expected data movements. Add FlexiPage and Page Layout samples when their phases start if not present.
@@ -202,12 +202,33 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 
 ---
 
-## Phase 6: Extensions (later chats)
+## Phase 6: LWC Measurer (required by FlexiPage)
 
-- **Chat 6**: Triggers, queueable (chained Apex). *Note: Basic batch (constructor + execute scope) already in Phase 2.*
-- **Chat 7**: LWC, Aura (frontend -> backend)
-- **Chat 8**: Validation rules, formula fields (if in scope)
-- **Chat 9**: Post script/CLI to push JSON to org (optional)
+**Chat 6 - LWC skill**
+
+1. **Create** `.cursor/skills/cosmic-measurer/cosmic-lwc-measurer/SKILL.md` satisfying the [SKILL.md contract](#skillmd-contract-all-artifact-skills).
+2. **Input contract from FlexiPage skill**:
+  - Consume `lwcCandidateMeasurements[]` entries emitted by FlexiPage measurement.
+  - Treat listed `requiredMovementTypes` as mandatory minimum coverage.
+3. **Inspection rules** (from LWC JS/HTML + called Apex):
+  - **Entry (E)**: user gestures that trigger data processing (`click`, `change`, explicit user commands).
+  - **Read (R)**: `@wire`, `getRecord`, LDS reads, Apex reads, GraphQL/UI API fetches.
+  - **Write (W)**: `updateRecord`, `createRecord`, `deleteRecord`, imperative Apex DML paths.
+  - **Exit (X)**: values rendered to user or emitted as outputs/notifications.
+4. **FlexiPage integration behavior**:
+  - If tab binding resolves to LWC, measure as a separate artifact FP candidate.
+  - Preserve tab context (`tabContext.title`, `tabContext.identifier`) for traceability.
+5. **Output**: Same JSON format; `artifact.type: "LWC"` with optional source linkage to FlexiPage.
+6. **Test**: Add one LWC sample paired with the existing FlexiPage sample and validate delegated measurement.
+
+---
+
+## Phase 7: Extensions (later chats)
+
+- **Chat 7**: Triggers, queueable (chained Apex). *Note: Basic batch (constructor + execute scope) already in Phase 2.*
+- **Chat 8**: Aura measurer parity with LWC approach
+- **Chat 9**: Validation rules, formula fields (if in scope)
+- **Chat 10**: Post script/CLI to push JSON to org (optional)
 
 ---
 
@@ -228,6 +249,8 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 ├── cosmic-flow-measurer/
 │   └── SKILL.md
 ├── cosmic-flexipage-measurer/
+│   └── SKILL.md
+├── cosmic-lwc-measurer/
 │   └── SKILL.md
 ├── cosmic-layout-measurer/
 │   └── SKILL.md
@@ -267,8 +290,9 @@ samples/                   # Test case artifacts
 | 1    | Foundation  | reference.md, JSON schema, mapping config; SKILL contract reflected in docs; link to [skill-best-practices.md](../../skill-best-practices.md) |
 | 2    | Apex        | cosmic-apex-measurer `SKILL.md` (Goal, Workflow, Validation, Output + frontmatter) + apex-sample.json                                         |
 | 3    | Flow        | cosmic-flow-measurer `SKILL.md` (same section contract) + flow-sample.json                                                                    |
-| 4    | FlexiPage   | cosmic-flexipage-measurer `SKILL.md` (same section contract) + flexipage-sample.json                                                         |
+| 4    | FlexiPage   | cosmic-flexipage-measurer `SKILL.md` (same section contract) + flexipage-sample.json                                                          |
 | 5    | Page Layout | cosmic-layout-measurer `SKILL.md` (same section contract) + layout-sample.json                                                                |
-| 6+   | Extensions  | Triggers, LWC, posting script, etc.                                                                                                           |
+| 6    | LWC         | cosmic-lwc-measurer `SKILL.md` + delegated measurement from flexipage `lwcCandidateMeasurements`                                              |
+| 7+   | Extensions  | Triggers, Aura parity, posting script, etc.                                                                                                   |
 
 

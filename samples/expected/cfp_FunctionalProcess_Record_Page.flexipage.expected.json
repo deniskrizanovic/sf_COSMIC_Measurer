@@ -57,6 +57,28 @@
   "traversalWarnings": [
     "Investigate configured page actions as separate functional processes: Delete, cfp_FunctionalProcess__c.Create_CRUDL, cfp_FunctionalProcess__c.cfp_Add_Email_Notification, cfp_FunctionalProcess__c.cfp_Create_ReadDisplayPair",
     "Tab-aware notes: page contains tabs = Listview, metadataView, Visualiser",
-    "Tab-component bindings: Listview -> aura(lst:dynamicRelatedList), metadataView -> aura(lst:dynamicRelatedList), Visualiser -> lwc(cfp_FunctionalProcessVisualiser)"
+    "Tab-component bindings: Listview -> aura(lst:dynamicRelatedList), metadataView -> aura(lst:dynamicRelatedList), Visualiser -> lwc(cfp_FunctionalProcessVisualiser)",
+    "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: cfp_FunctionalProcessVisualiser"
+  ],
+  "lwcCandidateMeasurements": [
+    {
+      "functionalProcessId": "<Id>",
+      "artifact": {
+        "type": "LWC",
+        "name": "cfp_FunctionalProcessVisualiser"
+      },
+      "sourceArtifact": {
+        "type": "FlexiPage",
+        "name": "cfp_FunctionalProcess_Record_Page"
+      },
+      "tabContext": {
+        "identifier": "flexipage_tab5",
+        "title": "Visualiser"
+      },
+      "requiredMovementTypes": [
+        "W"
+      ],
+      "notes": "Run dedicated lwc-measurer to extract concrete E/R/X/W movements."
+    }
   ]
 }

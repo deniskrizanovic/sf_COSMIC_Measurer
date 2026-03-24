@@ -20,6 +20,7 @@ Produce a COSMIC measurement for one FlexiPage metadata artifact focused on page
 - Extract page context (`masterLabel`, `sobjectType`, `type`).
 - Detect configured page actions (`force:highlightsPanel`) and surface them as investigation notes only.
 - Detect record field bindings (`Record.*`) and dynamic related lists for Read/Exit candidates.
+- Detect tab-bound LWCs and emit delegated `lwcCandidateMeasurements` entries for follow-up measurement.
 - Build ordered movements using shared output logic and append canonical final exit (`Errors/notifications`).
 - Output JSON to stdout or file.
 
@@ -35,6 +36,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 - `movementType` must be one of `E`, `R`, `W`, `X`.
 - FlexiPage action config does not create counted E/W rows in this skill version.
 - Configured actions appear in notes (`traversalWarnings`) for follow-up as separate functional processes.
+- Tab-bound LWCs are emitted as delegated candidates with `requiredMovementTypes` including `W`.
 - Output includes canonical final Exit `Errors/notifications` (`dataGroupRef: User`).
 - Data movement ordering and dedup rely on shared COSMIC output module.
 - Regression sample: `samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml` against `samples/expected/cfp_FunctionalProcess_Record_Page.flexipage.expected.json`.
@@ -61,6 +63,16 @@ JSON:
   ],
   "traversalWarnings": [
     "Investigate configured page actions as separate functional processes: Delete, cfp_FunctionalProcess__c.Create_CRUDL"
+  ],
+  "lwcCandidateMeasurements": [
+    {
+      "functionalProcessId": "<Id>",
+      "artifact": { "type": "LWC", "name": "cfp_FunctionalProcessVisualiser" },
+      "sourceArtifact": { "type": "FlexiPage", "name": "cfp_FunctionalProcess_Record_Page" },
+      "tabContext": { "identifier": "flexipage_tab5", "title": "Visualiser" },
+      "requiredMovementTypes": ["W"],
+      "notes": "Run dedicated lwc-measurer to extract concrete E/R/X/W movements."
+    }
   ]
 }
 ```
