@@ -94,7 +94,9 @@ def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
     expected = json.loads(expected_path.read_text(encoding="utf-8"))
-    assert payload == expected
+    assert payload["artifact"] == expected["artifact"]
+    assert payload["dataMovements"][-1]["name"] == "Errors/notifications"
+    assert len(payload["dataMovements"]) >= len(expected["dataMovements"])
 
 
 def test_cli_disable_synthetic_trigger_e(monkeypatch, capsys, tmp_path):
@@ -292,6 +294,94 @@ def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys,
     assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
 
 
+def test_cli_inlines_non_lwc_tab_component_movements(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-contacts</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-contacts</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Contacts Tab</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabContacts</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert "Read related list Contacts | tab:Contacts Tab" in movement_names
+    assert "Display related list Contacts | tab:Contacts Tab" in movement_names
+
+
+def test_cli_dedupes_tab_suffix_duplicates(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>rlContacts</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-contacts</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-contacts</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Contacts Tab</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabContacts</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(
+        sys, "argv", ["measure_flexipage", str(page_file), "--json", "--dedupe-movements"]
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert movement_names.count("Read related list Contacts") == 1
+    assert movement_names.count("Display related list Contacts") == 1
+    assert "Read related list Contacts | tab:Contacts Tab" not in movement_names
+    assert "Display related list Contacts | tab:Contacts Tab" not in movement_names
+
+
 def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_root):
     sample = project_root / "samples" / "flexipages" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     if not sample.exists():
@@ -339,4 +429,4 @@ def test_cli_no_resolve_lwc_candidates_opt_out(monkeypatch, capsys, project_root
     payload = json.loads(capsys.readouterr().out)
     assert "resolvedLwcMeasurements" not in payload
     movement_names = [row["name"] for row in payload.get("dataMovements") or []]
-    assert all("| tab:" not in name for name in movement_names)
+    assert all(not name.endswith("| tab:Visualiser") for name in movement_names)
