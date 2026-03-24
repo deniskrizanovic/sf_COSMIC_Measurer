@@ -176,7 +176,7 @@ def test_find_reads_skips_lookup_without_object():
 
 
 def test_find_reads_from_sample_flow(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     source = sample.read_text(encoding="utf-8")
@@ -297,7 +297,7 @@ def test_find_writes_unresolvable_input_reference():
 
 
 def test_find_writes_from_sample_flow(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     source = sample.read_text(encoding="utf-8")

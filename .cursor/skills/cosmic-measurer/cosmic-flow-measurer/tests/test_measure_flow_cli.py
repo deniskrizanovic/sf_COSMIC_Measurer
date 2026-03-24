@@ -113,7 +113,7 @@ def test_cli_multiple_files_output(monkeypatch, tmp_path):
 
 
 def test_cli_sample_flow(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         return
     monkeypatch.setattr(sys, "argv", ["measure_flow", str(sample), "--json"])
@@ -124,8 +124,8 @@ def test_cli_sample_flow(monkeypatch, capsys, project_root):
 
 
 def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
-    flow_sample = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
-    apex_sample = project_root / "samples" / "InvokeRunValidation.cls"
+    flow_sample = project_root / "samples" / "flows" / "Program_Validation_Commencement_Process.flow"
+    apex_sample = project_root / "samples" / "classes" / "InvokeRunValidation.cls"
     if not flow_sample.exists() or not apex_sample.exists():
         return
     monkeypatch.setattr(
@@ -136,7 +136,7 @@ def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
             str(flow_sample),
             "--json",
             "--apex-search-paths",
-            str(project_root / "samples"),
+            str(project_root / "samples" / "classes"),
         ],
     )
     assert measure_flow.main() == 0
