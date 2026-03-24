@@ -4,6 +4,7 @@ from conftest import make_flexipage_xml
 from flexipage_parser import (
     build_synthetic_action_entry,
     build_synthetic_page_trigger_entry,
+    extract_tab_component_bindings,
     extract_dynamic_related_lists,
     extract_flexipage_metadata,
     extract_highlights_actions,
@@ -127,6 +128,73 @@ def test_extract_tab_labels():
     root = parse_xml(xml)
     labels = extract_tab_labels(root)
     assert labels == ["Listview", "MetadataView"]
+
+
+def test_extract_tab_component_bindings_identifies_lwc_and_aura():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>cfp_FunctionalProcessVisualiser</componentName>
+                <identifier>c_cfp_FunctionalProcessVisualiser</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-visualiser</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>lst:dynamicRelatedList</componentName>
+                <identifier>lst_dynamicRelatedList2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-metadata</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-visualiser</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Visualiser</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab5</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-metadata</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>MetadataView</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab3</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body)
+    root = parse_xml(xml)
+    bindings = extract_tab_component_bindings(root)
+
+    assert len(bindings) == 2
+    visualiser = next(item for item in bindings if item.tab_title == "Visualiser")
+    metadata = next(item for item in bindings if item.tab_title == "MetadataView")
+
+    assert visualiser.target_component_name == "cfp_FunctionalProcessVisualiser"
+    assert visualiser.target_component_kind == "lwc"
+    assert metadata.target_component_name == "lst:dynamicRelatedList"
+    assert metadata.target_component_kind == "aura"
 
 
 def test_find_reads_and_exits_from_page():

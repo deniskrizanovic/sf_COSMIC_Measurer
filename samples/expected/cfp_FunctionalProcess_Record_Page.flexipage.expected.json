@@ -56,6 +56,7 @@
   ],
   "traversalWarnings": [
     "Investigate configured page actions as separate functional processes: Delete, cfp_FunctionalProcess__c.Create_CRUDL, cfp_FunctionalProcess__c.cfp_Add_Email_Notification, cfp_FunctionalProcess__c.cfp_Create_ReadDisplayPair",
-    "Tab-aware notes: page contains tabs = Listview, metadataView, Visualiser"
+    "Tab-aware notes: page contains tabs = Listview, metadataView, Visualiser",
+    "Tab-component bindings: Listview -> aura(lst:dynamicRelatedList), metadataView -> aura(lst:dynamicRelatedList), Visualiser -> lwc(cfp_FunctionalProcessVisualiser)"
   ]
 }

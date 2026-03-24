@@ -8,7 +8,10 @@ alwaysApply: true
 Before making any code edits, check the current git branch:
 
 1. Run `git branch --show-current`
-2. If branch is `main` or `master`: **do not edit**. Tell the user to create a feature branch first, e.g. `git checkout -b feature/description`
-3. If on a feature branch: proceed with edits
+2. If branch is `main` or `master`:
+   - If the user has asked to proceed (for example "do the needful", "commit/push", or implementation request), automatically create and switch to a feature branch.
+   - Use a semantic branch name, e.g. `feature/flexipage-tab-component-bindings`.
+   - Then continue with edits/workflow without asking the user to create the branch first.
+3. If already on a feature branch: proceed with edits
 
 Skip this check only if the workspace is not a git repo (`git rev-parse --is-inside-work-tree` ≠ true).

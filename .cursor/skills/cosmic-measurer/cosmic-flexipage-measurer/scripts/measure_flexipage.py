@@ -18,7 +18,9 @@ for path_entry in [str(_SCRIPT_DIR), str(_COSMIC_MEASURER_DIR)]:
 from flexipage_parser import (  # noqa: E402
     build_synthetic_action_entry,
     build_synthetic_page_trigger_entry,
+    extract_tab_component_bindings,
     parse_flexipage,
+    parse_xml,
 )
 from shared.output import build_output, to_human_summary, to_json_string, to_table  # noqa: E402
 
@@ -52,6 +54,7 @@ def measure_file(
 ) -> dict:
     source = path.read_text(encoding="utf-8", errors="replace")
     metadata, movements, actions, tab_labels = parse_flexipage(source, filename=path.name)
+    tab_bindings = extract_tab_component_bindings(parse_xml(source))
     if synthetic_trigger_entry:
         movements = [build_synthetic_page_trigger_entry(metadata.sobject_type)] + movements
     output = build_output(
@@ -75,6 +78,17 @@ def measure_file(
         tab_list = ", ".join(tab_labels)
         warning = f"Tab-aware notes: page contains tabs = {tab_list}"
         output.setdefault("traversalWarnings", []).append(warning)
+    if tab_bindings:
+        readable_bindings = []
+        for binding in tab_bindings:
+            if binding.tab_title and binding.target_component_name:
+                readable_bindings.append(
+                    f"{binding.tab_title} -> {binding.target_component_kind}({binding.target_component_name})"
+                )
+        if readable_bindings:
+            output.setdefault("traversalWarnings", []).append(
+                "Tab-component bindings: " + ", ".join(readable_bindings)
+            )
     return output
 
 
