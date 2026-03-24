@@ -41,13 +41,23 @@ Never use the `--trailer` switch with `git commit` in this workflow.
 
 If commit fails (e.g. hooks), fix issues and create a new commit. Never use `--no-verify` unless the user explicitly asks.
 
-## Step 4: Push
+## Step 4: Run Unit Tests (Required)
+
+Run the full unit test suite for this repository. Do not run a partial subset.
+
+Use the project-appropriate command (examples: `npm test`, `pytest`, `go test ./...`, `sf apex run test --test-level RunLocalTests`).
+
+If tests fail, stop this workflow, fix the failures on the feature branch, and re-run all unit tests until they pass.
+
+If no valid unit test command is known for this repository, stop and ask the user for the correct command before proceeding.
+
+## Step 5: Push
 
 ```bash
 git push -u origin $(git branch --show-current)
 ```
 
-## Step 5: Switch to Main & Pull
+## Step 6: Switch to Main & Pull
 
 ```bash
 git checkout main
@@ -56,7 +66,7 @@ git pull origin main
 
 Use `master` instead of `main` if that is the default branch.
 
-## Step 6: Merge Feature Branch into Main
+## Step 7: Merge Feature Branch into Main
 
 ```bash
 git merge <feature-branch-name> --no-ff -m "Merge branch '<feature-branch-name>'"
@@ -64,13 +74,13 @@ git merge <feature-branch-name> --no-ff -m "Merge branch '<feature-branch-name>'
 
 Use the branch name from Step 1. Resolve any merge conflicts if they occur.
 
-## Step 7: Push Main
+## Step 8: Push Main
 
 ```bash
 git push origin main
 ```
 
-## Step 8: Delete the Feature Branch
+## Step 9: Delete the Feature Branch
 
 ```bash
 git branch -d <feature-branch-name>
