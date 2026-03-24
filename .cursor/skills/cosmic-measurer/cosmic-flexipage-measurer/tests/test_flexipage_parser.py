@@ -375,3 +375,49 @@ def test_extract_tab_bound_component_movements_for_supported_components():
     assert "Read related record Access Issue Details | tab:RelatedTab" in movement_names
     assert "Display related record Access Issue Details | tab:RelatedTab" in movement_names
     assert any("inferred as X only" in warning for warning in warnings)
+
+
+def test_related_record_movements_are_paired_in_order():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>First Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord1</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Second Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>RelatedTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabRelated</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    movements, _ = extract_tab_bound_component_movements(root, "WorkOrder")
+
+    names_in_order = [movement.name for movement in movements]
+    assert names_in_order == [
+        "Read related record First Details | tab:RelatedTab",
+        "Display related record First Details | tab:RelatedTab",
+        "Read related record Second Details | tab:RelatedTab",
+        "Display related record Second Details | tab:RelatedTab",
+    ]

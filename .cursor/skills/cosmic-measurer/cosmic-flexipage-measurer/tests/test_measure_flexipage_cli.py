@@ -404,6 +404,56 @@ def test_cli_inlines_non_lwc_tab_component_movements(monkeypatch, capsys, tmp_pa
     assert "Display related list Contacts | tab:Contacts Tab" in movement_names
 
 
+def test_cli_places_related_record_read_display_pairs_adjacent(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Access Issue Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord1</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>NCAT Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>RelatedTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabRelated</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+
+    first_read_index = movement_names.index("Read related record Access Issue Details | tab:RelatedTab")
+    first_display_index = movement_names.index(
+        "Display related record Access Issue Details | tab:RelatedTab"
+    )
+    second_read_index = movement_names.index("Read related record NCAT Details | tab:RelatedTab")
+    second_display_index = movement_names.index("Display related record NCAT Details | tab:RelatedTab")
+
+    assert first_display_index == first_read_index + 1
+    assert second_display_index == second_read_index + 1
+
+
 def test_cli_dedupes_tab_suffix_duplicates(monkeypatch, capsys, tmp_path):
     body = """
     <flexiPageRegions>
