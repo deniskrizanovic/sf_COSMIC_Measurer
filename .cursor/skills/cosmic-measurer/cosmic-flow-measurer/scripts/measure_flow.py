@@ -31,6 +31,13 @@ from shared.output import (  # noqa: E402
 )
 
 
+def mark_invocable_apex_rows(rows: list[dict[str, Any]]) -> None:
+    """Set implementationType to apex for rows originating from invocable Apex."""
+    for row in rows:
+        if row.get("viaArtifact"):
+            row["implementationType"] = "apex"
+
+
 def _load_apex_measurer_helpers() -> tuple[Any, Any]:
     """
     Import Apex measurer functions lazily to avoid hard coupling at module import.
@@ -91,6 +98,7 @@ def measure_file(
         fp_id,
         implementation_type="flow",
     )
+    mark_invocable_apex_rows(output["dataMovements"])
     if missing_apex_classes:
         output["invocableApexClassesNotFound"] = sorted(set(missing_apex_classes))
     return output

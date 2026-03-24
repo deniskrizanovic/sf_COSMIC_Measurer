@@ -141,7 +141,9 @@ def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
     )
     assert measure_flow.main() == 0
     data = json.loads(capsys.readouterr().out)
-    assert any(m.get("viaArtifact") for m in data["dataMovements"])
+    via_rows = [m for m in data["dataMovements"] if m.get("viaArtifact")]
+    assert via_rows
+    assert all(m["implementationType"] == "apex" for m in via_rows)
 
 
 def test_cli_missing_invocable_apex_class_reports_json(monkeypatch, capsys, tmp_path):

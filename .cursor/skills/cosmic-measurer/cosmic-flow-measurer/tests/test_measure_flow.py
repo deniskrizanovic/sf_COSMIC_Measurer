@@ -227,6 +227,7 @@ def test_measure_flow_merges_invocable_apex_from_sample(project_root):
     via_rows = [m for m in result["dataMovements"] if m.get("viaArtifact")]
     assert via_rows, "Expected merged movements from invocable Apex"
     assert any(m["movementType"] in {"E", "R", "X"} for m in via_rows)
+    assert all(m["implementationType"] == "apex" for m in via_rows)
     assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME
 
 
