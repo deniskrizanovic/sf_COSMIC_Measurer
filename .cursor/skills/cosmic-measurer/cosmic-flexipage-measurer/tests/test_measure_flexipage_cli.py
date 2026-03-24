@@ -118,6 +118,9 @@ def test_cli_disable_synthetic_trigger_e(monkeypatch, capsys, tmp_path):
         "Display page record (Account)",
         "Edit page record (Account)",
     ]
+    assert payload["dataMovements"][2]["movementType"] == "E"
+    assert payload["dataMovements"][3]["name"] == "Write page record (Account)"
+    assert payload["dataMovements"][3]["movementType"] == "W"
 
 
 def test_cli_include_action_candidates(monkeypatch, capsys, tmp_path):
@@ -202,11 +205,12 @@ def test_cli_places_highlights_rows_directly_after_primary_four(monkeypatch, cap
     monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    assert [row["name"] for row in payload["dataMovements"][:8]] == [
+    assert [row["name"] for row in payload["dataMovements"][:9]] == [
         "Open record page (Account)",
         "Read page record (Account)",
         "Display page record (Account)",
         "Edit page record (Account)",
+        "Write page record (Account)",
         "Read highlights panel fields (Account)",
         "Display highlights panel fields (Account)",
         "Read related list Contacts",
@@ -237,11 +241,12 @@ def test_cli_places_primary_record_r_x_e_at_top(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    assert [row["name"] for row in payload["dataMovements"][:6]] == [
+    assert [row["name"] for row in payload["dataMovements"][:7]] == [
         "Open record page (Account)",
         "Read page record (Account)",
         "Display page record (Account)",
         "Edit page record (Account)",
+        "Write page record (Account)",
         "Read related list Contacts",
         "Display related list Contacts",
     ]

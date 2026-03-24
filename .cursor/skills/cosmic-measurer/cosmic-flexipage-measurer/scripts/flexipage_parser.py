@@ -530,6 +530,16 @@ def build_primary_record_edit_entry(sobject_type: str) -> RawMovement:
     )
 
 
+def build_primary_record_write_entry(sobject_type: str) -> RawMovement:
+    """Write movement for out-of-box Salesforce persistence of primary-record edits."""
+    return RawMovement(
+        movement_type="W",
+        data_group_ref=sobject_type,
+        name=f"Write page record ({sobject_type})",
+        order_hint=10000,
+    )
+
+
 def parse_flexipage(
     source: str, filename: str = ""
 ) -> tuple[FlexiPageMetadata, list[RawMovement], list[str], list[str]]:
@@ -558,5 +568,12 @@ def parse_flexipage(
         related_lists,
         include_highlights_panel=has_highlights,
     )
-    edits = [build_primary_record_edit_entry(metadata.sobject_type)] if has_primary_record_context else []
-    return metadata, reads + edits + exits, actions, tab_labels
+    primary_record_edits = (
+        [
+            build_primary_record_edit_entry(metadata.sobject_type),
+            build_primary_record_write_entry(metadata.sobject_type),
+        ]
+        if has_primary_record_context
+        else []
+    )
+    return metadata, reads + primary_record_edits + exits, actions, tab_labels

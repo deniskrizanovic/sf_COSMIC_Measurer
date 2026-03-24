@@ -258,6 +258,10 @@ def test_parse_flexipage_includes_primary_record_edit_entry():
         movement.name == "Edit page record (Account)" and movement.movement_type == "E"
         for movement in movements
     )
+    assert any(
+        movement.name == "Write page record (Account)" and movement.movement_type == "W"
+        for movement in movements
+    )
 
 
 def test_parse_flexipage():
