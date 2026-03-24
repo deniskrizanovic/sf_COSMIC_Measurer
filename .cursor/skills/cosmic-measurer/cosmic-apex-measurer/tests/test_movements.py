@@ -248,7 +248,7 @@ def test_to_table_with_via_merged_and_not_found():
         ],
     }
     text = to_table(out)
-    assert "| 1 | W | Z__c |" in text
+    assert "| 1 | W | w | Z__c |" in text
     assert "Helper" in text
     assert "u (L6)" in text
     assert "Functional size" in text
