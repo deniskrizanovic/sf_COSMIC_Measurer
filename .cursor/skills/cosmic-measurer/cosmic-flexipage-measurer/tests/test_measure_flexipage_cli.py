@@ -396,7 +396,9 @@ def test_cli_inlines_non_lwc_tab_component_movements(monkeypatch, capsys, tmp_pa
     </flexiPageRegions>
     """
     page_file = _write_flexipage(tmp_path, body=body)
-    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    monkeypatch.setattr(
+        sys, "argv", ["measure_flexipage", str(page_file), "--json", "--no-dedupe-movements"]
+    )
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
     movement_names = [row["name"] for row in payload.get("dataMovements") or []]
@@ -488,9 +490,7 @@ def test_cli_dedupes_tab_suffix_duplicates(monkeypatch, capsys, tmp_path):
     </flexiPageRegions>
     """
     page_file = _write_flexipage(tmp_path, body=body)
-    monkeypatch.setattr(
-        sys, "argv", ["measure_flexipage", str(page_file), "--json", "--dedupe-movements"]
-    )
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
     movement_names = [row["name"] for row in payload.get("dataMovements") or []]
