@@ -7,7 +7,7 @@ import measure_lwc
 
 
 def test_cli_json_stdout(monkeypatch, capsys, project_root):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     monkeypatch.setattr(
         sys,
         "argv",
@@ -24,7 +24,7 @@ def test_cli_json_stdout(monkeypatch, capsys, project_root):
 
 
 def test_cli_output_file(monkeypatch, capsys, tmp_path, project_root):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     output_path = tmp_path / "lwc.json"
     monkeypatch.setattr(
         sys,

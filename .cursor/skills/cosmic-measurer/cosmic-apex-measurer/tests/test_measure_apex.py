@@ -8,7 +8,7 @@ from movements import CANONICAL_EXIT_DATA_GROUP_REF, CANONICAL_EXIT_NAME
 
 def test_cfp_getDataMovements_matches_golden(project_root):
     """Output should match expected JSON (semantic equivalence)."""
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     expected = project_root / "expected" / "cfp_getDataMovements.expected.json"
 
     result = measure_file(sample)
@@ -28,7 +28,7 @@ def test_cfp_getDataMovements_matches_golden(project_root):
 
 def test_canonical_exit_is_final_row(project_root):
     """Every FP ends with one X: Errors/notifications (User)."""
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     result = measure_file(sample)
     dm = result["dataMovements"]
     assert dm[-1]["movementType"] == "X"
@@ -38,7 +38,7 @@ def test_canonical_exit_is_final_row(project_root):
 
 def test_BulkSurveyActionsBatch_has_entry_read_write(project_root):
     """Batch class should have E, R, W for Survey__c."""
-    sample = project_root / "samples" / "BulkSurveyActionsBatch.cls"
+    sample = project_root / "samples" / "classes" / "BulkSurveyActionsBatch.cls"
     if not sample.exists():
         return
 

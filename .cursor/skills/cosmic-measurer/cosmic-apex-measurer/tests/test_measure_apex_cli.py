@@ -264,14 +264,14 @@ def test_measure_file_no_traverse_hides_not_found(tmp_path):
 
 
 def test_main_json_stdout(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(sample), "--json"])
     assert measure_apex.main() == 0
     assert "dataMovements" in capsys.readouterr().out
 
 
 def test_main_table_stdout(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(sample)])
     assert measure_apex.main() == 0
     out = capsys.readouterr().out
@@ -279,7 +279,7 @@ def test_main_table_stdout(monkeypatch, capsys, project_root):
 
 
 def test_main_output_file(monkeypatch, capsys, project_root, tmp_path):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     out_file = tmp_path / "out.json"
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(sample), "-o", str(out_file)])
     assert measure_apex.main() == 0
@@ -289,7 +289,7 @@ def test_main_output_file(monkeypatch, capsys, project_root, tmp_path):
 
 
 def test_main_fp_id(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     monkeypatch.setattr(
         sys, "argv", ["measure_apex", str(sample), "--json", "--fp-id", "FP-99"]
     )
@@ -298,7 +298,7 @@ def test_main_fp_id(monkeypatch, capsys, project_root):
 
 
 def test_main_multiple_files_json_array(monkeypatch, capsys, project_root, tmp_path):
-    s1 = project_root / "samples" / "cfp_getDataMovements.cls"
+    s1 = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     s2 = tmp_path / "Tiny.cls"
     s2.write_text("public class Tiny { public static void x() {} }", encoding="utf-8")
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(s1), str(s2), "--json"])
@@ -309,7 +309,7 @@ def test_main_multiple_files_json_array(monkeypatch, capsys, project_root, tmp_p
 
 
 def test_main_multiple_files_output_writes_array(monkeypatch, project_root, tmp_path):
-    s1 = project_root / "samples" / "cfp_getDataMovements.cls"
+    s1 = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     s2 = tmp_path / "Tiny.cls"
     s2.write_text("public class Tiny { public static void x() {} }", encoding="utf-8")
     out_file = tmp_path / "multi.json"
@@ -323,15 +323,15 @@ def test_main_multiple_files_output_writes_array(monkeypatch, project_root, tmp_
 
 
 def test_main_list_entry_points(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(sample), "--list-entry-points"])
     assert measure_apex.main() == 0
     assert "entryPoints" in json.loads(capsys.readouterr().out)
 
 
 def test_main_list_entry_points_requires_single_file(monkeypatch, capsys, project_root):
-    s1 = project_root / "samples" / "cfp_getDataMovements.cls"
-    s2 = project_root / "samples" / "BulkSurveyActionsBatch.cls"
+    s1 = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
+    s2 = project_root / "samples" / "classes" / "BulkSurveyActionsBatch.cls"
     monkeypatch.setattr(sys, "argv", ["measure_apex", str(s1), str(s2), "--list-entry-points"])
     assert measure_apex.main() == 1
     assert "exactly one file" in capsys.readouterr().err
@@ -351,7 +351,7 @@ def test_main_list_entry_points_missing_file(monkeypatch, capsys):
 
 
 def test_main_invalid_entry_point(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     monkeypatch.setattr(
         sys,
         "argv",
@@ -362,7 +362,7 @@ def test_main_invalid_entry_point(monkeypatch, capsys, project_root):
 
 
 def test_main_valid_entry_point(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_getDataMovements.cls"
+    sample = project_root / "samples" / "classes" / "cfp_getDataMovements.cls"
     eps = get_entry_points(sample.read_text(encoding="utf-8"))
     assert eps
     param = eps[0]["param"]

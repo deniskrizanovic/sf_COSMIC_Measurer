@@ -27,7 +27,7 @@ CREATE_BODY = """
 
 
 def test_measure_sample_flow_reads_detected(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     result = measure_file(sample)
@@ -38,7 +38,7 @@ def test_measure_sample_flow_reads_detected(project_root):
 
 
 def test_measure_sample_flow_writes_detected(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     result = measure_file(sample)
@@ -48,7 +48,7 @@ def test_measure_sample_flow_writes_detected(project_root):
 
 
 def test_measure_sample_flow_entry_detected(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     result = measure_file(sample)
@@ -58,7 +58,7 @@ def test_measure_sample_flow_entry_detected(project_root):
 
 
 def test_measure_sample_flow_canonical_exit_is_final(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     result = measure_file(sample)
@@ -114,7 +114,7 @@ def test_measure_flow_with_dedup(tmp_path):
 
 
 def test_measure_sample_flow_artifact_type(project_root):
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     if not sample.exists():
         pytest.skip("Sample flow not found")
     result = measure_file(sample)
@@ -123,7 +123,7 @@ def test_measure_sample_flow_artifact_type(project_root):
 
 def test_measure_sample_flow_golden_file(project_root):
     """Regression test: full output must match golden expected JSON."""
-    sample = project_root / "samples" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
+    sample = project_root / "samples" / "flows" / "cfp_createCRUDLwithRelatedLists.flow-meta.xml"
     expected_path = project_root / "expected" / "cfp_createCRUDLwithRelatedLists.expected.json"
     if not sample.exists() or not expected_path.exists():
         pytest.skip("Sample flow or golden file not found")
@@ -218,12 +218,12 @@ def test_measure_flow_mixed_preserves_type_order(tmp_path):
 
 
 def test_measure_flow_merges_invocable_apex_from_sample(project_root):
-    flow_path = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
-    apex_path = project_root / "samples" / "InvokeRunValidation.cls"
+    flow_path = project_root / "samples" / "flows" / "Program_Validation_Commencement_Process.flow"
+    apex_path = project_root / "samples" / "classes" / "InvokeRunValidation.cls"
     if not flow_path.exists() or not apex_path.exists():
         pytest.skip("Flow/Apex sample files not found")
 
-    result = measure_file(flow_path, apex_search_paths=[project_root / "samples"])
+    result = measure_file(flow_path, apex_search_paths=[project_root / "samples" / "classes"])
     via_rows = [m for m in result["dataMovements"] if m.get("viaArtifact")]
     assert via_rows, "Expected merged movements from invocable Apex"
     assert any(m["movementType"] in {"E", "R", "X"} for m in via_rows)
@@ -233,12 +233,12 @@ def test_measure_flow_merges_invocable_apex_from_sample(project_root):
 
 
 def test_measure_flow_trigger_entry_precedes_invocable_apex_entries(project_root):
-    flow_path = project_root / "samples" / "Program_Validation_Commencement_Process.flow"
-    apex_path = project_root / "samples" / "InvokeRunValidation.cls"
+    flow_path = project_root / "samples" / "flows" / "Program_Validation_Commencement_Process.flow"
+    apex_path = project_root / "samples" / "classes" / "InvokeRunValidation.cls"
     if not flow_path.exists() or not apex_path.exists():
         pytest.skip("Flow/Apex sample files not found")
 
-    result = measure_file(flow_path, apex_search_paths=[project_root / "samples"])
+    result = measure_file(flow_path, apex_search_paths=[project_root / "samples" / "classes"])
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     assert entries, "Expected at least one Entry movement"
     assert entries[0]["name"] == "Trigger record (Program__c)"

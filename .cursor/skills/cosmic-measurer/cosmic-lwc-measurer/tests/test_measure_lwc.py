@@ -6,7 +6,7 @@ from measure_lwc import measure_lwc, measure_lwc_bundle
 
 
 def test_measure_lwc_bundle_sample(project_root: Path):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     result = measure_lwc_bundle(bundle_dir, functional_process_id="FP-1")
     assert result["functionalProcessId"] == "FP-1"
     assert result["artifact"]["type"] == "LWC"
@@ -17,11 +17,11 @@ def test_measure_lwc_bundle_sample(project_root: Path):
 
 
 def test_measure_lwc_required_types_validation(project_root: Path):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     result = measure_lwc_bundle(
         bundle_dir,
         required_movement_types=["W"],
-        apex_search_paths=[project_root / "samples"],
+        apex_search_paths=[project_root / "samples" / "classes"],
     )
     assert result["requiredMovementTypes"] == ["W"]
     assert result["satisfiesRequiredMovementTypes"] is False
@@ -29,10 +29,10 @@ def test_measure_lwc_required_types_validation(project_root: Path):
 
 
 def test_measure_lwc_apex_merge_has_via_artifact(project_root: Path):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     result = measure_lwc_bundle(
         bundle_dir,
-        apex_search_paths=[project_root / "samples"],
+        apex_search_paths=[project_root / "samples" / "classes"],
     )
     via_rows = [row for row in result["dataMovements"] if row.get("viaArtifact")]
     assert via_rows
@@ -64,7 +64,7 @@ def test_measure_lwc_missing_apex_non_fatal(tmp_path: Path):
 
 
 def test_measure_lwc_request_passthrough_context(project_root: Path):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     result = measure_lwc(
         {
             "lwc_bundle_dir": str(bundle_dir),
@@ -77,7 +77,7 @@ def test_measure_lwc_request_passthrough_context(project_root: Path):
 
 
 def test_measure_lwc_sample_matches_golden(project_root: Path):
-    bundle_dir = project_root / "samples" / "cfp_FunctionalProcessVisualiser"
+    bundle_dir = project_root / "samples" / "lwc" / "cfp_FunctionalProcessVisualiser"
     expected_path = (
         project_root
         / "expected"
@@ -86,7 +86,7 @@ def test_measure_lwc_sample_matches_golden(project_root: Path):
     assert expected_path.exists()
     result = measure_lwc_bundle(
         bundle_dir,
-        apex_search_paths=[project_root / "samples"],
+        apex_search_paths=[project_root / "samples" / "classes"],
         required_movement_types=["W"],
     )
     import json

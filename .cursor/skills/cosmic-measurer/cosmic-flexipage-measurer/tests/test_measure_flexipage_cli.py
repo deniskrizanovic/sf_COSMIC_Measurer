@@ -55,7 +55,7 @@ def test_cli_invalid_xml(monkeypatch, capsys, tmp_path):
 
 
 def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    sample = project_root / "samples" / "flexipages" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     if not sample.exists():
         return
     monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(sample), "--json"])
@@ -81,10 +81,10 @@ def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
 
 
 def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    sample = project_root / "samples" / "flexipages" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     expected_path = (
         project_root
-        / "samples"
+        / "expected"
         / "expected"
         / "cfp_FunctionalProcess_Record_Page.flexipage.expected.json"
     )
@@ -256,7 +256,7 @@ def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys,
 
 
 def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    sample = project_root / "samples" / "flexipages" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     if not sample.exists():
         return
     monkeypatch.setattr(
@@ -267,9 +267,9 @@ def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_roo
             str(sample),
             "--json",
             "--lwc-search-paths",
-            str(project_root / "samples"),
+            str(project_root / "samples" / "lwc"),
             "--apex-search-paths",
-            str(project_root / "samples"),
+            str(project_root / "samples" / "classes"),
         ],
     )
     assert measure_flexipage.main() == 0
@@ -285,7 +285,7 @@ def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_roo
 
 
 def test_cli_no_resolve_lwc_candidates_opt_out(monkeypatch, capsys, project_root):
-    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    sample = project_root / "samples" / "flexipages" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     if not sample.exists():
         return
     monkeypatch.setattr(
