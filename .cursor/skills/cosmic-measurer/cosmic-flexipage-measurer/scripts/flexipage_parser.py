@@ -105,11 +105,11 @@ def extract_record_field_bindings(root: ET.Element) -> list[str]:
 
 
 def extract_dynamic_related_lists(root: ET.Element) -> list[DynamicRelatedList]:
-    """Extract lst:dynamicRelatedList definitions."""
+    """Extract related list component definitions used by record pages."""
     related_lists: list[DynamicRelatedList] = []
     for component in root.findall(".//sf:componentInstance", NS):
         component_name = _find_text(component, "componentName")
-        if component_name != "lst:dynamicRelatedList":
+        if component_name not in ("lst:dynamicRelatedList", "force:relatedListSingleContainer"):
             continue
         related_lists.append(
             DynamicRelatedList(
@@ -300,6 +300,10 @@ def parse_flexipage(
     actions = extract_highlights_actions(root)
     tab_labels = extract_tab_labels(root)
 
-    reads = find_reads_from_page(metadata.sobject_type, record_fields, related_lists)
-    exits = find_exits_from_page(metadata.sobject_type, record_fields, related_lists)
+    # Record pages inherently read and display the primary record even when fieldItem
+    # bindings are not explicitly present (e.g., force:detailPanel-driven layouts).
+    has_primary_record_context = bool(record_fields) or metadata.page_type == "RecordPage"
+    primary_record_binding = ["Record.Id"] if has_primary_record_context else []
+    reads = find_reads_from_page(metadata.sobject_type, primary_record_binding, related_lists)
+    exits = find_exits_from_page(metadata.sobject_type, primary_record_binding, related_lists)
     return metadata, reads + exits, actions, tab_labels
