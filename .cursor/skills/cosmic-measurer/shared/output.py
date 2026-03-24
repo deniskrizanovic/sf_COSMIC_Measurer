@@ -43,7 +43,7 @@ class CosmicMeasureOutput(CosmicMeasureOutputCore, total=False):
 TYPE_ORDER = {"E": 0, "R": 1, "W": 2, "X": 3}
 
 CANONICAL_EXIT_NAME = "Errors/notifications"
-CANONICAL_EXIT_DATA_GROUP_REF = "User"
+CANONICAL_EXIT_DATA_GROUP_REF = "status/errors/etc"
 
 
 def order_movements(movements: list[RawMovement]) -> list[tuple[RawMovement, list]]:

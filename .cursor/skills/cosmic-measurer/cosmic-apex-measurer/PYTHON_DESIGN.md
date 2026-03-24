@@ -26,7 +26,7 @@ Deterministic, script-based extraction of COSMIC data movements from Apex `.cls`
 | **E** | Method params `(Type name, ...)` | Extract param types; `Id`/`List<Id>` → infer from usage or use placeholder |
 | **X** | `return\s+` + typed var | Infer from variable declaration or return type in signature |
 
-**Output layer**: `build_output` in `movements.py` **appends** one canonical Exit after all parser movements — **`Errors/notifications`** (`dataGroupRef`: `User`) — so every FP ends with that row (parser `return` exits remain when present).
+**Output layer**: `build_output` in `movements.py` **appends** one canonical Exit after all parser movements — **`Errors/notifications`** (`dataGroupRef`: `status/errors/etc`) — so every FP ends with that row (parser `return` exits remain when present).
 
 **Limitation**: `Id` and generic types need heuristics. Options: (a) use `"Unknown"` placeholder, (b) scan for `= :paramName` in WHERE to infer object, (c) config file mapping param names → objects.
 
@@ -130,7 +130,7 @@ Same JSON schema as reference.md. Example:
     { "name": "Receive fpId", "order": 1, "movementType": "E", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "apex", "isApiCall": false },
     { "name": "Read cfp_Data_Movements__c", "order": 2, "movementType": "R", "dataGroupRef": "cfp_Data_Movements__c", "implementationType": "apex", "isApiCall": false },
     { "name": "Return cfp_Data_Movements__c list", "order": 3, "movementType": "X", "dataGroupRef": "cfp_Data_Movements__c", "implementationType": "apex", "isApiCall": false },
-    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "User", "implementationType": "apex", "isApiCall": false }
+    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "status/errors/etc", "implementationType": "apex", "isApiCall": false }
   ]
 }
 ```

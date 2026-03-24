@@ -51,7 +51,7 @@ Inspects Apex `.cls` files, identifies data movements, and produces JSON in the 
 ### Exit (X)
 
 - **Parser**: `return` statements → Exit rows with inferred `dataGroupRef` (typed collections, etc.), as today.
-- **Canonical rule (functional process)**: After all other movements, **append** one final Exit — **`Errors/notifications`**, last in order. **`dataGroupRef`**: `User` (see [reference.md](../reference.md)). The deterministic script adds this row in `build_output`; it does **not** replace parser-derived exits.
+- **Canonical rule (functional process)**: After all other movements, **append** one final Exit — **`Errors/notifications`**, last in order. **`dataGroupRef`**: `status/errors/etc` (see [reference.md](../reference.md)). The deterministic script adds this row in `build_output`; it does **not** replace parser-derived exits.
 - **implementationType**: `apex` for the canonical exit when measuring Apex artifacts
 
 ### Procedural steps
@@ -100,7 +100,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-apex-measurer/tests/test_measure_a
 
 - **Schema**: Every `movementType` is exactly `E`, `R`, `X`, or `W`; `dataGroupRef` uses object API names and optional `::RecordTypeDeveloperName` / `::*` suffixes as in [reference.md](../reference.md).
 - **Regression**: For [samples/cfp_getDataMovements.cls](../../../samples/cfp_getDataMovements.cls), expect **1 E, 1 R, 2 X** (one return, then **Errors/notifications** last); compare output to [expected/cfp_getDataMovements.expected.json](../../../expected/cfp_getDataMovements.expected.json).
-- **Canonical exit**: Last movement is always **Errors/notifications** (`User`); CFP includes parser exits plus this X.
+- **Canonical exit**: Last movement is always **Errors/notifications** (`status/errors/etc`); CFP includes parser exits plus this X.
 - **Multi-process**: If `--list-entry-points` shows more than one candidate, do not silently pick one — confirm with the user.
 - **Deduplication**: Confirm merged Writes to the same data group appear as a single `W` in `dataMovements` when applying the merge rules above.
 
@@ -134,7 +134,7 @@ Produce JSON matching the schema in [reference.md](../reference.md):
     { "name": "...", "order": 1, "movementType": "E", "dataGroupRef": "...", "implementationType": "apex", "isApiCall": false },
     { "name": "Upsert Application_Log__c records", "movementType": "W", "viaClass": "ApplicationLogHandler", ... },
     { "name": "Return SomeObject__c list", "movementType": "X", "dataGroupRef": "SomeObject__c", ... },
-    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "User", "implementationType": "apex", "isApiCall": false }
+    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "status/errors/etc", "implementationType": "apex", "isApiCall": false }
   ],
   "calledClassesNotFound": ["Database", "String", "SomeExternalUtil"],
   "recordTypeReadsExcludedFromCfp": [

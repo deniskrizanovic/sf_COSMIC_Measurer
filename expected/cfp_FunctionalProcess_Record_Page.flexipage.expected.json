@@ -77,7 +77,7 @@
       "name": "Errors/notifications",
       "order": 9,
       "movementType": "X",
-      "dataGroupRef": "User",
+      "dataGroupRef": "status/errors/etc",
       "implementationType": "flexipage",
       "isApiCall": false
     }
@@ -147,7 +147,7 @@
           "name": "Errors/notifications",
           "order": 4,
           "movementType": "X",
-          "dataGroupRef": "User",
+          "dataGroupRef": "status/errors/etc",
           "implementationType": "lwc",
           "isApiCall": false
         }

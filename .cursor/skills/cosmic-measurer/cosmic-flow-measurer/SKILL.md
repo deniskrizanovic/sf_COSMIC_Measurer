@@ -57,7 +57,7 @@ Inspects `.flow-meta.xml` files, identifies data movements, and produces JSON in
 ### Exit (X)
 
 - **Output variables**: `<variables>` with `<isOutput>true</isOutput>` and SObject type
-- **Canonical rule**: After all other movements, append one final Exit — **Errors/notifications**, last in order. `dataGroupRef: User`. See [reference.md](../reference.md).
+- **Canonical rule**: After all other movements, append one final Exit — **Errors/notifications**, last in order. `dataGroupRef: status/errors/etc`. See [reference.md](../reference.md).
 - **implementationType**: `flow`
 
 ### Procedural steps
@@ -95,7 +95,7 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
 
 - **Schema**: Every `movementType` is exactly `E`, `R`, `X`, or `W`; `dataGroupRef` uses object API names as in [reference.md](../reference.md).
 - **Regression**: For [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](../../../samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml), compare output to [expected/cfp_createCRUDLwithRelatedLists.expected.json](../../../expected/cfp_createCRUDLwithRelatedLists.expected.json).
-- **Canonical exit**: Last movement is always Errors/notifications (User).
+- **Canonical exit**: Last movement is always Errors/notifications (status/errors/etc).
 - **Deduplication**: Confirm merged Writes to the same data group appear as a single W.
 
 ---
@@ -117,7 +117,7 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
     { "name": "Receive recordId", "order": 1, "movementType": "E", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
     { "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)", "order": 2, "movementType": "R", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
     { "name": "Create cfp_Data_Movements__c (createDMs)", "order": 3, "movementType": "W", "dataGroupRef": "cfp_Data_Movements__c", "implementationType": "flow", "isApiCall": false },
-    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "User", "implementationType": "flow", "isApiCall": false }
+    { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "status/errors/etc", "implementationType": "flow", "isApiCall": false }
   ]
 }
 ```

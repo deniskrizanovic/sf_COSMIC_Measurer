@@ -111,7 +111,7 @@
       "name": "Errors/notifications",
       "order": 10,
       "movementType": "X",
-      "dataGroupRef": "User",
+      "dataGroupRef": "status/errors/etc",
       "implementationType": "apex",
       "isApiCall": false
     }

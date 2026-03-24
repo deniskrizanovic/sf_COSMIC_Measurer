@@ -285,7 +285,7 @@ Expected movements for the sample (Screen Flow measuring COSMIC itself):
 - **E**: `recordId` input variable (inferred: `cfp_FunctionalProcess__c` from first lookup filter)
 - **R**: `getFunctionalProcess` (cfp_FunctionalProcess__c), `getDatagroups` (cfp_DataGroups__c)
 - **W**: `createDMs` (cfp_Data_Movements__c)
-- **X**: Canonical `Errors/notifications` (User)
+- **X**: Canonical `Errors/notifications` (status/errors/etc)
 
 Screens are deferred -- they won't produce movements until Part 5.
 

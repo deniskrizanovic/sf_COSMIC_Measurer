@@ -23,14 +23,21 @@ from flexipage_parser import (  # noqa: E402
     parse_flexipage,
     parse_xml,
 )
-from shared.output import build_output, to_human_summary, to_json_string, to_table  # noqa: E402
+from shared.output import (  # noqa: E402
+    CANONICAL_EXIT_DATA_GROUP_REF,
+    CANONICAL_EXIT_NAME,
+    build_output,
+    to_human_summary,
+    to_json_string,
+    to_table,
+)
 
 
 def _is_errors_notifications_row(row: dict) -> bool:
     return (
         row.get("movementType") == "X"
-        and row.get("name") == "Errors/notifications"
-        and row.get("dataGroupRef") == "User"
+        and row.get("name") == CANONICAL_EXIT_NAME
+        and row.get("dataGroupRef") == CANONICAL_EXIT_DATA_GROUP_REF
     )
 
 
@@ -54,10 +61,10 @@ def _inline_resolved_lwc_tab_movements(
 
     merged_rows.append(
         {
-            "name": "Errors/notifications",
+            "name": CANONICAL_EXIT_NAME,
             "order": 0,
             "movementType": "X",
-            "dataGroupRef": "User",
+            "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
             "implementationType": "flexipage",
             "isApiCall": False,
         }
