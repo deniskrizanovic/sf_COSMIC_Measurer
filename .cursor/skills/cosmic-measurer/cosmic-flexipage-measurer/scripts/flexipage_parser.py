@@ -289,6 +289,16 @@ def build_synthetic_action_entry(action_name: str, sobject_type: str) -> RawMove
     )
 
 
+def build_primary_record_edit_entry(sobject_type: str) -> RawMovement:
+    """Entry movement representing user edit intent on the primary record."""
+    return RawMovement(
+        movement_type="E",
+        data_group_ref=sobject_type,
+        name=f"Edit page record ({sobject_type})",
+        order_hint=9999,
+    )
+
+
 def parse_flexipage(
     source: str, filename: str = ""
 ) -> tuple[FlexiPageMetadata, list[RawMovement], list[str], list[str]]:
@@ -306,4 +316,5 @@ def parse_flexipage(
     primary_record_binding = ["Record.Id"] if has_primary_record_context else []
     reads = find_reads_from_page(metadata.sobject_type, primary_record_binding, related_lists)
     exits = find_exits_from_page(metadata.sobject_type, primary_record_binding, related_lists)
-    return metadata, reads + exits, actions, tab_labels
+    edits = [build_primary_record_edit_entry(metadata.sobject_type)] if has_primary_record_context else []
+    return metadata, reads + edits + exits, actions, tab_labels

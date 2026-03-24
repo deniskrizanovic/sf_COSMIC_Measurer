@@ -74,6 +74,74 @@ def _inline_resolved_lwc_tab_movements(
     output["dataMovements"] = merged_rows
 
 
+def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
+    rows = output.get("dataMovements") or []
+    if not rows:
+        return
+
+    canonical_exit = next((row for row in rows if _is_errors_notifications_row(row)), None)
+    non_canonical_rows = [row for row in rows if not _is_errors_notifications_row(row)]
+    if not non_canonical_rows:
+        return
+
+    open_record_name = f"Open record page ({sobject_type})"
+    promoted_order = [
+        ("E", open_record_name),
+        ("R", f"Read page record ({sobject_type})"),
+        ("X", f"Display page record ({sobject_type})"),
+        ("E", f"Edit page record ({sobject_type})"),
+    ]
+
+    promoted: list[dict] = []
+    remaining = list(non_canonical_rows)
+    for movement_type, movement_name in promoted_order:
+        for index, row in enumerate(remaining):
+            if row.get("movementType") == movement_type and row.get("name") == movement_name:
+                promoted.append(remaining.pop(index))
+                break
+
+    # Keep related-list read/display pairs adjacent (R then X) for traceability.
+    paired_related_rows: list[dict] = []
+    used_ids: set[int] = set()
+    for idx, row in enumerate(remaining):
+        if idx in used_ids:
+            continue
+        if row.get("movementType") != "R":
+            continue
+        row_name = str(row.get("name") or "")
+        if not row_name.startswith("Read related list "):
+            continue
+
+        paired_related_rows.append(row)
+        used_ids.add(idx)
+
+        match_index: Optional[int] = None
+        for candidate_idx, candidate in enumerate(remaining):
+            if candidate_idx in used_ids:
+                continue
+            if candidate.get("movementType") != "X":
+                continue
+            if candidate.get("dataGroupRef") != row.get("dataGroupRef"):
+                continue
+            candidate_name = str(candidate.get("name") or "")
+            if not candidate_name.startswith("Display related list "):
+                continue
+            match_index = candidate_idx
+            break
+        if match_index is not None:
+            paired_related_rows.append(remaining[match_index])
+            used_ids.add(match_index)
+
+    leftovers = [row for idx, row in enumerate(remaining) if idx not in used_ids]
+    ordered_rows = promoted + paired_related_rows + leftovers
+    if canonical_exit is not None:
+        ordered_rows.append(canonical_exit)
+
+    for idx, row in enumerate(ordered_rows, start=1):
+        row["order"] = idx
+    output["dataMovements"] = ordered_rows
+
+
 def _parse_search_paths(csv_paths: str) -> list[Path]:
     return [Path(p.strip()) for p in csv_paths.split(",") if p.strip()]
 
@@ -233,6 +301,7 @@ def measure_file(
         fp_id,
         implementation_type="flexipage",
     )
+    _promote_primary_record_rows(output, metadata.sobject_type)
     if actions:
         action_list = ", ".join(actions)
         output["traversalWarnings"] = [

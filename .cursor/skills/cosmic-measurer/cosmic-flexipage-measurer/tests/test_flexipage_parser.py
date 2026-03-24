@@ -214,6 +214,33 @@ def test_find_reads_and_exits_from_page():
     assert exits[0].movement_type == "X"
 
 
+def test_parse_flexipage_includes_primary_record_edit_entry():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>parentFieldApiName</name>
+                    <value>Account.Id</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body)
+    _, movements, _, _ = parse_flexipage(xml, filename="Sample.flexipage-meta.xml")
+    assert any(
+        movement.name == "Edit page record (Account)" and movement.movement_type == "E"
+        for movement in movements
+    )
+
+
 def test_parse_flexipage():
     body = """
     <flexiPageRegions>

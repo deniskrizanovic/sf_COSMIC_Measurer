@@ -111,7 +111,11 @@ def test_cli_disable_synthetic_trigger_e(monkeypatch, capsys, tmp_path):
     )
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["dataMovements"][0]["movementType"] == "R"
+    assert [row["name"] for row in payload["dataMovements"][:3]] == [
+        "Read page record (Account)",
+        "Display page record (Account)",
+        "Edit page record (Account)",
+    ]
 
 
 def test_cli_include_action_candidates(monkeypatch, capsys, tmp_path):
@@ -143,6 +147,39 @@ def test_cli_include_action_candidates(monkeypatch, capsys, tmp_path):
     candidates = payload.get("actionCandidateMeasurements") or []
     assert len(candidates) == 2
     assert candidates[0]["artifact"]["type"] == "FlexiPageAction"
+
+
+def test_cli_places_primary_record_r_x_e_at_top(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Contacts</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>parentFieldApiName</name>
+                    <value>Account.Id</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert [row["name"] for row in payload["dataMovements"][:6]] == [
+        "Open record page (Account)",
+        "Read page record (Account)",
+        "Display page record (Account)",
+        "Edit page record (Account)",
+        "Read related list Contacts",
+        "Display related list Contacts",
+    ]
 
 
 def test_cli_tab_aware_notes(monkeypatch, capsys, tmp_path):
