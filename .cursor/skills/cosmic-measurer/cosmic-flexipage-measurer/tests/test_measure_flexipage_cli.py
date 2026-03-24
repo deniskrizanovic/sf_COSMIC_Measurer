@@ -66,6 +66,10 @@ def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
     assert payload["dataMovements"][0]["name"].startswith("Open record page")
     warnings = payload.get("traversalWarnings") or []
     assert any("Tab-aware notes:" in item for item in warnings)
+    assert any(
+        "Visualiser -> lwc(cfp_FunctionalProcessVisualiser)" in item
+        for item in warnings
+    )
 
 
 def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
@@ -154,3 +158,43 @@ def test_cli_tab_aware_notes(monkeypatch, capsys, tmp_path):
     payload = json.loads(capsys.readouterr().out)
     warnings = payload.get("traversalWarnings") or []
     assert any("Tab-aware notes: page contains tabs = Visualiser" in item for item in warnings)
+
+
+def test_cli_tab_component_binding_warning(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>cfp_FunctionalProcessVisualiser</componentName>
+                <identifier>c_cfp_FunctionalProcessVisualiser</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-visualiser</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-visualiser</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Visualiser</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabVisualiser</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    warnings = payload.get("traversalWarnings") or []
+    assert any(
+        "Tab-component bindings: Visualiser -> lwc(cfp_FunctionalProcessVisualiser)" in item
+        for item in warnings
+    )

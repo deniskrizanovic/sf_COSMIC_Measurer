@@ -29,6 +29,15 @@ class DynamicRelatedList:
     related_list_label: Optional[str]
 
 
+@dataclass
+class TabComponentBinding:
+    tab_identifier: str
+    tab_title: Optional[str]
+    body_facet_name: str
+    target_component_name: Optional[str]
+    target_component_kind: str
+
+
 def _find_text(element: ET.Element, tag: str) -> Optional[str]:
     child = element.find(f"sf:{tag}", NS)
     if child is not None and child.text:
@@ -134,6 +143,54 @@ def extract_tab_labels(root: ET.Element) -> list[str]:
         if label:
             labels.append(label)
     return labels
+
+
+def _classify_component_kind(component_name: Optional[str]) -> str:
+    if not component_name:
+        return "unknown"
+    return "aura" if ":" in component_name else "lwc"
+
+
+def _build_facet_component_index(root: ET.Element) -> dict[str, Optional[str]]:
+    facet_targets: dict[str, Optional[str]] = {}
+    for region in root.findall("sf:flexiPageRegions", NS):
+        region_name = _find_text(region, "name")
+        if not region_name:
+            continue
+        first_component_name: Optional[str] = None
+        for item in region.findall("sf:itemInstances", NS):
+            component = item.find("sf:componentInstance", NS)
+            if component is None:
+                continue
+            first_component_name = _find_text(component, "componentName")
+            if first_component_name:
+                break
+        facet_targets[region_name] = first_component_name
+    return facet_targets
+
+
+def extract_tab_component_bindings(root: ET.Element) -> list[TabComponentBinding]:
+    """Resolve each tab body facet to the first target component and classify kind."""
+    bindings: list[TabComponentBinding] = []
+    facet_component_index = _build_facet_component_index(root)
+    for component in root.findall(".//sf:componentInstance", NS):
+        component_name = _find_text(component, "componentName")
+        if component_name != "flexipage:tab":
+            continue
+        body_facet_name = _extract_component_property(component, "body")
+        if not body_facet_name:
+            continue
+        target_component_name = facet_component_index.get(body_facet_name)
+        bindings.append(
+            TabComponentBinding(
+                tab_identifier=_find_text(component, "identifier") or "unknownTab",
+                tab_title=_extract_component_property(component, "title"),
+                body_facet_name=body_facet_name,
+                target_component_name=target_component_name,
+                target_component_kind=_classify_component_kind(target_component_name),
+            )
+        )
+    return bindings
 
 
 def find_reads_from_page(
