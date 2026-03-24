@@ -11,6 +11,7 @@ from flow_parser import (
     find_exits,
     find_record_lookups,
     find_record_mutations,
+    find_screen_movements,
     parse_flow,
     parse_xml,
 )
@@ -506,6 +507,201 @@ def test_find_exits_empty_when_no_outputs():
     variables = extract_variables(root)
     exits = find_exits(variables)
     assert exits == []
+
+
+# ---------------------------------------------------------------------------
+# Screens (Entry/Exit from screen interactions)
+# ---------------------------------------------------------------------------
+
+def test_find_screen_entries_per_data_group():
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <screens>
+        <name>AccountScreen</name>
+        <fields>
+            <name>accountInput</name>
+            <fieldType>InputField</fieldType>
+            <fieldText>&lt;p&gt;{!selectedAccount.Name}&lt;/p&gt;</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    screen_entries, _ = find_screen_movements(root, variables)
+    assert len(screen_entries) == 1
+    assert screen_entries[0].movement_type == "E"
+    assert screen_entries[0].data_group_ref == "Account"
+
+
+def test_find_screen_exits_per_data_group():
+    body = """
+    <recordLookups>
+        <name>getAccounts</name>
+        <object>Account</object>
+    </recordLookups>
+    <recordLookups>
+        <name>getContacts</name>
+        <object>Contact</object>
+    </recordLookups>
+    <screens>
+        <name>ReviewData</name>
+        <fields>
+            <name>accountsTable</name>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>tableData</name>
+                <value>
+                    <elementReference>getAccounts</elementReference>
+                </value>
+            </inputParameters>
+        </fields>
+        <fields>
+            <name>contactsTable</name>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>tableData</name>
+                <value>
+                    <elementReference>getContacts</elementReference>
+                </value>
+            </inputParameters>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    _, screen_exits = find_screen_movements(root, variables)
+    assert {m.data_group_ref for m in screen_exits} == {"Account", "Contact"}
+
+
+def test_display_only_screen_counts_as_exit():
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <screens>
+        <name>ConfirmScreen</name>
+        <fields>
+            <name>summaryText</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>&lt;p&gt;Selected: {!selectedAccount.Name}&lt;/p&gt;</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    screen_entries, screen_exits = find_screen_movements(root, variables)
+    assert screen_entries == []
+    assert len(screen_exits) == 1
+    assert screen_exits[0].data_group_ref == "Account"
+
+
+def test_screen_dedups_same_data_group_within_screen():
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <screens>
+        <name>AccountScreen</name>
+        <fields>
+            <name>summary1</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+        <fields>
+            <name>summary2</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedAccount.Id}</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    _, screen_exits = find_screen_movements(root, variables)
+    assert len(screen_exits) == 1
+    assert screen_exits[0].data_group_ref == "Account"
+
+
+def test_screen_skips_unresolved_primitive_refs():
+    body = """
+    <variables>
+        <name>plainText</name>
+        <dataType>String</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <screens>
+        <name>PrimitiveOnlyScreen</name>
+        <fields>
+            <name>summary</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!plainText}</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    screen_entries, screen_exits = find_screen_movements(root, variables)
+    assert screen_entries == []
+    assert screen_exits == []
+
+
+def test_screen_handles_multiple_screens_accumulation():
+    body = """
+    <variables>
+        <name>selectedAccount</name>
+        <dataType>SObject</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Account</objectType>
+    </variables>
+    <variables>
+        <name>selectedContact</name>
+        <dataType>SObject</dataType>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Contact</objectType>
+    </variables>
+    <screens>
+        <name>ScreenA</name>
+        <fields>
+            <name>a1</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedAccount.Name}</fieldText>
+        </fields>
+    </screens>
+    <screens>
+        <name>ScreenB</name>
+        <fields>
+            <name>b1</name>
+            <fieldType>DisplayText</fieldType>
+            <fieldText>{!selectedContact.Name}</fieldText>
+        </fields>
+    </screens>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    variables = extract_variables(root)
+    _, screen_exits = find_screen_movements(root, variables)
+    assert {m.data_group_ref for m in screen_exits} == {"Account", "Contact"}
 
 
 # ---------------------------------------------------------------------------

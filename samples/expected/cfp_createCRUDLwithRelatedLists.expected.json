@@ -14,8 +14,16 @@
       "isApiCall": false
     },
     {
-      "name": "Read cfp_DataGroups__c (getDatagroups)",
+      "name": "Screen input (Which_DataGroup) (cfp_DataGroups__c)",
       "order": 2,
+      "movementType": "E",
+      "dataGroupRef": "cfp_DataGroups__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Read cfp_DataGroups__c (getDatagroups)",
+      "order": 3,
       "movementType": "R",
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
@@ -23,7 +31,7 @@
     },
     {
       "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)",
-      "order": 3,
+      "order": 4,
       "movementType": "R",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flow",
@@ -31,15 +39,23 @@
     },
     {
       "name": "Create cfp_Data_Movements__c (createDMs)",
-      "order": 4,
+      "order": 5,
       "movementType": "W",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "flow",
       "isApiCall": false
     },
     {
+      "name": "Screen display (Which_DataGroup) (cfp_DataGroups__c)",
+      "order": 6,
+      "movementType": "X",
+      "dataGroupRef": "cfp_DataGroups__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
       "name": "Errors/notifications",
-      "order": 5,
+      "order": 7,
       "movementType": "X",
       "dataGroupRef": "User",
       "implementationType": "flow",
