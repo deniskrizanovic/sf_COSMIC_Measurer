@@ -9,7 +9,7 @@ from movements import CANONICAL_EXIT_DATA_GROUP_REF, CANONICAL_EXIT_NAME
 def test_cfp_getDataMovements_matches_golden(project_root):
     """Output should match expected JSON (semantic equivalence)."""
     sample = project_root / "samples" / "cfp_getDataMovements.cls"
-    expected = project_root / "samples" / "expected" / "cfp_getDataMovements.expected.json"
+    expected = project_root / "expected" / "cfp_getDataMovements.expected.json"
 
     result = measure_file(sample)
     with open(expected) as f:
