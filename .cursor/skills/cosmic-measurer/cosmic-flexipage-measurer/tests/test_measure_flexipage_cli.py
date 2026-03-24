@@ -294,6 +294,74 @@ def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys,
     assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
 
 
+def test_cli_emits_tbc_dm_row_for_each_lwc_candidate(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>cfp_FunctionalProcessVisualiser</componentName>
+                <identifier>c_cfp_FunctionalProcessVisualiser</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-visualiser</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>cfp_FunctionalProcessEditor</componentName>
+                <identifier>c_cfp_FunctionalProcessEditor</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-editor</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-visualiser</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Visualiser</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabVisualiser</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-editor</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Edit Details</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabEditor</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(
+        sys, "argv", ["measure_flexipage", str(page_file), "--json", "--no-resolve-lwc-candidates"]
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    dm_rows = payload.get("dataMovements") or []
+    tbc_lwc_rows = [
+        row for row in dm_rows if row.get("dataGroupRef") == "tbc" and "Inspect LWC" in row.get("name", "")
+    ]
+    assert len(tbc_lwc_rows) == 2
+    assert any("cfp_FunctionalProcessVisualiser" in row["name"] for row in tbc_lwc_rows)
+    assert any("cfp_FunctionalProcessEditor" in row["name"] for row in tbc_lwc_rows)
+
+
 def test_cli_inlines_non_lwc_tab_component_movements(monkeypatch, capsys, tmp_path):
     body = """
     <flexiPageRegions>

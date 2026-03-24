@@ -83,7 +83,11 @@ JSON (optional / export-oriented):
 
 Default response behavior:
 
-- If the user asks to "measure" a FlexiPage without specifying format, return table-first output.
+- If the user asks to "measure" a FlexiPage (or uses phrasing like "measure <file>"), treat it as a full-output request by default.
+- Full-output request means always return:
+  - movement table (ordered rows),
+  - totals table (`E`, `R`, `W`, `X`, `Total CFP`),
+  - all notes/warnings (including canonical final exit and follow-up investigation notes).
 - Default to merged roll-up totals (FlexiPage + traversed tab-bound LWC movements).
 - Traverse tab-bound LWCs by default before producing totals.
 - Use `--no-resolve-lwc-candidates` to skip inline LWC traversal when needed.
