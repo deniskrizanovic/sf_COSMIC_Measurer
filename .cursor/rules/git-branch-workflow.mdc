@@ -5,13 +5,15 @@ alwaysApply: true
 
 # Git Branch Workflow
 
-Before making any code edits, check the current git branch:
+Before making any code edits, always verify the active directory and git worktree from shell commands. Do not trust pre-attached environment metadata.
 
-1. Run `git branch --show-current`
-2. If branch is `main` or `master`:
+1. Run `pwd` to confirm the current directory on disk.
+2. Run `git rev-parse --is-inside-work-tree`:
+   - If result is not `true`, skip branch checks and proceed.
+3. Run `git rev-parse --show-toplevel` to confirm the actual git root for the active worktree.
+4. Run `git branch --show-current`.
+5. If branch is `main` or `master`:
    - If the user has asked to proceed (for example "do the needful", "commit/push", or implementation request), automatically create and switch to a feature branch.
    - Use a semantic branch name, e.g. `feature/flexipage-tab-component-bindings`.
    - Then continue with edits/workflow without asking the user to create the branch first.
-3. If already on a feature branch: proceed with edits
-
-Skip this check only if the workspace is not a git repo (`git rev-parse --is-inside-work-tree` ≠ true).
+6. If already on a feature branch, proceed with edits.
