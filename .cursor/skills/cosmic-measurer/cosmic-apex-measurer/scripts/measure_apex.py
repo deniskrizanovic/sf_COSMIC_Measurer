@@ -56,102 +56,65 @@ def _traverse_callees(
     visited: set[str],
     current_class: str,
 ) -> tuple[list[RawMovement], set[str]]:
-    """Parse callees, merge R/W movements, return (merged_movements, called_not_found)."""
+    """Recursively parse transitive callees and merge only R/W movements."""
     called_not_found: set[str] = set()
-    callee_classes = find_static_calls(source)
-    async_batch_classes = find_execute_batch_calls(source)
-    async_queueable_classes = find_enqueue_job_calls(source)
-    async_schedulable_classes = find_system_schedule_calls(source)
+    processed: set[str] = set()
+    stack = [current_class]
+    class_sources: dict[str, str] = {current_class: source}
+    class_async: dict[str, bool] = {current_class: False}
 
-    for cls in callee_classes:
-        if cls == current_class:
+    while stack:
+        cls_name = stack.pop()
+        if cls_name in processed:
             continue
-        if cls in visited:
-            continue
+        processed.add(cls_name)
 
-        cls_path = find_class_file(cls, search_paths)
-        if cls_path is None:
-            called_not_found.add(cls)
-            continue
+        cls_source = class_sources[cls_name]
+        parent_is_async = class_async.get(cls_name, False)
 
-        visited.add(cls)
-        try:
-            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
-            _, callee_movements = parse(callee_source)
-            for m in callee_movements:
-                if m.movement_type in ("R", "W"):
-                    movements.append(dataclasses.replace(m, via_artifact=cls))
-        finally:
-            visited.discard(cls)
+        edge_targets: dict[str, bool] = {}
+        for target in sorted(find_static_calls(cls_source)):
+            edge_targets[target] = edge_targets.get(target, False) or parent_is_async
+        for target in sorted(find_execute_batch_calls(cls_source)):
+            edge_targets[target] = True
+        for target in sorted(find_enqueue_job_calls(cls_source)):
+            edge_targets[target] = True
+        for target in sorted(find_system_schedule_calls(cls_source)):
+            edge_targets[target] = True
 
-    for cls in async_batch_classes:
-        if cls == current_class:
-            continue
-        if cls in visited:
-            continue
+        for target, edge_is_async in edge_targets.items():
+            if target == cls_name:
+                continue
+            if target in visited:
+                continue
+            if target in processed:
+                continue
 
-        cls_path = find_class_file(cls, search_paths)
-        if cls_path is None:
-            called_not_found.add(cls)
-            continue
+            cls_path = find_class_file(target, search_paths)
+            if cls_path is None:
+                called_not_found.add(target)
+                continue
 
-        visited.add(cls)
-        try:
-            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
-            _, callee_movements = parse(callee_source)
-            for m in callee_movements:
-                if m.movement_type in ("R", "W"):
+            visited.add(target)
+            try:
+                callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
+                _, callee_movements = parse(callee_source)
+                for movement in callee_movements:
+                    if movement.movement_type not in ("R", "W"):
+                        continue
                     movements.append(
-                        dataclasses.replace(m, via_artifact=cls, is_async=True)
+                        dataclasses.replace(
+                            movement,
+                            via_artifact=target,
+                            is_async=edge_is_async,
+                        )
                     )
-        finally:
-            visited.discard(cls)
 
-    for cls in async_queueable_classes:
-        if cls == current_class:
-            continue
-        if cls in visited:
-            continue
-
-        cls_path = find_class_file(cls, search_paths)
-        if cls_path is None:
-            called_not_found.add(cls)
-            continue
-
-        visited.add(cls)
-        try:
-            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
-            _, callee_movements = parse(callee_source)
-            for m in callee_movements:
-                if m.movement_type in ("R", "W"):
-                    movements.append(
-                        dataclasses.replace(m, via_artifact=cls, is_async=True)
-                    )
-        finally:
-            visited.discard(cls)
-
-    for cls in async_schedulable_classes:
-        if cls == current_class:
-            continue
-        if cls in visited:
-            continue
-
-        cls_path = find_class_file(cls, search_paths)
-        if cls_path is None:
-            called_not_found.add(cls)
-            continue
-
-        visited.add(cls)
-        try:
-            callee_source = cls_path.read_text(encoding="utf-8", errors="replace")
-            _, callee_movements = parse(callee_source)
-            for m in callee_movements:
-                if m.movement_type in ("R", "W"):
-                    movements.append(
-                        dataclasses.replace(m, via_artifact=cls, is_async=True)
-                    )
-        finally:
-            visited.discard(cls)
+                class_sources[target] = callee_source
+                class_async[target] = edge_is_async
+                stack.append(target)
+            finally:
+                visited.discard(target)
 
     return movements, called_not_found
 

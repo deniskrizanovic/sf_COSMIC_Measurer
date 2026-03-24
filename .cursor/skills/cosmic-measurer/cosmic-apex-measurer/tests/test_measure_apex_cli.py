@@ -110,6 +110,33 @@ public class CycleB {
 }
 """
 
+MULTI_HOP_CALLER_SRC = """
+public class MultiHopCaller {
+    public static void run() {
+        LevelOne.run(new List<Account>());
+    }
+}
+"""
+
+LEVEL_ONE_SRC = """
+public class LevelOne {
+    public static List<Account> run(List<Account> accounts) {
+        LevelTwo.touch(accounts);
+        return accounts;
+    }
+}
+"""
+
+LEVEL_TWO_SRC = """
+public class LevelTwo {
+    public static void touch(List<Account> accounts) {
+        List<Account> rows = [SELECT Id FROM Account WHERE Id != null];
+        update accounts;
+        MissingDeep.ping();
+    }
+}
+"""
+
 
 def test_find_class_file_skips_missing_base_and_finds_match(tmp_path):
     missing = tmp_path / "nope"
@@ -177,6 +204,22 @@ def test_measure_file_skips_cycle_between_classes(tmp_path):
     (tmp_path / "CycleA.cls").write_text(CYCLE_A_SRC, encoding="utf-8")
     (tmp_path / "CycleB.cls").write_text(CYCLE_B_SRC, encoding="utf-8")
     measure_file(tmp_path / "CycleA.cls", search_paths=[tmp_path])
+
+
+def test_measure_file_traverses_multi_hop_and_merges_rw_only(tmp_path):
+    (tmp_path / "MultiHopCaller.cls").write_text(MULTI_HOP_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "LevelOne.cls").write_text(LEVEL_ONE_SRC, encoding="utf-8")
+    (tmp_path / "LevelTwo.cls").write_text(LEVEL_TWO_SRC, encoding="utf-8")
+
+    out = measure_file(tmp_path / "MultiHopCaller.cls", search_paths=[tmp_path])
+    via_level_one = [m for m in out["dataMovements"] if m.get("viaArtifact") == "LevelOne"]
+    via_level_two = [m for m in out["dataMovements"] if m.get("viaArtifact") == "LevelTwo"]
+
+    assert not any(m["movementType"] == "E" for m in via_level_one)
+    assert not any(m["movementType"] == "X" for m in via_level_one)
+    assert any(m["movementType"] == "R" for m in via_level_two)
+    assert any(m["movementType"] == "W" for m in via_level_two)
+    assert "MissingDeep" in (out.get("calledClassesNotFound") or [])
 
 
 def test_traverse_skips_class_already_in_visited(tmp_path):
