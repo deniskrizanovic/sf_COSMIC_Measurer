@@ -77,7 +77,7 @@ def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
     lwc_candidates = payload.get("lwcCandidateMeasurements") or []
     assert len(lwc_candidates) == 1
     assert lwc_candidates[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
-    assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
+    assert lwc_candidates[0]["requiredMovementTypes"] == []
 
 
 def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
@@ -214,10 +214,48 @@ def test_cli_tab_component_binding_warning(monkeypatch, capsys, tmp_path):
     lwc_candidates = payload.get("lwcCandidateMeasurements") or []
     assert len(lwc_candidates) == 1
     assert lwc_candidates[0]["artifact"]["type"] == "LWC"
+    assert lwc_candidates[0]["requiredMovementTypes"] == []
+
+
+def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentName>cfp_FunctionalProcessEditor</componentName>
+                <identifier>c_cfp_FunctionalProcessEditor</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-editor</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-editor</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Edit Details</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabEditor</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
+    assert len(lwc_candidates) == 1
     assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
 
 
-def test_cli_resolve_lwc_candidates(monkeypatch, capsys, project_root):
+def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_root):
     sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
     if not sample.exists():
         return
@@ -228,7 +266,6 @@ def test_cli_resolve_lwc_candidates(monkeypatch, capsys, project_root):
             "measure_flexipage",
             str(sample),
             "--json",
-            "--resolve-lwc-candidates",
             "--lwc-search-paths",
             str(project_root / "samples"),
             "--apex-search-paths",
@@ -241,3 +278,28 @@ def test_cli_resolve_lwc_candidates(monkeypatch, capsys, project_root):
     assert len(resolved) == 1
     assert resolved[0]["artifact"]["type"] == "LWC"
     assert resolved[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert any(name.endswith("| tab:Visualiser") for name in movement_names)
+    assert "Potential write via imperative Apex call | tab:Visualiser" not in movement_names
+    assert movement_names[-1] == "Errors/notifications"
+
+
+def test_cli_no_resolve_lwc_candidates_opt_out(monkeypatch, capsys, project_root):
+    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    if not sample.exists():
+        return
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "measure_flexipage",
+            str(sample),
+            "--json",
+            "--no-resolve-lwc-candidates",
+        ],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert "resolvedLwcMeasurements" not in payload
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert all("| tab:" not in name for name in movement_names)

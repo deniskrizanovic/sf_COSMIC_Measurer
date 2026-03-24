@@ -46,8 +46,36 @@
       "isApiCall": false
     },
     {
-      "name": "Errors/notifications",
+      "name": "Receive fpId (Functional Process) | tab:Visualiser",
       "order": 6,
+      "movementType": "E",
+      "dataGroupRef": "cfp_FunctionalProcess__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 7,
+      "viaArtifact": "cfp_getDataMovements"
+    },
+    {
+      "name": "Read cfp_Data_Movements__c list | tab:Visualiser",
+      "order": 7,
+      "movementType": "R",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 9,
+      "viaArtifact": "cfp_getDataMovements"
+    },
+    {
+      "name": "Display LWC output to user | tab:Visualiser",
+      "order": 8,
+      "movementType": "X",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "lwc",
+      "isApiCall": false
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 9,
       "movementType": "X",
       "dataGroupRef": "User",
       "implementationType": "flexipage",
@@ -75,10 +103,66 @@
         "identifier": "flexipage_tab5",
         "title": "Visualiser"
       },
-      "requiredMovementTypes": [
-        "W"
-      ],
+      "requiredMovementTypes": [],
       "notes": "Run dedicated lwc-measurer to extract concrete E/R/X/W movements."
+    }
+  ],
+  "resolvedLwcMeasurements": [
+    {
+      "functionalProcessId": "<Id>",
+      "artifact": {
+        "type": "LWC",
+        "name": "cfp_FunctionalProcessVisualiser"
+      },
+      "dataMovements": [
+        {
+          "name": "Receive fpId (Functional Process)",
+          "order": 1,
+          "movementType": "E",
+          "dataGroupRef": "cfp_FunctionalProcess__c",
+          "implementationType": "apex",
+          "isApiCall": false,
+          "sourceLine": 7,
+          "viaArtifact": "cfp_getDataMovements"
+        },
+        {
+          "name": "Read cfp_Data_Movements__c list",
+          "order": 2,
+          "movementType": "R",
+          "dataGroupRef": "cfp_Data_Movements__c",
+          "implementationType": "apex",
+          "isApiCall": false,
+          "sourceLine": 9,
+          "viaArtifact": "cfp_getDataMovements"
+        },
+        {
+          "name": "Display LWC output to user",
+          "order": 3,
+          "movementType": "X",
+          "dataGroupRef": "cfp_Data_Movements__c",
+          "implementationType": "lwc",
+          "isApiCall": false
+        },
+        {
+          "name": "Errors/notifications",
+          "order": 4,
+          "movementType": "X",
+          "dataGroupRef": "User",
+          "implementationType": "lwc",
+          "isApiCall": false
+        }
+      ],
+      "sourceArtifact": {
+        "type": "FlexiPage",
+        "name": "cfp_FunctionalProcess_Record_Page"
+      },
+      "tabContext": {
+        "identifier": "flexipage_tab5",
+        "title": "Visualiser"
+      },
+      "requiredMovementTypes": [],
+      "missingRequiredMovementTypes": [],
+      "satisfiesRequiredMovementTypes": true
     }
   ]
 }

@@ -24,8 +24,8 @@ def test_measure_lwc_required_types_validation(project_root: Path):
         apex_search_paths=[project_root / "samples"],
     )
     assert result["requiredMovementTypes"] == ["W"]
-    assert result["satisfiesRequiredMovementTypes"] is True
-    assert result["missingRequiredMovementTypes"] == []
+    assert result["satisfiesRequiredMovementTypes"] is False
+    assert result["missingRequiredMovementTypes"] == ["W"]
 
 
 def test_measure_lwc_apex_merge_has_via_artifact(project_root: Path):

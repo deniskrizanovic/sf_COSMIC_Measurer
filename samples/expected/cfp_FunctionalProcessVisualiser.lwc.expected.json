@@ -26,16 +26,8 @@
       "viaArtifact": "cfp_getDataMovements"
     },
     {
-      "name": "Potential write via imperative Apex call",
-      "order": 3,
-      "movementType": "W",
-      "dataGroupRef": "Unknown",
-      "implementationType": "lwc",
-      "isApiCall": false
-    },
-    {
       "name": "Display LWC output to user",
-      "order": 4,
+      "order": 3,
       "movementType": "X",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "lwc",
@@ -43,7 +35,7 @@
     },
     {
       "name": "Errors/notifications",
-      "order": 5,
+      "order": 4,
       "movementType": "X",
       "dataGroupRef": "User",
       "implementationType": "lwc",
@@ -53,6 +45,8 @@
   "requiredMovementTypes": [
     "W"
   ],
-  "missingRequiredMovementTypes": [],
-  "satisfiesRequiredMovementTypes": true
+  "missingRequiredMovementTypes": [
+    "W"
+  ],
+  "satisfiesRequiredMovementTypes": false
 }

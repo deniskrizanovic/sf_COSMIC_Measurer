@@ -29,6 +29,7 @@ CLI:
 ```bash
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json
 python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml -o out.json --fp-id 001xxx
+python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure_flexipage.py samples/cfp_FunctionalProcess_Record_Page.flexipage-meta.xml --json --no-resolve-lwc-candidates
 ```
 
 ## Validation
@@ -85,4 +86,5 @@ Default response behavior:
 - If the user asks to "measure" a FlexiPage without specifying format, return table-first output.
 - Default to merged roll-up totals (FlexiPage + traversed tab-bound LWC movements).
 - Traverse tab-bound LWCs by default before producing totals.
+- Use `--no-resolve-lwc-candidates` to skip inline LWC traversal when needed.
 - Include JSON only when explicitly requested (for example: "as JSON", "for posting", or "export").

@@ -26,6 +26,47 @@ from flexipage_parser import (  # noqa: E402
 from shared.output import build_output, to_human_summary, to_json_string, to_table  # noqa: E402
 
 
+def _is_errors_notifications_row(row: dict) -> bool:
+    return (
+        row.get("movementType") == "X"
+        and row.get("name") == "Errors/notifications"
+        and row.get("dataGroupRef") == "User"
+    )
+
+
+def _inline_resolved_lwc_tab_movements(
+    output: dict,
+    resolved_lwc_measurements: list[dict],
+) -> None:
+    base_rows = output.get("dataMovements") or []
+    merged_rows: list[dict] = [row for row in base_rows if not _is_errors_notifications_row(row)]
+
+    for resolved in resolved_lwc_measurements:
+        tab_context = resolved.get("tabContext") or {}
+        tab_title = (tab_context.get("title") or tab_context.get("identifier") or "").strip()
+        tab_suffix = f" | tab:{tab_title}" if tab_title else ""
+        for row in resolved.get("dataMovements") or []:
+            if _is_errors_notifications_row(row):
+                continue
+            merged_row = dict(row)
+            merged_row["name"] = f"{merged_row.get('name', '')}{tab_suffix}"
+            merged_rows.append(merged_row)
+
+    merged_rows.append(
+        {
+            "name": "Errors/notifications",
+            "order": 0,
+            "movementType": "X",
+            "dataGroupRef": "User",
+            "implementationType": "flexipage",
+            "isApiCall": False,
+        }
+    )
+    for idx, row in enumerate(merged_rows, start=1):
+        row["order"] = idx
+    output["dataMovements"] = merged_rows
+
+
 def _parse_search_paths(csv_paths: str) -> list[Path]:
     return [Path(p.strip()) for p in csv_paths.split(",") if p.strip()]
 
@@ -91,6 +132,32 @@ def _build_lwc_candidate_outputs(
     tab_bindings: list,
     fp_id: str,
 ) -> list[dict]:
+    write_keywords = (
+        "edit",
+        "create",
+        "new",
+        "add",
+        "update",
+        "delete",
+        "save",
+        "submit",
+        "compose",
+        "wizard",
+        "form",
+    )
+
+    def infer_required_movement_types(binding: object) -> list[str]:
+        signals = " ".join(
+            [
+                str(getattr(binding, "tab_title", "") or ""),
+                str(getattr(binding, "target_component_name", "") or ""),
+                str(getattr(binding, "tab_identifier", "") or ""),
+            ]
+        ).lower()
+        if any(keyword in signals for keyword in write_keywords):
+            return ["W"]
+        return []
+
     candidates: list[dict] = []
     for binding in tab_bindings:
         if binding.target_component_kind != "lwc" or not binding.target_component_name:
@@ -110,7 +177,7 @@ def _build_lwc_candidate_outputs(
                     "identifier": binding.tab_identifier,
                     "title": binding.tab_title,
                 },
-                "requiredMovementTypes": ["W"],
+                "requiredMovementTypes": infer_required_movement_types(binding),
                 "notes": "Run dedicated lwc-measurer to extract concrete E/R/X/W movements.",
             }
         )
@@ -143,7 +210,7 @@ def measure_file(
     *,
     synthetic_trigger_entry: bool = True,
     include_action_candidates: bool = False,
-    resolve_lwc_candidates: bool = False,
+    resolve_lwc_candidates: bool = True,
     lwc_search_paths: Optional[list[Path]] = None,
     apex_search_paths: Optional[list[Path]] = None,
 ) -> dict:
@@ -193,11 +260,13 @@ def measure_file(
             f"{lwc_names}"
         )
         if resolve_lwc_candidates:
-            output["resolvedLwcMeasurements"] = _resolve_lwc_candidates(
+            resolved_lwc_measurements = _resolve_lwc_candidates(
                 lwc_candidates,
                 lwc_search_paths=lwc_search_paths or [],
                 apex_search_paths=apex_search_paths or [],
             )
+            output["resolvedLwcMeasurements"] = resolved_lwc_measurements
+            _inline_resolved_lwc_tab_movements(output, resolved_lwc_measurements)
     return output
 
 
@@ -224,9 +293,9 @@ def main() -> int:
         help="Include synthetic per-action candidate measurements in JSON output",
     )
     parser.add_argument(
-        "--resolve-lwc-candidates",
+        "--no-resolve-lwc-candidates",
         action="store_true",
-        help="Resolve lwcCandidateMeasurements by invoking standalone cosmic-lwc-measurer",
+        help="Disable resolving lwcCandidateMeasurements via standalone cosmic-lwc-measurer",
     )
     parser.add_argument(
         "--lwc-search-paths",
@@ -260,7 +329,7 @@ def main() -> int:
                 args.fp_id,
                 synthetic_trigger_entry=not args.no_synthetic_trigger_e,
                 include_action_candidates=args.include_action_candidates,
-                resolve_lwc_candidates=args.resolve_lwc_candidates,
+                resolve_lwc_candidates=not args.no_resolve_lwc_candidates,
                 lwc_search_paths=lwc_search_paths,
                 apex_search_paths=apex_search_paths,
             )
