@@ -1,6 +1,6 @@
 ---
 name: COSMIC Measurer Skills
-overview: "Create a set of Cursor skills that inspect Salesforce artifacts (Apex, Flows, Page Layouts, etc.), extract COSMIC data movements (E/R/X/W), and output JSON for posting to a COSMIC database in Salesforce. Work incrementally: Apex first, then Flow, then others."
+overview: "Create a set of Cursor skills that inspect Salesforce artifacts (Apex, Flows, FlexiPages, Page Layouts, etc.), extract COSMIC data movements (E/R/X/W), and output JSON for posting to a COSMIC database in Salesforce. Work incrementally: Apex first, then Flow, then UI metadata artifacts."
 todos: []
 isProject: true
 ---
@@ -17,7 +17,7 @@ isProject: true
 
 ## SKILL.md contract (all artifact skills)
 
-Every artifact skill (`cosmic-apex-measurer`, `cosmic-flow-measurer`, `cosmic-layout-measurer`, …) must satisfy:
+Every artifact skill (`cosmic-apex-measurer`, `cosmic-flow-measurer`, `cosmic-flexipage-measurer`, `cosmic-layout-measurer`, …) must satisfy:
 
 1. **YAML frontmatter**
   - `name` — must match the skill folder name exactly (e.g. `cosmic-apex-measurer`).
@@ -37,7 +37,7 @@ From [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](samples/cfp_createC
 ```json
 {
   "functionalProcessId": "<Id>",
-  "artifact": { "type": "Apex|Flow|PageLayout", "name": "..." },
+  "artifact": { "type": "Apex|Flow|FlexiPage|PageLayout", "name": "..." },
   "dataMovements": [
     {
       "name": "Read Account list",
@@ -62,12 +62,14 @@ flowchart TB
     subgraph inputs [Inputs]
         Apex[Apex .cls]
         Flow[Flow .flow-meta.xml]
+        FlexiPage[FlexiPage]
         Layout[Page Layout]
     end
 
     subgraph skills [Skills - One per artifact type]
         SkillApex[cosmic-apex-measurer]
         SkillFlow[cosmic-flow-measurer]
+        SkillFlexiPage[cosmic-flexipage-measurer]
         SkillLayout[cosmic-layout-measurer]
     end
 
@@ -78,10 +80,12 @@ flowchart TB
 
     Apex --> SkillApex
     Flow --> SkillFlow
+    FlexiPage --> SkillFlexiPage
     Layout --> SkillLayout
 
     SkillApex --> JSON
     SkillFlow --> JSON
+    SkillFlexiPage --> JSON
     SkillLayout --> JSON
 
     JSON -->|"Post (manual or script)"| DB
@@ -101,9 +105,11 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 | Apex (simple) | [samples/cfp_getDataMovements.cls](samples/cfp_getDataMovements.cls)                                                                                   | cosmic-apex-measurer |
 | Apex (batch)  | [samples/BulkSurveyActionsBatch.cls](samples/BulkSurveyActionsBatch.cls), [samples/dk_PASSurveyToAssetBatch.cls](samples/dk_PASSurveyToAssetBatch.cls) | cosmic-apex-measurer |
 | Flow          | [samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml](samples/cfp_createCRUDLwithRelatedLists.flow-meta.xml)                                         | cosmic-flow-measurer |
+| FlexiPage     | Add sample (for example, `samples/Account_Record_Page.flexipage-meta.xml`) in Phase 4                                                                  | cosmic-flexipage-measurer |
+| Page Layout   | Add sample layout metadata XML in Phase 5                                                                                                                | cosmic-layout-measurer |
 
 
-**Workflow**: For each phase, run the skill against the corresponding sample, produce JSON, and verify the output matches expected data movements. Add Page Layout sample when Phase 4 starts if not present.
+**Workflow**: For each phase, run the skill against the corresponding sample, produce JSON, and verify the output matches expected data movements. Add FlexiPage and Page Layout samples when their phases start if not present.
 
 **Expected outputs** (golden files): Store expected JSON in `samples/expected/` (e.g., `cfp_getDataMovements.expected.json`, `cfp_createCRUDLwithRelatedLists.expected.json`) for regression testing.
 
@@ -165,9 +171,25 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 
 ---
 
-## Phase 4: Page Layout Measurer
+## Phase 4: FlexiPage Measurer
 
-**Chat 4 – Page Layout skill**
+**Chat 4 - FlexiPage skill**
+
+1. **Create** [.cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/SKILL.md](.cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/SKILL.md) satisfying the [SKILL.md contract](#skillmd-contract-all-artifact-skills).
+2. **Inspection rules** (from FlexiPage metadata XML):
+  - **Exit (X)**: Visible components and bound record fields rendered to users
+    - **Entry (E)**: User inputs on interactive components where metadata indicates editable interaction (for example, quick action regions or editable related components)
+    - **Read (R)**: Data-bound components that require server fetches implied by record context, related lists, or list views
+    - **Write (W)**: Usually none at metadata level unless component config clearly implies direct write action
+3. **Input**: FlexiPage metadata XML
+4. **Output**: Same JSON format; `artifact.type: "FlexiPage"`
+5. **Test**: Add sample FlexiPage to [samples/](samples/) when implementing; validate output
+
+---
+
+## Phase 5: Page Layout Measurer
+
+**Chat 5 - Page Layout skill**
 
 1. **Create** [.cursor/skills/cosmic-measurer/cosmic-layout-measurer/SKILL.md](.cursor/skills/cosmic-measurer/cosmic-layout-measurer/SKILL.md) satisfying the [SKILL.md contract](#skillmd-contract-all-artifact-skills).
 2. **Inspection rules**:
@@ -180,12 +202,12 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 
 ---
 
-## Phase 5: Extensions (later chats)
+## Phase 6: Extensions (later chats)
 
-- **Chat 5**: Triggers, queueable (chained Apex). *Note: Basic batch (constructor + execute scope) already in Phase 2.*
-- **Chat 6**: LWC, Aura (frontend → backend)
-- **Chat 7**: Validation rules, formula fields (if in scope)
-- **Chat 8**: Post script/CLI to push JSON to org (optional)
+- **Chat 6**: Triggers, queueable (chained Apex). *Note: Basic batch (constructor + execute scope) already in Phase 2.*
+- **Chat 7**: LWC, Aura (frontend -> backend)
+- **Chat 8**: Validation rules, formula fields (if in scope)
+- **Chat 9**: Post script/CLI to push JSON to org (optional)
 
 ---
 
@@ -205,11 +227,14 @@ Use artifacts in [samples/](samples/) as test cases for each skill. Generated ou
 │       └── test_measure_apex.py
 ├── cosmic-flow-measurer/
 │   └── SKILL.md
+├── cosmic-flexipage-measurer/
+│   └── SKILL.md
 ├── cosmic-layout-measurer/
 │   └── SKILL.md
 └── examples/
     ├── apex-sample.json
     ├── flow-sample.json
+    ├── flexipage-sample.json
     └── layout-sample.json
 
 samples/                   # Test case artifacts
@@ -242,7 +267,8 @@ samples/                   # Test case artifacts
 | 1    | Foundation  | reference.md, JSON schema, mapping config; SKILL contract reflected in docs; link to [skill-best-practices.md](../../skill-best-practices.md) |
 | 2    | Apex        | cosmic-apex-measurer `SKILL.md` (Goal, Workflow, Validation, Output + frontmatter) + apex-sample.json                                         |
 | 3    | Flow        | cosmic-flow-measurer `SKILL.md` (same section contract) + flow-sample.json                                                                    |
-| 4    | Page Layout | cosmic-layout-measurer `SKILL.md` (same section contract) + layout-sample.json                                                                |
-| 5+   | Extensions  | Triggers, LWC, posting script, etc.                                                                                                           |
+| 4    | FlexiPage   | cosmic-flexipage-measurer `SKILL.md` (same section contract) + flexipage-sample.json                                                         |
+| 5    | Page Layout | cosmic-layout-measurer `SKILL.md` (same section contract) + layout-sample.json                                                                |
+| 6+   | Extensions  | Triggers, LWC, posting script, etc.                                                                                                           |
 
 
