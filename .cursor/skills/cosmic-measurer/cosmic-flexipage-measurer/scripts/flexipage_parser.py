@@ -1,0 +1,248 @@
+"""
+XML parser for Salesforce FlexiPage .flexipage-meta.xml files.
+Extracts COSMIC data movements from page display metadata (R/X).
+"""
+
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+
+from shared.models import RawMovement
+
+NS = {"sf": "http://soap.sforce.com/2006/04/metadata"}
+
+
+@dataclass
+class FlexiPageMetadata:
+    name: str
+    master_label: str
+    sobject_type: str
+    page_type: str
+
+
+@dataclass
+class DynamicRelatedList:
+    identifier: str
+    related_list_api_name: Optional[str]
+    parent_field_api_name: Optional[str]
+    related_list_label: Optional[str]
+
+
+def _find_text(element: ET.Element, tag: str) -> Optional[str]:
+    child = element.find(f"sf:{tag}", NS)
+    if child is not None and child.text:
+        return child.text.strip()
+    return None
+
+
+def _normalize_related_list_to_data_group(related_list_api_name: str) -> str:
+    ref = related_list_api_name.strip()
+    if ref.endswith("__r"):
+        return ref[:-3] + "__c"
+    return ref
+
+
+def _extract_action_values(component: ET.Element) -> list[str]:
+    actions: list[str] = []
+    for prop in component.findall("sf:componentInstanceProperties", NS):
+        if _find_text(prop, "name") != "actionNames":
+            continue
+        for value in prop.findall(".//sf:valueListItems/sf:value", NS):
+            if value.text and value.text.strip():
+                actions.append(value.text.strip())
+    return actions
+
+
+def _extract_component_property(component: ET.Element, prop_name: str) -> Optional[str]:
+    for prop in component.findall("sf:componentInstanceProperties", NS):
+        if _find_text(prop, "name") != prop_name:
+            continue
+        value = _find_text(prop, "value")
+        if value:
+            return value
+    return None
+
+
+def parse_xml(source: str) -> ET.Element:
+    """Parse XML string and return root element. Raises ValueError on bad XML."""
+    try:
+        return ET.fromstring(source)
+    except ET.ParseError as exc:
+        raise ValueError(f"Invalid XML: {exc}") from exc
+
+
+def extract_flexipage_metadata(root: ET.Element, filename: str = "") -> FlexiPageMetadata:
+    master_label = _find_text(root, "masterLabel") or "Unknown"
+    sobject_type = _find_text(root, "sobjectType") or "Unknown"
+    page_type = _find_text(root, "type") or "Unknown"
+    stem = Path(filename).stem if filename else master_label
+    name = stem.removesuffix(".flexipage-meta") if stem.endswith(".flexipage-meta") else stem
+    return FlexiPageMetadata(
+        name=name,
+        master_label=master_label,
+        sobject_type=sobject_type,
+        page_type=page_type,
+    )
+
+
+def extract_record_field_bindings(root: ET.Element) -> list[str]:
+    """Extract Record.<Field> bindings from fieldInstance/fieldItem tags."""
+    fields: list[str] = []
+    for field_item in root.findall(".//sf:fieldInstance/sf:fieldItem", NS):
+        if field_item.text and field_item.text.strip().startswith("Record."):
+            fields.append(field_item.text.strip())
+    return fields
+
+
+def extract_dynamic_related_lists(root: ET.Element) -> list[DynamicRelatedList]:
+    """Extract lst:dynamicRelatedList definitions."""
+    related_lists: list[DynamicRelatedList] = []
+    for component in root.findall(".//sf:componentInstance", NS):
+        component_name = _find_text(component, "componentName")
+        if component_name != "lst:dynamicRelatedList":
+            continue
+        related_lists.append(
+            DynamicRelatedList(
+                identifier=_find_text(component, "identifier") or "unknownRelatedList",
+                related_list_api_name=_extract_component_property(component, "relatedListApiName"),
+                parent_field_api_name=_extract_component_property(component, "parentFieldApiName"),
+                related_list_label=_extract_component_property(component, "relatedListLabel"),
+            )
+        )
+    return related_lists
+
+
+def extract_highlights_actions(root: ET.Element) -> list[str]:
+    """Extract action names from force:highlightsPanel."""
+    actions: list[str] = []
+    for component in root.findall(".//sf:componentInstance", NS):
+        component_name = _find_text(component, "componentName")
+        if component_name == "force:highlightsPanel":
+            actions.extend(_extract_action_values(component))
+    return actions
+
+
+def extract_tab_labels(root: ET.Element) -> list[str]:
+    """Extract tab labels from flexipage:tab component instances."""
+    labels: list[str] = []
+    for component in root.findall(".//sf:componentInstance", NS):
+        component_name = _find_text(component, "componentName")
+        if component_name != "flexipage:tab":
+            continue
+        label = _extract_component_property(component, "title")
+        if label:
+            labels.append(label)
+    return labels
+
+
+def find_reads_from_page(
+    sobject_type: str,
+    record_fields: list[str],
+    related_lists: list[DynamicRelatedList],
+) -> list[RawMovement]:
+    reads: list[RawMovement] = []
+    hint = 0
+    seen_data_groups: set[str] = set()
+    if record_fields:
+        hint += 1
+        seen_data_groups.add(sobject_type)
+        reads.append(
+            RawMovement(
+                movement_type="R",
+                data_group_ref=sobject_type,
+                name=f"Read page record ({sobject_type})",
+                order_hint=hint,
+            )
+        )
+    for rl in related_lists:
+        if not rl.related_list_api_name:
+            continue
+        data_group = _normalize_related_list_to_data_group(rl.related_list_api_name)
+        if data_group in seen_data_groups:
+            continue
+        hint += 1
+        seen_data_groups.add(data_group)
+        reads.append(
+            RawMovement(
+                movement_type="R",
+                data_group_ref=data_group,
+                name=f"Read related list {rl.related_list_api_name}",
+                order_hint=hint,
+            )
+        )
+    return reads
+
+
+def find_exits_from_page(
+    sobject_type: str,
+    record_fields: list[str],
+    related_lists: list[DynamicRelatedList],
+) -> list[RawMovement]:
+    exits: list[RawMovement] = []
+    hint = 0
+    seen_data_groups: set[str] = set()
+    if record_fields:
+        hint += 1
+        seen_data_groups.add(sobject_type)
+        exits.append(
+            RawMovement(
+                movement_type="X",
+                data_group_ref=sobject_type,
+                name=f"Display page record ({sobject_type})",
+                order_hint=hint,
+            )
+        )
+    for rl in related_lists:
+        if not rl.related_list_api_name:
+            continue
+        data_group = _normalize_related_list_to_data_group(rl.related_list_api_name)
+        if data_group in seen_data_groups:
+            continue
+        hint += 1
+        seen_data_groups.add(data_group)
+        exits.append(
+            RawMovement(
+                movement_type="X",
+                data_group_ref=data_group,
+                name=f"Display related list {rl.related_list_api_name}",
+                order_hint=hint,
+            )
+        )
+    return exits
+
+
+def build_synthetic_page_trigger_entry(sobject_type: str) -> RawMovement:
+    """Synthetic COSMIC trigger entry for page-open functional process."""
+    return RawMovement(
+        movement_type="E",
+        data_group_ref=sobject_type,
+        name=f"Open record page ({sobject_type})",
+        order_hint=0,
+    )
+
+
+def build_synthetic_action_entry(action_name: str, sobject_type: str) -> RawMovement:
+    """Synthetic COSMIC trigger entry for an action-specific functional process."""
+    return RawMovement(
+        movement_type="E",
+        data_group_ref=sobject_type,
+        name=f"Trigger action {action_name}",
+        order_hint=0,
+    )
+
+
+def parse_flexipage(
+    source: str, filename: str = ""
+) -> tuple[FlexiPageMetadata, list[RawMovement], list[str], list[str]]:
+    """Parse a FlexiPage XML string and return metadata, movements, actions, and tab labels."""
+    root = parse_xml(source)
+    metadata = extract_flexipage_metadata(root, filename=filename)
+    record_fields = extract_record_field_bindings(root)
+    related_lists = extract_dynamic_related_lists(root)
+    actions = extract_highlights_actions(root)
+    tab_labels = extract_tab_labels(root)
+
+    reads = find_reads_from_page(metadata.sobject_type, record_fields, related_lists)
+    exits = find_exits_from_page(metadata.sobject_type, record_fields, related_lists)
+    return metadata, reads + exits, actions, tab_labels
