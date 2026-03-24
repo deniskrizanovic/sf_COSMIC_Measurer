@@ -9,6 +9,7 @@ from flexipage_parser import (
     extract_flexipage_metadata,
     extract_highlights_actions,
     extract_record_field_bindings,
+    extract_sidebar_component_movements,
     extract_tab_labels,
     extract_tab_bound_component_movements,
     find_exits_from_page,
@@ -421,3 +422,62 @@ def test_related_record_movements_are_paired_in_order():
         "Read related record Second Details | tab:RelatedTab",
         "Display related record Second Details | tab:RelatedTab",
     ]
+
+
+def test_extract_sidebar_component_movements_for_related_record():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>Case.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Request Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>sidebarRelatedRecord</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    movements, warnings = extract_sidebar_component_movements(root, "WorkOrder")
+
+    names_in_order = [movement.name for movement in movements]
+    assert names_in_order == [
+        "Read related record Request Details",
+        "Display related record Request Details",
+    ]
+    assert [movement.data_group_ref for movement in movements] == ["Case", "Case"]
+    assert warnings == []
+
+
+def test_related_record_data_group_uses_lookup_target_object():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.CaseId</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Request Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecordCase</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>RelatedTab</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabRelated</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    movements, _ = extract_tab_bound_component_movements(root, "WorkOrder")
+    assert [movement.data_group_ref for movement in movements] == ["Case", "Case"]

@@ -238,7 +238,15 @@ def _infer_related_record_data_group(
 ) -> tuple[str, bool]:
     lookup_field = properties.get("lookupFieldName", "").strip()
     if "." in lookup_field:
-        return lookup_field.split(".", 1)[0], False
+        parent_object, field_name = lookup_field.split(".", 1)
+        field_name = field_name.strip()
+        if field_name == "Id":
+            return parent_object, False
+        if field_name.endswith("Id") and len(field_name) > 2:
+            return field_name[:-2], False
+        if field_name.endswith("__c"):
+            return field_name, False
+        return parent_object, False
     if lookup_field and lookup_field != "Id":
         return lookup_field, False
     action_name = properties.get("updateQuickActionName", "").strip()
@@ -334,6 +342,52 @@ def extract_tab_bound_component_movements(
         warnings.append(
             f"Unsupported tab component {binding.tab_title or binding.tab_identifier}: {component_name or 'unknown component'}"
         )
+
+    return movements, warnings
+
+
+def extract_sidebar_component_movements(
+    root: ET.Element, sobject_type: str
+) -> tuple[list[RawMovement], list[str]]:
+    """Build movements for supported sidebar component instances."""
+    movements: list[RawMovement] = []
+    warnings: list[str] = []
+    movement_order_hint = 2000
+
+    for region in root.findall("sf:flexiPageRegions", NS):
+        if (_find_text(region, "name") or "").strip() != "sidebar":
+            continue
+        for item in region.findall("sf:itemInstances", NS):
+            component = item.find("sf:componentInstance", NS)
+            if component is None:
+                continue
+            component_name = _find_text(component, "componentName") or ""
+            if component_name != "console:relatedRecord":
+                continue
+            properties = _extract_component_properties(component)
+            data_group_ref, used_fallback = _infer_related_record_data_group(properties, sobject_type)
+            record_title = properties.get("titleFieldName", "").strip() or "related record details"
+            movements.append(
+                RawMovement(
+                    movement_type="R",
+                    data_group_ref=data_group_ref,
+                    name=f"Read related record {record_title}",
+                    order_hint=movement_order_hint,
+                )
+            )
+            movements.append(
+                RawMovement(
+                    movement_type="X",
+                    data_group_ref=data_group_ref,
+                    name=f"Display related record {record_title}",
+                    order_hint=movement_order_hint + 1,
+                )
+            )
+            movement_order_hint += 2
+            if used_fallback:
+                warnings.append(
+                    f"Sidebar component console:relatedRecord fell back to dataGroupRef {sobject_type}"
+                )
 
     return movements, warnings
 

@@ -654,3 +654,33 @@ def test_cli_no_resolve_flow_candidates_opt_out(monkeypatch, capsys, tmp_path):
     flow_candidates = payload.get("flowCandidateMeasurements") or []
     assert len(flow_candidates) == 1
     assert "resolvedFlowMeasurements" not in payload
+
+
+def test_cli_includes_sidebar_related_record_movements(monkeypatch, capsys, tmp_path):
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>Case.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Request Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>sidebarRelatedRecord</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>sidebar</name>
+        <type>Region</type>
+    </flexiPageRegions>
+    """
+    page_file = _write_flexipage(tmp_path, body=body)
+    monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    movement_names = [row["name"] for row in payload.get("dataMovements") or []]
+    assert "Read related record Request Details" in movement_names
+    assert "Display related record Request Details" in movement_names
+    read_row = next(
+        row
+        for row in payload.get("dataMovements") or []
+        if row.get("name") == "Read related record Request Details"
+    )
+    assert read_row["dataGroupRef"] == "Case"
