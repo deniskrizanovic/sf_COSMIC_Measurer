@@ -19,6 +19,7 @@ for path_entry in [str(_SCRIPT_DIR), str(_COSMIC_MEASURER_DIR)]:
 from flexipage_parser import (  # noqa: E402
     build_synthetic_action_entry,
     build_synthetic_page_trigger_entry,
+    extract_sidebar_component_movements,
     extract_tab_bound_component_movements,
     extract_tab_component_bindings,
     parse_flexipage,
@@ -524,8 +525,13 @@ def measure_file(
     tab_component_movements, tab_component_warnings = extract_tab_bound_component_movements(
         root, metadata.sobject_type
     )
+    sidebar_component_movements, sidebar_component_warnings = extract_sidebar_component_movements(
+        root, metadata.sobject_type
+    )
     if tab_component_movements:
         movements = movements + tab_component_movements
+    if sidebar_component_movements:
+        movements = movements + sidebar_component_movements
     if synthetic_trigger_entry:
         movements = [build_synthetic_page_trigger_entry(metadata.sobject_type)] + movements
     output = build_output(
@@ -562,6 +568,8 @@ def measure_file(
                 "Tab-component bindings: " + ", ".join(readable_bindings)
             )
     for warning in tab_component_warnings:
+        output.setdefault("traversalWarnings", []).append(warning)
+    for warning in sidebar_component_warnings:
         output.setdefault("traversalWarnings", []).append(warning)
     lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
     flow_candidates = _build_flow_candidate_outputs(metadata.name, tab_bindings, fp_id)
