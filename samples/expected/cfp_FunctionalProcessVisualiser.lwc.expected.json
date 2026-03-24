@@ -1,0 +1,58 @@
+{
+  "functionalProcessId": "<Id>",
+  "artifact": {
+    "type": "LWC",
+    "name": "cfp_FunctionalProcessVisualiser"
+  },
+  "dataMovements": [
+    {
+      "name": "Receive fpId (Functional Process)",
+      "order": 1,
+      "movementType": "E",
+      "dataGroupRef": "cfp_FunctionalProcess__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 7,
+      "viaArtifact": "cfp_getDataMovements"
+    },
+    {
+      "name": "Read cfp_Data_Movements__c list",
+      "order": 2,
+      "movementType": "R",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 9,
+      "viaArtifact": "cfp_getDataMovements"
+    },
+    {
+      "name": "Potential write via imperative Apex call",
+      "order": 3,
+      "movementType": "W",
+      "dataGroupRef": "Unknown",
+      "implementationType": "lwc",
+      "isApiCall": false
+    },
+    {
+      "name": "Display LWC output to user",
+      "order": 4,
+      "movementType": "X",
+      "dataGroupRef": "cfp_Data_Movements__c",
+      "implementationType": "lwc",
+      "isApiCall": false
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 5,
+      "movementType": "X",
+      "dataGroupRef": "User",
+      "implementationType": "lwc",
+      "isApiCall": false
+    }
+  ],
+  "requiredMovementTypes": [
+    "W"
+  ],
+  "missingRequiredMovementTypes": [],
+  "satisfiesRequiredMovementTypes": true
+}

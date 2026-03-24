@@ -1,0 +1,71 @@
+<template>
+    <div class="slds-card"  style="width: 100%; height: auto;">
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="slds-scrollable_y" style="height: 800px;">
+                <div class="svg-container" style="width: 100%; height: 100%;">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" style="width: 100%; height: 100%;">
+
+
+                        <text id="NameOfFunctionalProcess" x="300" y="30" class="title" text-anchor="middle">{fpName}</text>
+
+                        <!-- Main vertical line (centered) -->
+                        <line id="verticalLineOfFunctionalProcess" x1="300" y1="50" x2="300" y2={calculateLengthOfFunctionalProcess} stroke="teal" stroke-width="2"/>
+                        <line id="systemBoundaryRightSide" x1="500" y1="50" x2="500" y2={calculateLengthOfFunctionalProcess} stroke="grey" stroke-width="2" stroke-dasharray="4" />
+                        <line id="systemBoundaryLeftSide" x1="100" y1="50" x2="100" y2={calculateLengthOfFunctionalProcess} stroke="grey" stroke-width="2" stroke-dasharray="4" />
+
+                        <!-- Data Movements -->
+                        <template for:each={results} for:item="dm">
+                            <template if:true={dm.isEntry}>
+                                <template if:true={dm.cfp_is_API_Call__c}>
+                                    {setRightSideLineWithExtraLength}
+                                    <text key={dm.Name} x={coords.textX} y={coords.lineYText}> {dm.Name}</text>
+                                    <polygon key={dm.Id} points={coords.rightSideEntryArrow} fill="teal"/>
+                                </template>
+                                <template if:false={dm.cfp_is_API_Call__c}>
+                                    {setLeftSideLine}
+                                    <text key={dm.Name} x={coords.textX} y={coords.lineYText} text-anchor="end"> {dm.Name}</text>
+                                    <polygon key={dm.Id} points={coords.leftSideEntryArrow} fill="teal"/>
+                                </template>
+
+                                <line key={dm.cfp_order__c} x1={coords.lineXStart} y1={coords.lineY} x2={coords.lineXEnd} y2={coords.lineY} stroke="teal" stroke-width="2"/>
+
+                            </template>
+
+                            <template if:true={dm.isExit}>
+                                <template if:true={dm.cfp_is_API_Call__c}>
+                                    {setRightSideLineWithExtraLength}
+                                    <text key={dm.Name} x={coords.textX} y={coords.lineYText}>{dm.Name}</text>
+                                    <polygon key={dm.Id} points={coords.rightSideExitArrow} fill="teal"/>
+                                </template>
+                                <template if:false={dm.cfp_is_API_Call__c}>
+                                    {setLeftSideLine}
+                                    <text key={dm.Name} x={coords.textX} y={coords.lineYText} text-anchor="end">{dm.Name}</text>
+                                    <polygon key={dm.Id} points={coords.leftSideExitArrow} fill="teal"/>
+                                </template>
+                                <line key={dm.cfp_order__c} x1={coords.lineXStart} y1={coords.lineY} x2={coords.lineXEnd} y2={coords.lineY} stroke="teal" stroke-width="2"/>
+                            </template>
+
+                            <template if:true={dm.isRead}>
+                                {setRightSideLine}
+                                <text key={dm.Name} x={coords.textX} y={coords.lineYText}> {dm.Name}</text>
+                                <line key={dm.cfp_order__c} x1={coords.lineXStart} y1={coords.lineY} x2={coords.lineXEnd} y2={coords.lineY} stroke="teal" stroke-width="2"/>
+                                <polygon key={dm.Id} points={coords.rightSideEntryArrow} fill="teal"/>
+                            </template>
+
+
+                            <template if:true={dm.isWrite}>
+                                {setRightSideLine}
+                                <text key={dm.Name} x={coords.textX} y={coords.lineYText}> {dm.Name}</text>
+                                <line key={dm.cfp_order__c} x1={coords.lineXStart} y1={coords.lineY} x2={coords.lineXEnd} y2={coords.lineY} stroke="teal" stroke-width="2"/>
+                                <polygon key={dm.Id} points={coords.rightSideExitArrow} fill="teal"/>
+                            </template>
+                            {nextLine}
+                        </template>
+
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
