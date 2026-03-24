@@ -8,6 +8,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Optional
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _COSMIC_MEASURER_DIR = _SCRIPT_DIR.parent.parent
@@ -23,6 +24,66 @@ from flexipage_parser import (  # noqa: E402
     parse_xml,
 )
 from shared.output import build_output, to_human_summary, to_json_string, to_table  # noqa: E402
+
+
+def _parse_search_paths(csv_paths: str) -> list[Path]:
+    return [Path(p.strip()) for p in csv_paths.split(",") if p.strip()]
+
+
+def _find_lwc_bundle_dir(lwc_name: str, search_paths: list[Path]) -> Optional[Path]:
+    for base in search_paths:
+        if not base.exists():
+            continue
+        for match in base.rglob(lwc_name):
+            if match.is_dir():
+                js_file = match / f"{lwc_name}.js"
+                html_file = match / f"{lwc_name}.html"
+                if js_file.exists() and html_file.exists():
+                    return match
+    return None
+
+
+def _resolve_lwc_candidates(
+    lwc_candidates: list[dict],
+    *,
+    lwc_search_paths: list[Path],
+    apex_search_paths: list[Path],
+) -> list[dict]:
+    if not lwc_candidates:
+        return []
+
+    lwc_scripts_dir = _COSMIC_MEASURER_DIR / "cosmic-lwc-measurer" / "scripts"
+    if str(lwc_scripts_dir) not in sys.path:
+        sys.path.insert(0, str(lwc_scripts_dir))
+    from measure_lwc import measure_lwc_bundle  # type: ignore
+
+    resolved: list[dict] = []
+    for candidate in lwc_candidates:
+        artifact = candidate.get("artifact") or {}
+        lwc_name = artifact.get("name")
+        if not lwc_name:
+            continue
+        bundle_dir = _find_lwc_bundle_dir(lwc_name, lwc_search_paths)
+        if bundle_dir is None:
+            unresolved = {
+                "artifact": {"type": "LWC", "name": lwc_name},
+                "traversalWarnings": [
+                    f"Unable to resolve LWC bundle directory for {lwc_name}"
+                ],
+            }
+            resolved.append(unresolved)
+            continue
+        result = measure_lwc_bundle(
+            bundle_dir,
+            lwc_name=lwc_name,
+            functional_process_id=candidate.get("functionalProcessId", "<Id>"),
+            apex_search_paths=apex_search_paths,
+            required_movement_types=candidate.get("requiredMovementTypes"),
+            source_artifact=candidate.get("sourceArtifact"),
+            tab_context=candidate.get("tabContext"),
+        )
+        resolved.append(result)
+    return resolved
 
 
 def _build_lwc_candidate_outputs(
@@ -82,6 +143,9 @@ def measure_file(
     *,
     synthetic_trigger_entry: bool = True,
     include_action_candidates: bool = False,
+    resolve_lwc_candidates: bool = False,
+    lwc_search_paths: Optional[list[Path]] = None,
+    apex_search_paths: Optional[list[Path]] = None,
 ) -> dict:
     source = path.read_text(encoding="utf-8", errors="replace")
     metadata, movements, actions, tab_labels = parse_flexipage(source, filename=path.name)
@@ -128,6 +192,12 @@ def measure_file(
             "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: "
             f"{lwc_names}"
         )
+        if resolve_lwc_candidates:
+            output["resolvedLwcMeasurements"] = _resolve_lwc_candidates(
+                lwc_candidates,
+                lwc_search_paths=lwc_search_paths or [],
+                apex_search_paths=apex_search_paths or [],
+            )
     return output
 
 
@@ -153,7 +223,26 @@ def main() -> int:
         action="store_true",
         help="Include synthetic per-action candidate measurements in JSON output",
     )
+    parser.add_argument(
+        "--resolve-lwc-candidates",
+        action="store_true",
+        help="Resolve lwcCandidateMeasurements by invoking standalone cosmic-lwc-measurer",
+    )
+    parser.add_argument(
+        "--lwc-search-paths",
+        metavar="DIR",
+        default="samples,force-app/main/default/lwc",
+        help="Comma-separated dirs to resolve LWC bundle directories",
+    )
+    parser.add_argument(
+        "--apex-search-paths",
+        metavar="DIR",
+        default="samples,force-app/main/default/classes,src/classes",
+        help="Comma-separated dirs for LWC imported Apex class resolution",
+    )
     args = parser.parse_args()
+    lwc_search_paths = _parse_search_paths(args.lwc_search_paths)
+    apex_search_paths = _parse_search_paths(args.apex_search_paths)
 
     results: list[dict] = []
     for candidate in args.files:
@@ -171,6 +260,9 @@ def main() -> int:
                 args.fp_id,
                 synthetic_trigger_entry=not args.no_synthetic_trigger_e,
                 include_action_candidates=args.include_action_candidates,
+                resolve_lwc_candidates=args.resolve_lwc_candidates,
+                lwc_search_paths=lwc_search_paths,
+                apex_search_paths=apex_search_paths,
             )
         except ValueError as exc:
             print(f"Error: {candidate}: {exc}", file=sys.stderr)

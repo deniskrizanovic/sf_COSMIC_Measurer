@@ -215,3 +215,29 @@ def test_cli_tab_component_binding_warning(monkeypatch, capsys, tmp_path):
     assert len(lwc_candidates) == 1
     assert lwc_candidates[0]["artifact"]["type"] == "LWC"
     assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
+
+
+def test_cli_resolve_lwc_candidates(monkeypatch, capsys, project_root):
+    sample = project_root / "samples" / "cfp_FunctionalProcess_Record_Page.flexipage-meta.xml"
+    if not sample.exists():
+        return
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "measure_flexipage",
+            str(sample),
+            "--json",
+            "--resolve-lwc-candidates",
+            "--lwc-search-paths",
+            str(project_root / "samples"),
+            "--apex-search-paths",
+            str(project_root / "samples"),
+        ],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    resolved = payload.get("resolvedLwcMeasurements") or []
+    assert len(resolved) == 1
+    assert resolved[0]["artifact"]["type"] == "LWC"
+    assert resolved[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
