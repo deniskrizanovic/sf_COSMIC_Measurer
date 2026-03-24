@@ -43,12 +43,13 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 
 ## Output
 
-Human summary:
+Human summary (default, table-first):
 
-- Functional size with E/R/W/X counts and total CFP.
-- Notes about canonical exit and action follow-up items.
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `isApiCall`).
+- Present a second compact table for totals (`E`, `R`, `W`, `X`, `Total CFP`).
+- Include short notes for canonical exit and action follow-up items.
 
-JSON:
+JSON (optional / export-oriented):
 
 ```json
 {
@@ -76,3 +77,8 @@ JSON:
   ]
 }
 ```
+
+Default response behavior:
+
+- If the user asks to "measure" a FlexiPage without specifying format, return table-first output.
+- Include JSON only when explicitly requested (for example: "as JSON", "for posting", or "export").
