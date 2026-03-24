@@ -215,8 +215,8 @@ def to_table(output: CosmicMeasureOutput) -> str:
         return f"{output['artifact']['name']}: no data movements"
 
     lines: list[str] = []
-    lines.append("| Order | Type | Data group | Name | LineNumber | Via | Merged |")
-    lines.append("|-------|------|------------|------|------------|-----|--------|")
+    lines.append("| Order | Type | Name | Data group | LineNumber | Via | Merged |")
+    lines.append("|-------|------|------|------------|------------|-----|--------|")
     for m in rows:
         order = m.get("order", "")
         mtype = m.get("movementType", "")
@@ -234,7 +234,7 @@ def to_table(output: CosmicMeasureOutput) -> str:
             else "—"
         )
         lines.append(
-            f"| {order} | {mtype} | {dg} | {name} | {line} | {via} | {merged_str} |"
+            f"| {order} | {mtype} | {name} | {dg} | {line} | {via} | {merged_str} |"
         )
 
     artifact = output["artifact"]
