@@ -296,6 +296,44 @@ def _build_lwc_candidate_outputs(
     return candidates
 
 
+def _build_lwc_tbc_data_movements(lwc_candidates: list[dict]) -> list[dict]:
+    key_counts: dict[tuple[str, str], int] = {}
+    for candidate in lwc_candidates:
+        artifact = candidate.get("artifact") or {}
+        tab_context = candidate.get("tabContext") or {}
+        lwc_name = str(artifact.get("name") or "").strip()
+        tab_title = str(tab_context.get("title") or tab_context.get("identifier") or "").strip()
+        if lwc_name:
+            key = (lwc_name, tab_title)
+            key_counts[key] = key_counts.get(key, 0) + 1
+
+    placeholder_rows: list[dict] = []
+    key_seen: dict[tuple[str, str], int] = {}
+    for candidate in lwc_candidates:
+        artifact = candidate.get("artifact") or {}
+        tab_context = candidate.get("tabContext") or {}
+        lwc_name = str(artifact.get("name") or "").strip()
+        if not lwc_name:
+            continue
+        tab_title = str(tab_context.get("title") or tab_context.get("identifier") or "").strip()
+        tab_suffix = f" on tab {tab_title}" if tab_title else ""
+        key = (lwc_name, tab_title)
+        sequence = key_seen.get(key, 0) + 1
+        key_seen[key] = sequence
+        instance_suffix = f" [instance {sequence}]" if key_counts.get(key, 0) > 1 else ""
+        placeholder_rows.append(
+            {
+                "name": f"Inspect LWC {lwc_name} data movements (TBC){tab_suffix}{instance_suffix}",
+                "order": 0,
+                "movementType": "X",
+                "dataGroupRef": "tbc",
+                "implementationType": "flexipage",
+                "isApiCall": False,
+            }
+        )
+    return placeholder_rows
+
+
 def _build_action_candidate_outputs(
     artifact_name: str,
     sobject_type: str,
@@ -325,7 +363,7 @@ def measure_file(
     resolve_lwc_candidates: bool = True,
     lwc_search_paths: Optional[list[Path]] = None,
     apex_search_paths: Optional[list[Path]] = None,
-    deduplicate_movements: bool = False,
+    deduplicate_movements: bool = True,
 ) -> dict:
     source = path.read_text(encoding="utf-8", errors="replace")
     root = parse_xml(source)
@@ -376,6 +414,9 @@ def measure_file(
     lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
     if lwc_candidates:
         output["lwcCandidateMeasurements"] = lwc_candidates
+        output["dataMovements"] = (output.get("dataMovements") or []) + _build_lwc_tbc_data_movements(
+            lwc_candidates
+        )
         lwc_names = ", ".join(candidate["artifact"]["name"] for candidate in lwc_candidates)
         output.setdefault("traversalWarnings", []).append(
             "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: "
@@ -434,9 +475,9 @@ def main() -> int:
         help="Comma-separated dirs for LWC imported Apex class resolution",
     )
     parser.add_argument(
-        "--dedupe-movements",
+        "--no-dedupe-movements",
         action="store_true",
-        help="Deduplicate repeated movements by type, data group, and base name (ignoring tab suffix)",
+        help="Disable deduplication of repeated movements",
     )
     args = parser.parse_args()
     lwc_search_paths = _parse_search_paths(args.lwc_search_paths)
@@ -461,7 +502,7 @@ def main() -> int:
                 resolve_lwc_candidates=not args.no_resolve_lwc_candidates,
                 lwc_search_paths=lwc_search_paths,
                 apex_search_paths=apex_search_paths,
-                deduplicate_movements=args.dedupe_movements,
+                deduplicate_movements=not args.no_dedupe_movements,
             )
         except ValueError as exc:
             print(f"Error: {candidate}: {exc}", file=sys.stderr)
