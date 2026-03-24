@@ -4,15 +4,18 @@ import pytest
 
 from conftest import make_flow_xml
 from flow_parser import (
+    InvocableApexCall,
     VariableInfo,
     extract_flow_metadata,
     extract_variables,
     find_entries,
     find_exits,
+    find_invocable_apex_calls,
     find_record_lookups,
     find_record_mutations,
     find_screen_movements,
     parse_flow,
+    parse_flow_with_invocables,
     parse_xml,
 )
 
@@ -736,3 +739,44 @@ def test_parse_flow_empty_returns_no_movements():
     xml = make_flow_xml(body="")
     meta, movements = parse_flow(xml)
     assert movements == []
+
+
+def test_find_invocable_apex_calls_detects_action_call():
+    body = """
+    <actionCalls>
+        <name>CallValidation</name>
+        <label>Call Validation</label>
+        <actionName>SUI_InvokeRunValidation</actionName>
+        <actionType>apex</actionType>
+    </actionCalls>
+    """
+    xml = make_flow_xml(body=body)
+    root = parse_xml(xml)
+    calls = find_invocable_apex_calls(root)
+    assert len(calls) == 1
+    call = calls[0]
+    assert isinstance(call, InvocableApexCall)
+    assert call.action_name == "SUI_InvokeRunValidation"
+    assert call.element_name == "CallValidation"
+
+
+def test_parse_flow_with_invocables_returns_calls():
+    body = """
+    <actionCalls>
+        <name>CallValidation</name>
+        <label>Call Validation</label>
+        <actionName>SUI_InvokeRunValidation</actionName>
+        <actionType>apex</actionType>
+    </actionCalls>
+    <recordLookups>
+        <name>getAccount</name>
+        <label>getAccount</label>
+        <object>Account</object>
+    </recordLookups>
+    """
+    xml = make_flow_xml(body=body)
+    meta, movements, calls = parse_flow_with_invocables(xml, filename="MyFlow.flow-meta.xml")
+    assert meta.name == "MyFlow"
+    assert any(m.movement_type == "R" for m in movements)
+    assert len(calls) == 1
+    assert calls[0].action_name == "SUI_InvokeRunValidation"

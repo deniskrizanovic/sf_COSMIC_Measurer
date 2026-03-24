@@ -46,6 +46,13 @@ class FlowMetadata:
     trigger_object: Optional[str]
 
 
+@dataclass
+class InvocableApexCall:
+    element_name: str
+    label: str
+    action_name: str
+
+
 def _find_text(element: ET.Element, tag: str) -> Optional[str]:
     child = element.find(f"sf:{tag}", NS)
     if child is not None and child.text:
@@ -383,6 +390,28 @@ def find_screen_movements(
     return entries, exits
 
 
+def find_invocable_apex_calls(root: ET.Element) -> list[InvocableApexCall]:
+    """Extract Apex invocable action calls from <actionCalls>."""
+    calls: list[InvocableApexCall] = []
+    for idx, action_call in enumerate(root.findall("sf:actionCalls", NS), start=1):
+        action_type = (_find_text(action_call, "actionType") or "").strip().lower()
+        if action_type != "apex":
+            continue
+        action_name = _find_text(action_call, "actionName")
+        if not action_name:
+            continue
+        element_name = _find_text(action_call, "name") or f"actionCall_{idx}"
+        label = _find_text(action_call, "label") or element_name
+        calls.append(
+            InvocableApexCall(
+                element_name=element_name,
+                label=label,
+                action_name=action_name,
+            )
+        )
+    return calls
+
+
 def parse_flow(
     source: str, filename: str = ""
 ) -> tuple[FlowMetadata, list[RawMovement]]:
@@ -398,3 +427,22 @@ def parse_flow(
     exits = find_exits(variables)
 
     return metadata, entries + screen_entries + reads + writes + exits + screen_exits
+
+
+def parse_flow_with_invocables(
+    source: str, filename: str = ""
+) -> tuple[FlowMetadata, list[RawMovement], list[InvocableApexCall]]:
+    """Parse a flow XML string and include invocable Apex action call metadata."""
+    root = parse_xml(source)
+    metadata = extract_flow_metadata(root, filename)
+    variables = extract_variables(root)
+
+    entries = find_entries(root, metadata, variables)
+    screen_entries, screen_exits = find_screen_movements(root, variables)
+    reads = find_record_lookups(root)
+    writes = find_record_mutations(root, variables)
+    exits = find_exits(variables)
+    invocable_apex_calls = find_invocable_apex_calls(root)
+
+    movements = entries + screen_entries + reads + writes + exits + screen_exits
+    return metadata, movements, invocable_apex_calls

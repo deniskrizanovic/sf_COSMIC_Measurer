@@ -121,3 +121,47 @@ def test_cli_sample_flow(monkeypatch, capsys, project_root):
     data = json.loads(capsys.readouterr().out)
     assert data["artifact"]["type"] == "Flow"
     assert len(data["dataMovements"]) >= 4
+
+
+def test_cli_sample_flow_with_invocable_apex(monkeypatch, capsys, project_root):
+    flow_sample = project_root / "samples" / "SUI_Program_Validation_Commencement_Process.flow"
+    apex_sample = project_root / "samples" / "SUI_InvokeRunValidation.cls"
+    if not flow_sample.exists() or not apex_sample.exists():
+        return
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "measure_flow",
+            str(flow_sample),
+            "--json",
+            "--apex-search-paths",
+            str(project_root / "samples"),
+        ],
+    )
+    assert measure_flow.main() == 0
+    data = json.loads(capsys.readouterr().out)
+    assert any(m.get("viaArtifact") for m in data["dataMovements"])
+
+
+def test_cli_missing_invocable_apex_class_reports_json(monkeypatch, capsys, tmp_path):
+    xml = make_flow_xml(
+        process_type="AutolaunchedFlow",
+        body="""
+    <actionCalls>
+        <name>CallMissing</name>
+        <actionName>MissingInvocableClass</actionName>
+        <actionType>apex</actionType>
+    </actionCalls>
+    """,
+    )
+    flow_file = tmp_path / "MissingInvocable.flow-meta.xml"
+    flow_file.write_text(xml, encoding="utf-8")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["measure_flow", str(flow_file), "--json", "--apex-search-paths", str(tmp_path)],
+    )
+    assert measure_flow.main() == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["invocableApexClassesNotFound"] == ["MissingInvocableClass"]
