@@ -26,6 +26,7 @@ Inspects `.flow-meta.xml` files, identifies data movements, and produces JSON in
 - **Single flow file** per measurement
 - **Flow types**: Screen Flow, AutoLaunched Flow, Record-Triggered Flow, Scheduled Flow, Platform Event Flow
 - **No subflow traversal** (deferred to future iteration)
+- **Invocable Apex**: Supported for `actionCalls` where `actionType=apex` by calling the Apex measurer
 
 ### Entry (E)
 
@@ -38,6 +39,14 @@ Inspects `.flow-meta.xml` files, identifies data movements, and produces JSON in
 
 - **recordLookups**: `<recordLookups>` elements — extract object from `<object>` child element
 - **implementationType**: `flow`
+
+### Invocable Apex integration
+
+- **Detection**: `<actionCalls>` with `<actionType>apex</actionType>`
+- **Class resolution**: resolve `<actionName>` to `<actionName>.cls` in search paths
+- **Measurement source**: calls `cosmic-apex-measurer` and merges Apex movements (`E/R/W/X`) into Flow output
+- **Fallback**: unresolved classes do not fail measurement; output includes `invocableApexClassesNotFound`
+- **Provenance**: merged rows include `viaArtifact` showing the originating invocable Apex action
 
 ### Write (W)
 
@@ -70,6 +79,8 @@ Inspects `.flow-meta.xml` files, identifies data movements, and produces JSON in
 ```bash
 python3 .cursor/skills/cosmic-measurer/cosmic-flow-measurer/scripts/measure_flow.py path/to/Flow.flow-meta.xml
 python3 ... measure_flow.py Flow.flow-meta.xml [-o output.json] [--fp-id 001xxx] [--json]
+python3 ... measure_flow.py Flow.flow-meta.xml --apex-search-paths samples,force-app/main/default/classes
+python3 ... measure_flow.py Flow.flow-meta.xml --no-invocable-apex
 ```
 
 Run tests:

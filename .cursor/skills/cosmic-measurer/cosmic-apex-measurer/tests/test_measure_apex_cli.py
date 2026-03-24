@@ -28,6 +28,62 @@ public class TraverseHelper {
 }
 """
 
+BATCH_CALLER_SRC = """
+public class BatchCaller {
+    public static void run() {
+        Id jobId = Database.executeBatch(new AsyncBatchWorker());
+    }
+}
+"""
+
+ASYNC_BATCH_WORKER_SRC = """
+public class AsyncBatchWorker implements Database.Batchable<SObject> {
+    public Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator([SELECT Id FROM Account WHERE Id != null]);
+    }
+    public void execute(Database.BatchableContext bc, List<SObject> scope) {
+        List<Contact> rows = new List<Contact>();
+        update rows;
+    }
+    public void finish(Database.BatchableContext bc) {
+    }
+}
+"""
+
+QUEUEABLE_CALLER_SRC = """
+public class QueueableCaller {
+    public static void run() {
+        Id jobId = System.enqueueJob(new AsyncQueueableWorker());
+    }
+}
+"""
+
+ASYNC_QUEUEABLE_WORKER_SRC = """
+public class AsyncQueueableWorker implements Queueable {
+    public void execute(QueueableContext context) {
+        List<Account> rows = [SELECT Id FROM Account WHERE Id != null];
+        update rows;
+    }
+}
+"""
+
+SCHEDULE_CALLER_SRC = """
+public class ScheduleCaller {
+    public static void run() {
+        String id = System.schedule('Nightly', '0 0 2 * * ?', new AsyncSchedulableWorker());
+    }
+}
+"""
+
+ASYNC_SCHEDULABLE_WORKER_SRC = """
+public class AsyncSchedulableWorker implements Schedulable {
+    public void execute(SchedulableContext context) {
+        List<Contact> rows = [SELECT Id FROM Contact WHERE Id != null];
+        update rows;
+    }
+}
+"""
+
 SELF_LOOP_SRC = """
 public class SelfLoop {
     public static void run() {
@@ -54,6 +110,33 @@ public class CycleB {
 }
 """
 
+MULTI_HOP_CALLER_SRC = """
+public class MultiHopCaller {
+    public static void run() {
+        LevelOne.run(new List<Account>());
+    }
+}
+"""
+
+LEVEL_ONE_SRC = """
+public class LevelOne {
+    public static List<Account> run(List<Account> accounts) {
+        LevelTwo.touch(accounts);
+        return accounts;
+    }
+}
+"""
+
+LEVEL_TWO_SRC = """
+public class LevelTwo {
+    public static void touch(List<Account> accounts) {
+        List<Account> rows = [SELECT Id FROM Account WHERE Id != null];
+        update accounts;
+        MissingDeep.ping();
+    }
+}
+"""
+
 
 def test_find_class_file_skips_missing_base_and_finds_match(tmp_path):
     missing = tmp_path / "nope"
@@ -75,6 +158,42 @@ def test_measure_file_traverses_helper_via_artifact(tmp_path):
     assert any(m["movementType"] == "W" for m in via)
 
 
+def test_measure_file_traverses_execute_batch_as_async(tmp_path):
+    (tmp_path / "BatchCaller.cls").write_text(BATCH_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncBatchWorker.cls").write_text(ASYNC_BATCH_WORKER_SRC, encoding="utf-8")
+
+    out = measure_file(tmp_path / "BatchCaller.cls", search_paths=[tmp_path])
+    via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncBatchWorker"]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
+
+
+def test_measure_file_traverses_enqueue_job_as_async(tmp_path):
+    (tmp_path / "QueueableCaller.cls").write_text(QUEUEABLE_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncQueueableWorker.cls").write_text(
+        ASYNC_QUEUEABLE_WORKER_SRC, encoding="utf-8"
+    )
+
+    out = measure_file(tmp_path / "QueueableCaller.cls", search_paths=[tmp_path])
+    via = [m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncQueueableWorker"]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
+
+
+def test_measure_file_traverses_system_schedule_as_async(tmp_path):
+    (tmp_path / "ScheduleCaller.cls").write_text(SCHEDULE_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "AsyncSchedulableWorker.cls").write_text(
+        ASYNC_SCHEDULABLE_WORKER_SRC, encoding="utf-8"
+    )
+
+    out = measure_file(tmp_path / "ScheduleCaller.cls", search_paths=[tmp_path])
+    via = [
+        m for m in out["dataMovements"] if m.get("viaArtifact") == "AsyncSchedulableWorker"
+    ]
+    assert via
+    assert all(m.get("isAsync") is True for m in via)
+
+
 def test_measure_file_skips_self_static_call(tmp_path):
     (tmp_path / "SelfLoop.cls").write_text(SELF_LOOP_SRC, encoding="utf-8")
     out = measure_file(tmp_path / "SelfLoop.cls", search_paths=[tmp_path])
@@ -85,6 +204,22 @@ def test_measure_file_skips_cycle_between_classes(tmp_path):
     (tmp_path / "CycleA.cls").write_text(CYCLE_A_SRC, encoding="utf-8")
     (tmp_path / "CycleB.cls").write_text(CYCLE_B_SRC, encoding="utf-8")
     measure_file(tmp_path / "CycleA.cls", search_paths=[tmp_path])
+
+
+def test_measure_file_traverses_multi_hop_and_merges_rw_only(tmp_path):
+    (tmp_path / "MultiHopCaller.cls").write_text(MULTI_HOP_CALLER_SRC, encoding="utf-8")
+    (tmp_path / "LevelOne.cls").write_text(LEVEL_ONE_SRC, encoding="utf-8")
+    (tmp_path / "LevelTwo.cls").write_text(LEVEL_TWO_SRC, encoding="utf-8")
+
+    out = measure_file(tmp_path / "MultiHopCaller.cls", search_paths=[tmp_path])
+    via_level_one = [m for m in out["dataMovements"] if m.get("viaArtifact") == "LevelOne"]
+    via_level_two = [m for m in out["dataMovements"] if m.get("viaArtifact") == "LevelTwo"]
+
+    assert not any(m["movementType"] == "E" for m in via_level_one)
+    assert not any(m["movementType"] == "X" for m in via_level_one)
+    assert any(m["movementType"] == "R" for m in via_level_two)
+    assert any(m["movementType"] == "W" for m in via_level_two)
+    assert "MissingDeep" in (out.get("calledClassesNotFound") or [])
 
 
 def test_traverse_skips_class_already_in_visited(tmp_path):

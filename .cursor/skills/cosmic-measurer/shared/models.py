@@ -15,3 +15,4 @@ class RawMovement:
     source_line: Optional[int] = None
     execution_order: Optional[int] = None
     via_artifact: Optional[str] = None
+    is_async: bool = False
