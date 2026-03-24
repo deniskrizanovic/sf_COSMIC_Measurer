@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Invoke the Run Validation Batch</description>
+        <name>SUI_Invoke_the_Run_Validation_Batch</name>
+        <label>Invoke the Run Validation Batch</label>
+        <locationX>176</locationX>
+        <locationY>323</locationY>
+        <actionName>SUI_InvokeRunValidation</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>programIds</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>SUI_InvokeRunValidation</nameSegment>
+    </actionCalls>
+    <apiVersion>59.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>SUI - This flow controls the validation process on a program, launching Apex actions depending on the entry criteria to complete the validation calculations</description>
+    <environments>Default</environments>
+    <interviewLabel>Program - Validation Commencement Process {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Program - Validation Commencement Process</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>SUI_Invoke_the_Run_Validation_Batch</targetReference>
+        </connector>
+        <filterFormula>AND(
+ISCHANGED({!$Record.SUI_Status__c}),
+ISPICKVAL({!$Record.SUI_Status__c},&apos;Validation In Progress&apos;)
+)</filterFormula>
+        <object>SUI_Program__c</object>
+        <recordTriggerType>Update</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+    <triggerOrder>1300</triggerOrder>
+    <variables>
+        <name>RecipientIds</name>
+        <dataType>String</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>
