@@ -772,3 +772,27 @@ def test_cli_includes_path_component_read_and_display_rows(monkeypatch, capsys, 
     ]
     assert len(path_rows) == 2
     assert [row["movementType"] for row in path_rows] == ["R", "X"]
+
+
+def test_cli_caps_all_emitted_movement_names_at_80(monkeypatch, capsys, project_root, tmp_path):
+    page_file = project_root / "samples" / "flexipages" / "WorkOrder.flexipage"
+    flow_search = project_root / "samples" / "flows"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "measure_flexipage",
+            str(page_file),
+            "--json",
+            "--flow-search-paths",
+            str(flow_search),
+        ],
+    )
+    assert measure_flexipage.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    over_limit = [
+        row.get("name", "")
+        for row in (payload.get("dataMovements") or [])
+        if len(str(row.get("name") or "")) > 80
+    ]
+    assert over_limit == []

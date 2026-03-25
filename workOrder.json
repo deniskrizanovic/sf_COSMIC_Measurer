@@ -62,7 +62,7 @@
       "isApiCall": false
     },
     {
-      "name": "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)",
+      "name": "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathA",
       "order": 8,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
@@ -70,16 +70,8 @@
       "isApiCall": false
     },
     {
-      "name": "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathAssistant)",
-      "order": 9,
-      "movementType": "X",
-      "dataGroupRef": "WorkOrder",
-      "implementationType": "flexipage",
-      "isApiCall": false
-    },
-    {
       "name": "Read related list WorkOrderLineItems",
-      "order": 10,
+      "order": 9,
       "movementType": "R",
       "dataGroupRef": "WorkOrderLineItems",
       "implementationType": "flexipage",
@@ -87,7 +79,7 @@
     },
     {
       "name": "Display related list WorkOrderLineItems",
-      "order": 11,
+      "order": 10,
       "movementType": "X",
       "dataGroupRef": "WorkOrderLineItems",
       "implementationType": "flexipage",
@@ -95,7 +87,7 @@
     },
     {
       "name": "Read related list Work_Order_Milestones__r",
-      "order": 12,
+      "order": 11,
       "movementType": "R",
       "dataGroupRef": "Work_Order_Milestones__c",
       "implementationType": "flexipage",
@@ -103,7 +95,7 @@
     },
     {
       "name": "Display related list Work_Order_Milestones__r",
-      "order": 13,
+      "order": 12,
       "movementType": "X",
       "dataGroupRef": "Work_Order_Milestones__c",
       "implementationType": "flexipage",
@@ -111,7 +103,7 @@
     },
     {
       "name": "Read related list ProcessSteps",
-      "order": 14,
+      "order": 13,
       "movementType": "R",
       "dataGroupRef": "ProcessSteps",
       "implementationType": "flexipage",
@@ -119,7 +111,7 @@
     },
     {
       "name": "Display related list ProcessSteps",
-      "order": 15,
+      "order": 14,
       "movementType": "X",
       "dataGroupRef": "ProcessSteps",
       "implementationType": "flexipage",
@@ -127,7 +119,7 @@
     },
     {
       "name": "Read related list Histories",
-      "order": 16,
+      "order": 15,
       "movementType": "R",
       "dataGroupRef": "Histories",
       "implementationType": "flexipage",
@@ -135,7 +127,7 @@
     },
     {
       "name": "Display related list Histories",
-      "order": 17,
+      "order": 16,
       "movementType": "X",
       "dataGroupRef": "Histories",
       "implementationType": "flexipage",
@@ -143,7 +135,7 @@
     },
     {
       "name": "Read related list Payment_Claims__r",
-      "order": 18,
+      "order": 17,
       "movementType": "R",
       "dataGroupRef": "Payment_Claims__c",
       "implementationType": "flexipage",
@@ -151,7 +143,7 @@
     },
     {
       "name": "Display related list Payment_Claims__r",
-      "order": 19,
+      "order": 18,
       "movementType": "X",
       "dataGroupRef": "Payment_Claims__c",
       "implementationType": "flexipage",
@@ -159,7 +151,7 @@
     },
     {
       "name": "Read related list Credit_Notes__r",
-      "order": 20,
+      "order": 19,
       "movementType": "R",
       "dataGroupRef": "Credit_Notes__c",
       "implementationType": "flexipage",
@@ -167,7 +159,7 @@
     },
     {
       "name": "Display related list Credit_Notes__r",
-      "order": 21,
+      "order": 20,
       "movementType": "X",
       "dataGroupRef": "Credit_Notes__c",
       "implementationType": "flexipage",
@@ -175,7 +167,7 @@
     },
     {
       "name": "Read related list ServiceAppointments",
-      "order": 22,
+      "order": 21,
       "movementType": "R",
       "dataGroupRef": "ServiceAppointments",
       "implementationType": "flexipage",
@@ -183,7 +175,7 @@
     },
     {
       "name": "Display related list ServiceAppointments",
-      "order": 23,
+      "order": 22,
       "movementType": "X",
       "dataGroupRef": "ServiceAppointments",
       "implementationType": "flexipage",
@@ -191,7 +183,7 @@
     },
     {
       "name": "Read related list Assessments__r",
-      "order": 24,
+      "order": 23,
       "movementType": "R",
       "dataGroupRef": "Assessments__c",
       "implementationType": "flexipage",
@@ -199,7 +191,7 @@
     },
     {
       "name": "Display related list Assessments__r",
-      "order": 25,
+      "order": 24,
       "movementType": "X",
       "dataGroupRef": "Assessments__c",
       "implementationType": "flexipage",
@@ -207,7 +199,7 @@
     },
     {
       "name": "Read related list Comments__r",
-      "order": 26,
+      "order": 25,
       "movementType": "R",
       "dataGroupRef": "Comments__c",
       "implementationType": "flexipage",
@@ -215,7 +207,7 @@
     },
     {
       "name": "Display related list Comments__r",
-      "order": 27,
+      "order": 26,
       "movementType": "X",
       "dataGroupRef": "Comments__c",
       "implementationType": "flexipage",
@@ -223,7 +215,7 @@
     },
     {
       "name": "Read related list AttachedContentDocuments",
-      "order": 28,
+      "order": 27,
       "movementType": "R",
       "dataGroupRef": "AttachedContentDocuments",
       "implementationType": "flexipage",
@@ -231,7 +223,7 @@
     },
     {
       "name": "Display related list AttachedContentDocuments",
-      "order": 29,
+      "order": 28,
       "movementType": "X",
       "dataGroupRef": "AttachedContentDocuments",
       "implementationType": "flexipage",
@@ -239,7 +231,7 @@
     },
     {
       "name": "Read related record Access Issue Details | tab:Access Issue",
-      "order": 30,
+      "order": 29,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -247,7 +239,7 @@
     },
     {
       "name": "Display related record Access Issue Details | tab:Access Issue",
-      "order": 31,
+      "order": 30,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -255,7 +247,7 @@
     },
     {
       "name": "Read related record NCAT Details | tab:Access Issue",
-      "order": 32,
+      "order": 31,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -263,7 +255,7 @@
     },
     {
       "name": "Display related record NCAT Details | tab:Access Issue",
-      "order": 33,
+      "order": 32,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -271,7 +263,7 @@
     },
     {
       "name": "Read related record Appointment Details | tab:Access Issue",
-      "order": 34,
+      "order": 33,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -279,7 +271,7 @@
     },
     {
       "name": "Display related record Appointment Details | tab:Access Issue",
-      "order": 35,
+      "order": 34,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -287,7 +279,7 @@
     },
     {
       "name": "Read related record Visible Damage Details | tab:Visible Damage",
-      "order": 36,
+      "order": 35,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -295,7 +287,7 @@
     },
     {
       "name": "Display related record Visible Damage Details | tab:Visible Damage",
-      "order": 37,
+      "order": 36,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -303,7 +295,7 @@
     },
     {
       "name": "Read related record Tenant Details | tab:Visible Damage",
-      "order": 38,
+      "order": 37,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -311,7 +303,7 @@
     },
     {
       "name": "Display related record Tenant Details | tab:Visible Damage",
-      "order": 39,
+      "order": 38,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -319,7 +311,7 @@
     },
     {
       "name": "Read related record Recovery Details | tab:Visible Damage",
-      "order": 40,
+      "order": 39,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -327,7 +319,7 @@
     },
     {
       "name": "Display related record Recovery Details | tab:Visible Damage",
-      "order": 41,
+      "order": 40,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -335,7 +327,7 @@
     },
     {
       "name": "Read related record Debt Recovery Details | tab:Visible Damage",
-      "order": 42,
+      "order": 41,
       "movementType": "R",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -343,7 +335,7 @@
     },
     {
       "name": "Display related record Debt Recovery Details | tab:Visible Damage",
-      "order": 43,
+      "order": 42,
       "movementType": "X",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
@@ -351,7 +343,7 @@
     },
     {
       "name": "Read related record Request Details",
-      "order": 44,
+      "order": 43,
       "movementType": "R",
       "dataGroupRef": "Case",
       "implementationType": "flexipage",
@@ -359,22 +351,30 @@
     },
     {
       "name": "Display related record Request Details",
-      "order": 45,
+      "order": 44,
       "movementType": "X",
       "dataGroupRef": "Case",
       "implementationType": "flexipage",
       "isApiCall": false
     },
     {
-      "name": "Inspect LWC sui_AddSORs data movements (TBC) on tab SoRs [instance 1]",
-      "order": 46,
+      "name": "Display flow interview Associations_Show_Work_Order_Associations | tab:Related W",
+      "order": 45,
       "movementType": "X",
-      "dataGroupRef": "tbc",
+      "dataGroupRef": "Flow:Associations_Show_Work_Order_Associations",
       "implementationType": "flexipage",
       "isApiCall": false
     },
     {
-      "name": "Inspect LWC sui_AddSORs data movements (TBC) on tab SoRs [instance 2]",
+      "name": "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pa",
+      "order": 46,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false
+    },
+    {
+      "name": "Inspect LWC sui_AddSORs data movements (TBC) on tab SoRs [instance 1]",
       "order": 47,
       "movementType": "X",
       "dataGroupRef": "tbc",
@@ -382,8 +382,16 @@
       "isApiCall": false
     },
     {
-      "name": "Receive recordId (WorkOrder) | tab:Warranties",
+      "name": "Inspect LWC sui_AddSORs data movements (TBC) on tab SoRs [instance 2]",
       "order": 48,
+      "movementType": "X",
+      "dataGroupRef": "tbc",
+      "implementationType": "flexipage",
+      "isApiCall": false
+    },
+    {
+      "name": "Receive recordId (WorkOrder) | tab:Warranties",
+      "order": 49,
       "movementType": "E",
       "dataGroupRef": "WorkOrder",
       "implementationType": "flow",
@@ -391,7 +399,7 @@
     },
     {
       "name": "Screen input (SCR1_Show_warranty_records) (Warranty__c) | tab:Warranties",
-      "order": 49,
+      "order": 50,
       "movementType": "E",
       "dataGroupRef": "Warranty__c",
       "implementationType": "flow",
@@ -399,7 +407,7 @@
     },
     {
       "name": "Receive varR_ContractorPriceRecords (Contractor_Price__c) | tab:Warranties",
-      "order": 50,
+      "order": 51,
       "movementType": "E",
       "dataGroupRef": "Contractor_Price__c",
       "implementationType": "flow",
@@ -407,7 +415,7 @@
     },
     {
       "name": "Receive varR_ServiceCatalogueRecords (Service_Catalogue__c) | tab:Warranties",
-      "order": 51,
+      "order": 52,
       "movementType": "E",
       "dataGroupRef": "Service_Catalogue__c",
       "implementationType": "flow",
@@ -415,14 +423,6 @@
     },
     {
       "name": "Receive varR_Warranties (Warranty__c) | tab:Warranties",
-      "order": 52,
-      "movementType": "E",
-      "dataGroupRef": "Warranty__c",
-      "implementationType": "flow",
-      "isApiCall": false
-    },
-    {
-      "name": "Receive varR_WarrantiesList (Warranty__c) | tab:Warranties",
       "order": 53,
       "movementType": "E",
       "dataGroupRef": "Warranty__c",
@@ -430,8 +430,16 @@
       "isApiCall": false
     },
     {
-      "name": "Read WorkOrderLineItem (GET1: Get work order line item records) | tab:Warranties",
+      "name": "Receive varR_WarrantiesList (Warranty__c) | tab:Warranties",
       "order": 54,
+      "movementType": "E",
+      "dataGroupRef": "Warranty__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Read WorkOrderLineItem (GET1: Get work order line item records) | tab:Warranties",
+      "order": 55,
       "movementType": "R",
       "dataGroupRef": "WorkOrderLineItem",
       "implementationType": "flow",
@@ -439,7 +447,7 @@
     },
     {
       "name": "Read Contractor_Price__c (GET2: Get Contractor Price records) | tab:Warranties",
-      "order": 55,
+      "order": 56,
       "movementType": "R",
       "dataGroupRef": "Contractor_Price__c",
       "implementationType": "flow",
@@ -447,7 +455,7 @@
     },
     {
       "name": "Read Service_Catalogue__c (GET3: Get Service Catalogue records) | tab:Warranties",
-      "order": 56,
+      "order": 57,
       "movementType": "R",
       "dataGroupRef": "Service_Catalogue__c",
       "implementationType": "flow",
@@ -455,7 +463,7 @@
     },
     {
       "name": "Read Warranty__c (GET4: Get Warranty records) | tab:Warranties",
-      "order": 57,
+      "order": 58,
       "movementType": "R",
       "dataGroupRef": "Warranty__c",
       "implementationType": "flow",
@@ -463,7 +471,7 @@
     },
     {
       "name": "Output varR_ContractorPriceRecords (Contractor_Price__c) | tab:Warranties",
-      "order": 58,
+      "order": 59,
       "movementType": "X",
       "dataGroupRef": "Contractor_Price__c",
       "implementationType": "flow",
@@ -471,7 +479,7 @@
     },
     {
       "name": "Screen display (SCR1_Show_warranty_records) (Warranty__c) | tab:Warranties",
-      "order": 59,
+      "order": 60,
       "movementType": "X",
       "dataGroupRef": "Warranty__c",
       "implementationType": "flow",
@@ -479,7 +487,7 @@
     },
     {
       "name": "Output varR_ServiceCatalogueRecords (Service_Catalogue__c) | tab:Warranties",
-      "order": 60,
+      "order": 61,
       "movementType": "X",
       "dataGroupRef": "Service_Catalogue__c",
       "implementationType": "flow",
@@ -487,14 +495,6 @@
     },
     {
       "name": "Output varR_Warranties (Warranty__c) | tab:Warranties",
-      "order": 61,
-      "movementType": "X",
-      "dataGroupRef": "Warranty__c",
-      "implementationType": "flow",
-      "isApiCall": false
-    },
-    {
-      "name": "Output varR_WarrantiesList (Warranty__c) | tab:Warranties",
       "order": 62,
       "movementType": "X",
       "dataGroupRef": "Warranty__c",
@@ -502,8 +502,16 @@
       "isApiCall": false
     },
     {
-      "name": "Screen input (SCR1_Show_all_associated_requests) (Associations__c) | tab:Related WOs",
+      "name": "Output varR_WarrantiesList (Warranty__c) | tab:Warranties",
       "order": 63,
+      "movementType": "X",
+      "dataGroupRef": "Warranty__c",
+      "implementationType": "flow",
+      "isApiCall": false
+    },
+    {
+      "name": "Screen input (SCR1_Show_all_associated_requests) (Associations__c) | tab:Related",
+      "order": 64,
       "movementType": "E",
       "dataGroupRef": "Associations__c",
       "implementationType": "flow",
@@ -511,15 +519,15 @@
     },
     {
       "name": "Read Associations__c (GET1: Get WO Associations) | tab:Related WOs",
-      "order": 64,
+      "order": 65,
       "movementType": "R",
       "dataGroupRef": "Associations__c",
       "implementationType": "flow",
       "isApiCall": false
     },
     {
-      "name": "Screen display (SCR1_Show_all_associated_requests) (Associations__c) | tab:Related WOs",
-      "order": 65,
+      "name": "Screen display (SCR1_Show_all_associated_requests) (Associations__c) | tab:Relat",
+      "order": 66,
       "movementType": "X",
       "dataGroupRef": "Associations__c",
       "implementationType": "flow",
@@ -527,7 +535,7 @@
     },
     {
       "name": "Errors/notifications",
-      "order": 66,
+      "order": 67,
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "flexipage",

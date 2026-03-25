@@ -29,6 +29,7 @@ from shared.output import (  # noqa: E402
     CANONICAL_EXIT_DATA_GROUP_REF,
     CANONICAL_EXIT_NAME,
     build_output,
+    cap_movement_name,
     to_human_summary,
     to_json_string,
     to_table,
@@ -206,6 +207,12 @@ def _deduplicate_data_movements(output: dict) -> None:
     for idx, row in enumerate(unique_rows, start=1):
         row["order"] = idx
     output["dataMovements"] = unique_rows
+
+
+def _cap_output_movement_names(output: dict) -> None:
+    rows = output.get("dataMovements") or []
+    for row in rows:
+        row["name"] = cap_movement_name(str(row.get("name") or ""))
 
 
 def _parse_search_paths(csv_paths: str) -> list[Path]:
@@ -644,6 +651,7 @@ def measure_file(
             )
     if deduplicate_movements:
         _deduplicate_data_movements(output)
+    _cap_output_movement_names(output)
     return output
 
 
