@@ -767,8 +767,8 @@ def test_cli_includes_path_component_read_and_display_rows(monkeypatch, capsys, 
     path_rows = [
         row
         for row in payload.get("dataMovements") or []
-        if "path state (Account) (region:header, id:runtime_sales_pathassistant_pathAssistant)"
-        in row.get("name", "")
+        if row.get("name", "").startswith("Read path state (Account)")
+        or row.get("name", "").startswith("Display path state (Account)")
     ]
     assert len(path_rows) == 2
     assert [row["movementType"] for row in path_rows] == ["R", "X"]

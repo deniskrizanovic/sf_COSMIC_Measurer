@@ -44,6 +44,11 @@ TYPE_ORDER = {"E": 0, "R": 1, "W": 2, "X": 3}
 
 CANONICAL_EXIT_NAME = "Errors/notifications"
 CANONICAL_EXIT_DATA_GROUP_REF = "status/errors/etc"
+MAX_MOVEMENT_NAME_LENGTH = 80
+
+
+def cap_movement_name(name: str) -> str:
+    return name[:MAX_MOVEMENT_NAME_LENGTH]
 
 
 def order_movements(movements: list[RawMovement]) -> list[tuple[RawMovement, list]]:
@@ -91,7 +96,7 @@ def to_json_movement(
     implementation_type: str = "apex",
 ) -> DataMovementRowOptional:
     out: DataMovementRowOptional = {
-        "name": m.name,
+        "name": cap_movement_name(m.name),
         "order": order,
         "movementType": m.movement_type,
         "dataGroupRef": m.data_group_ref,
@@ -124,7 +129,7 @@ def build_output(
     ]
     data_movements.append(
         {
-            "name": CANONICAL_EXIT_NAME,
+            "name": cap_movement_name(CANONICAL_EXIT_NAME),
             "order": len(data_movements) + 1,
             "movementType": "X",
             "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
