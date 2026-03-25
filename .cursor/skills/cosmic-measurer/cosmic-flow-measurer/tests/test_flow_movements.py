@@ -123,3 +123,15 @@ def test_to_json_string_roundtrip():
     data = json.loads(s)
     assert data["artifact"]["type"] == "Flow"
     assert len(data["dataMovements"]) == 1
+
+
+def test_build_output_caps_movement_name_at_80_characters():
+    long_name = "Read " + ("VeryLongFieldName_" * 6)
+    out = build_output(
+        "Flow",
+        "F",
+        [RawMovement("R", "Account", long_name, 1)],
+        implementation_type="flow",
+    )
+    assert len(out["dataMovements"][0]["name"]) == 80
+    assert out["dataMovements"][0]["name"] == long_name[:80]
