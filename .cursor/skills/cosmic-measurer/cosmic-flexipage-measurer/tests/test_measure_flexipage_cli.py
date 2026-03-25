@@ -74,10 +74,7 @@ def test_cli_sample_flexipage(monkeypatch, capsys, project_root):
         "Delegate tab-bound LWCs to lwc-measurer" in item
         for item in warnings
     )
-    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
-    assert len(lwc_candidates) == 1
-    assert lwc_candidates[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
-    assert lwc_candidates[0]["requiredMovementTypes"] == []
+    assert "lwcCandidateMeasurements" not in payload
 
 
 def test_cli_sample_flexipage_matches_golden(monkeypatch, capsys, project_root):
@@ -318,10 +315,7 @@ def test_cli_tab_component_binding_warning(monkeypatch, capsys, tmp_path):
         "cfp_FunctionalProcessVisualiser" in item
         for item in warnings
     )
-    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
-    assert len(lwc_candidates) == 1
-    assert lwc_candidates[0]["artifact"]["type"] == "LWC"
-    assert lwc_candidates[0]["requiredMovementTypes"] == []
+    assert "lwcCandidateMeasurements" not in payload
 
 
 def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys, tmp_path):
@@ -357,9 +351,7 @@ def test_cli_tab_component_binding_infers_write_requirement(monkeypatch, capsys,
     monkeypatch.setattr(sys, "argv", ["measure_flexipage", str(page_file), "--json"])
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    lwc_candidates = payload.get("lwcCandidateMeasurements") or []
-    assert len(lwc_candidates) == 1
-    assert lwc_candidates[0]["requiredMovementTypes"] == ["W"]
+    assert "lwcCandidateMeasurements" not in payload
 
 
 def test_cli_emits_tbc_dm_row_for_each_lwc_candidate(monkeypatch, capsys, tmp_path):
@@ -583,6 +575,7 @@ def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_roo
             str(project_root / "samples" / "lwc"),
             "--apex-search-paths",
             str(project_root / "samples" / "classes"),
+            "--include-resolution-details",
         ],
     )
     assert measure_flexipage.main() == 0
@@ -664,6 +657,7 @@ def test_cli_resolves_flow_candidates_by_default(monkeypatch, capsys, project_ro
             "--json",
             "--flow-search-paths",
             str(flow_sample_dir),
+            "--include-resolution-details",
         ],
     )
     assert measure_flexipage.main() == 0
@@ -719,8 +713,7 @@ def test_cli_no_resolve_flow_candidates_opt_out(monkeypatch, capsys, tmp_path):
     )
     assert measure_flexipage.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    flow_candidates = payload.get("flowCandidateMeasurements") or []
-    assert len(flow_candidates) == 1
+    assert "flowCandidateMeasurements" not in payload
     assert "resolvedFlowMeasurements" not in payload
 
 

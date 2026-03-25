@@ -533,6 +533,7 @@ def measure_file(
     flow_search_paths: Optional[list[Path]] = None,
     apex_search_paths: Optional[list[Path]] = None,
     deduplicate_movements: bool = True,
+    include_resolution_details: bool = False,
 ) -> dict:
     source = path.read_text(encoding="utf-8", errors="replace")
     root = parse_xml(source)
@@ -590,7 +591,8 @@ def measure_file(
     lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
     flow_candidates = _build_flow_candidate_outputs(metadata.name, tab_bindings, fp_id)
     if lwc_candidates:
-        output["lwcCandidateMeasurements"] = lwc_candidates
+        if include_resolution_details:
+            output["lwcCandidateMeasurements"] = lwc_candidates
         output["dataMovements"] = (output.get("dataMovements") or []) + _build_lwc_tbc_data_movements(
             lwc_candidates
         )
@@ -605,10 +607,12 @@ def measure_file(
                 lwc_search_paths=lwc_search_paths or [],
                 apex_search_paths=apex_search_paths or [],
             )
-            output["resolvedLwcMeasurements"] = resolved_lwc_measurements
+            if include_resolution_details:
+                output["resolvedLwcMeasurements"] = resolved_lwc_measurements
             _inline_resolved_lwc_tab_movements(output, resolved_lwc_measurements)
     if flow_candidates:
-        output["flowCandidateMeasurements"] = flow_candidates
+        if include_resolution_details:
+            output["flowCandidateMeasurements"] = flow_candidates
         flow_names = ", ".join(candidate["artifact"]["name"] for candidate in flow_candidates)
         output.setdefault("traversalWarnings", []).append(
             "Delegate tab-bound Flows to flow-measurer for concrete E/R/W/X movements: "
@@ -620,7 +624,8 @@ def measure_file(
                 flow_search_paths=flow_search_paths or [],
                 apex_search_paths=apex_search_paths or [],
             )
-            output["resolvedFlowMeasurements"] = resolved_flow_measurements
+            if include_resolution_details:
+                output["resolvedFlowMeasurements"] = resolved_flow_measurements
             _inline_resolved_flow_tab_movements(output, resolved_flow_measurements)
             unresolved_flow_names = sorted(
                 {
@@ -697,6 +702,15 @@ def main() -> int:
         action="store_true",
         help="Disable deduplication of repeated movements",
     )
+    parser.add_argument(
+        "--include-resolution-details",
+        action="store_true",
+        help=(
+            "Include diagnostic candidate/resolution arrays "
+            "(lwcCandidateMeasurements, flowCandidateMeasurements, "
+            "resolvedLwcMeasurements, resolvedFlowMeasurements) in JSON output"
+        ),
+    )
     args = parser.parse_args()
     lwc_search_paths = _parse_search_paths(args.lwc_search_paths)
     flow_search_paths = _parse_search_paths(args.flow_search_paths)
@@ -724,6 +738,7 @@ def main() -> int:
                 flow_search_paths=flow_search_paths,
                 apex_search_paths=apex_search_paths,
                 deduplicate_movements=not args.no_dedupe_movements,
+                include_resolution_details=args.include_resolution_details,
             )
         except ValueError as exc:
             print(f"Error: {candidate}: {exc}", file=sys.stderr)

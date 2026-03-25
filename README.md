@@ -105,6 +105,7 @@ Useful flags:
 - `--apex-search-paths <csv>`
 - `--no-resolve-lwc-candidates`
 - `--no-resolve-flow-candidates`
+- `--include-resolution-details` -> include diagnostic candidate/resolution arrays in JSON
 
 ## Example: Table-based FlexiPage output
 
@@ -185,6 +186,8 @@ By convention, a canonical final exit row is included:
 - `name`: `Errors/notifications`
 - `movementType`: `X`
 - `dataGroupRef`: `status/errors/etc`
+
+For FlexiPage output, `dataMovements` is the canonical consumer contract. Candidate/resolution arrays (`lwcCandidateMeasurements`, `flowCandidateMeasurements`, `resolvedLwcMeasurements`, `resolvedFlowMeasurements`) are diagnostics and are only emitted when `--include-resolution-details` is passed.
 
 ## Validation and tests
 
