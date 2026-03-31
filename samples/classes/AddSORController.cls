@@ -21,6 +21,9 @@
                   
   v2.1            pradeep.gupta@sauceconsulting.com.au
   2024-04-03      Removed everything added under v2.0
+
+  v2.2            gaurav.tanwar@dcj.nsw.gov.au, satya.singh@homes.nsw.gov.au
+  2025-09-01      Added two new methods fetchAllSORList and fetchSOLRList for additional filters and search.
 * ─────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 public class AddSORController {
@@ -29,6 +32,92 @@ public class AddSORController {
     * Custom exception class
     */
    public class CustomException extends Exception {}
+   
+   /**
+    * @description            This method is responsible to fetch all  Service Catalouge for the given component, component 
+    *                         type and sub componant. It will also include already added work order line item for that work order.
+                              this method implemented for MA-51045
+    * @param  workOrderId     This is work order Id required to check which service catalouge already added under this work order.
+    * @param  componentId     Filter value for - component 
+    * @param  componentTypeId Filter value for - component type 
+    * @param  subComponentId  Filter value for - sub component 
+    * @param  contractType    Filter value for - contract type
+    * @param  activityType    Filter value for - contract type
+    * @param  financeCat      Filter value for - financeCat
+    * @param  tradeName       Filter value for - tradeName
+    * @param  shortDescription     Filter value for - shortDescription
+    * @return                 return description
+    */ 
+    @AuraEnabled 
+    public static list<serviceCatalougeWrapper> fetchSOLRsList(String workOrderId, String componentId, String componentTypeId, 
+                                                            String subComponentId, String contractType, String activityType,
+                                                            String financeCat,String tradeName, String shortDescription) {
+             
+        WorkOrder currentWO = [SELECT Id, RecordTypeId,SUI_Record_Type_developer_Name__c,SUI_Work_Program__c,SUI_Prog_Work_Classification__c,SUI_Work_Priority__r.name FROM WorkOrder Where ID =: workOrderId];    
+        String scopingContract =GlobalConstants.WORK_ORDER_CONTRACT_TYPE_SCOPING;
+        
+        //Create a query 
+        String query = '';
+        String scopingComponent= GlobalConstants.SERVICE_CATALOGUE_COMPONENT_SCOPING;
+        system.debug(currentWO.SUI_Work_Priority__r.name);
+        
+        if(currentWo.SUI_Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING){
+        query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
+                        ' FROM SUI_Service_Catalogue__c'+  
+                        ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\')';
+        }
+        else {
+                query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
+                            ' FROM SUI_Service_Catalogue__c'+  
+                            ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Component__r.Name=:scopingComponent AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\')';
+        }
+        query += prepareSOQL(componentId, componentTypeId, subComponentId, contractType, activityType,
+                                financeCat, tradeName, shortDescription);
+        System.debug('query='+query);
+        //Query the service catalouge records
+        List<SUI_Service_Catalogue__c> serviceCatalougeList = database.query(query);
+        system.debug('serviceCatalougeList='+serviceCatalougeList);
+        List<serviceCatalougeWrapper> serviceCatalougeWrapperList = new List<serviceCatalougeWrapper>();
+        for(SUI_Service_Catalogue__c catalogue : serviceCatalougeList){
+            serviceCatalougeWrapperList.add(new serviceCatalougeWrapper(catalogue,null,null));
+        }
+        system.debug('serviceCatalougeWrapperList='+serviceCatalougeWrapperList);
+        return serviceCatalougeWrapperList;
+    }
+
+    private static String prepareSOQL(String componentId, String componentTypeId, String subComponentId, String contractType, String activityType,
+                                     String financeCat,String tradeName, String shortDescription) {
+        String query = ' ';
+        if(String.isNotBlank(componentId)){
+            query += ' AND SUI_Component__c =:componentId ';
+        }
+        if(String.isNotBlank(componentTypeId)){
+            query += ' AND SUI_Component_Type__c =:componentTypeId ';
+        }
+        if(String.isNotBlank(subComponentId)){
+            query += ' AND SUI_Sub_Component__c =:subComponentId ';
+        }
+        if(String.isNotBlank(activityType)){
+            query += '  AND SUI_Activity_Type__c   =:activityType ';
+        }
+        if(String.isNotBlank(financeCat)) {
+            query += '  AND SUI_Finance_Category__c   =:financeCat ';
+        }
+        if(String.isNotBlank(tradeName)){
+            // Filter by Trade Name using LIKE
+            query += ' AND SUI_Trade_Name__c LIKE \'%' + String.escapeSingleQuotes(tradeName) + '%\' ';
+            System.debug('Filtering by Trade Name (LIKE): ' + tradeName);
+        }
+
+        if(String.isNotBlank(shortDescription)){
+            // Filter by Short Description using LIKE
+            query += ' AND SUI_Service_Item_Short_Description__c LIKE \'%' + String.escapeSingleQuotes(shortDescription) + '%\' ';
+            System.debug('Filtering by Short Description (LIKE): ' + shortDescription);
+        }
+        return query;
+    }
+
+
    
    /**
     * @description            This method is responsible to fetch all the active Service Catalouge for the given component, component 
@@ -53,7 +142,7 @@ public class AddSORController {
        system.debug(currentWO.SUI_Work_Priority__r.name);
       
        if(currentWo.SUI_Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING){
-        query = 'SELECT Id,Name,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
+        query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
                           ' FROM SUI_Service_Catalogue__c'+  
                           ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\')';
               if(componentId != '' && componentId != null){
@@ -69,7 +158,7 @@ public class AddSORController {
            }
           
        }else{
-             query = 'SELECT Id,Name,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
+             query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+ 
                            ' FROM SUI_Service_Catalogue__c'+  
                            ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Component__r.Name=:scopingComponent AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\')';
                     if(componentTypeId != ''  && componentTypeId != null){
@@ -114,7 +203,7 @@ public class AddSORController {
        //Create a query 
        String query = '';
         if(currentWo.SUI_Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING){
-           query = 'SELECT Id,Name,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c,SUI_Work_Program__c,SUI_Work_Classification__c'+ 
+           query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c,SUI_Work_Program__c,SUI_Work_Classification__c'+ 
                    ' FROM SUI_Service_Catalogue__c'+  
                    ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\') AND SUI_Supplementary_Works_Flag__c =' + isSupplementaryWorksFlag;
            if(componentId != '' && componentId != null){
@@ -130,7 +219,7 @@ public class AddSORController {
            }
           
        }else{
-           query = 'SELECT Id,Name,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c,SUI_Work_Program__c,SUI_Work_Classification__c'+ 
+           query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c,SUI_Work_Program__c,SUI_Work_Classification__c'+ 
            ' FROM SUI_Service_Catalogue__c'+  
            ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Component__r.Name =:scopingComponent AND SUI_Work_Classification__c includes (\''+currentWO.SUI_Prog_Work_Classification__c+'\') AND SUI_Work_Program__c  includes (\''+currentWO.SUI_Work_Program__c+'\') AND SUI_Work_Priority__c includes (\''+currentWO.SUI_Work_Priority__r.name+'\') AND SUI_Supplementary_Works_Flag__c =' + isSupplementaryWorksFlag;
            if(componentTypeId != ''  && componentTypeId != null){
@@ -153,6 +242,57 @@ public class AddSORController {
        }
        return serviceCatalougeWrapperList;
    } 
+
+   /**
+    * @description            This method is responsible to fetch all  Service Catalouge for the given component, component 
+    *                         type and sub componant. It will also include already added work order line item for that work order.
+                              this method implemented for MA-045 
+    * @param  workOrderId     This is work order Id required to check which service catalouge already added under this work order.
+    * @param  componentId     Filter value for - component 
+    * @param  componentTypeId Filter value for - component type 
+    * @param  subComponentId  Filter value for - sub component 
+    * @param  contractType    Filter value for - contract type
+    * @param  activityType    Filter value for - contract type
+    * @param  financeCat      Filter value for - financeCat
+    * @param  tradeName       Filter value for - tradeName
+    * @param  shortDescription     Filter value for - shortDescription    
+    * @return                 return description
+    * Created By              Satya and Gaurav
+    * CreatedDate             1st Sept. 2025
+    * Version       
+    */ 
+   @AuraEnabled 
+   public static list<serviceCatalougeWrapper> fetchAllSORsList(String workOrderId, String componentId, String componentTypeId, String subComponentId, String contractType, String activityType,String financeCat,String tradeName, boolean isSupplementaryWorksFlag, String shortDescription){
+    System.debug('In fetchAllSORListNew ');
+    WorkOrder currentWO = [SELECT Id, RecordTypeId,SUI_Record_Type_developer_Name__c FROM WorkOrder Where ID =: workOrderId];    
+    String scopingContract = GlobalConstants.WORK_ORDER_CONTRACT_TYPE_SCOPING;
+    String scopingComponent = GlobalConstants.SERVICE_CATALOGUE_COMPONENT_SCOPING;
+
+    //Create a query 
+    String query = '';
+    if(currentWo.SUI_Record_Type_developer_Name__c != GlobalConstants.WORK_ORDER_RECORD_TYPE_SCOPING){
+        query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+
+                ' FROM SUI_Service_Catalogue__c'+
+                ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Supplementary_Works_Flag__c =' + isSupplementaryWorksFlag;
+    }
+    else{
+        query = 'SELECT Id,Name,SUI_Activity_Type__c,SUI_Trade_Name__c,SUI_Service_Item_Code__c,SUI_Service_Item_Long_Description__c,SUI_Service_Item_Short_Description__c,SUI_Component__c,SUI_Component__r.Name,SUI_Component_Type__c,SUI_Finance_Category__c,SUI_Finance_Category_Threshold_Quantity__c,SUI_Component_Type__r.Name,SUI_Sub_Component__r.Name,SUI_Sub_Component__c'+
+        ' FROM SUI_Service_Catalogue__c'+
+        ' WHERE SUI_Contract_Type__c=:contractType AND SUI_Component__r.Name =:scopingComponent AND SUI_Supplementary_Works_Flag__c =' + isSupplementaryWorksFlag;
+    }
+    query += prepareSOQL(componentId, componentTypeId, subComponentId, contractType, activityType,
+                                financeCat, tradeName, shortDescription);
+
+    System.debug('The query is'+query);
+    //Query the service catalouge records
+    list<SUI_Service_Catalogue__c> serviceCatalougeList = database.query(query);
+    list<serviceCatalougeWrapper> serviceCatalougeWrapperList = new list<serviceCatalougeWrapper>();
+    for(SUI_Service_Catalogue__c catalogue : serviceCatalougeList){
+        serviceCatalougeWrapperList.add(new serviceCatalougeWrapper(catalogue,null,null));
+    }
+    return serviceCatalougeWrapperList;
+}
+
 
    /**
     * @description        This method is responsible to return the work order details based on given work order Id
@@ -214,7 +354,7 @@ public class AddSORController {
                                SUI_Ref__r.SUI_Reference_Component_Type__r.SUI_Reference_Component__r.SUI_Master_Component__c,
                                SUI_Ref__r.SUI_Reference_Component_Type__r.SUI_Master_Component_Type__c,
                                SUI_Ref__r.SUI_Master_Sub_Component__c,
-                               
+                               SUI_Add_SOR_Visibility__c,
                                Case.SUI_Ref__c, Case.SUI_Ref__r.SUI_Master_Component__c,Case.SUI_Ref__r.SUI_Master_Component_Type__c
                                FROM WorkOrder Where Id=: workOrderId LIMIT 1];
        return workOrderData;
@@ -259,7 +399,11 @@ public class AddSORController {
            }
            //insert work order line items 
            if(!workOrderLineItems.isEmpty()){
-               insert workOrderLineItems;
+
+                WorkOrderTriggerHandler.BY_PASS_SUPPDELEGATION_CHECK = true;
+                insert workOrderLineItems;
+
+                WorkOrderTriggerHandler.BY_PASS_SUPPDELEGATION_CHECK = false;
            }
            
            //update the Work Order to Execute the SUI_UpdateContractorPriceBatch
@@ -321,7 +465,9 @@ public class AddSORController {
            System.debug('Data for Supp Works before saving==>'+workOrderLineItems);
            //insert work order line items 
            if(!workOrderLineItems.isEmpty()){
-               insert workOrderLineItems;
+                WorkOrderTriggerHandler.BY_PASS_SUPPDELEGATION_CHECK = true;
+                insert workOrderLineItems;
+                WorkOrderTriggerHandler.BY_PASS_SUPPDELEGATION_CHECK = false;
            }
            System.debug('Data for Supp Works after saving==>'+workOrderLineItems);
             //change the  Supplementary Works Indicator value to Requested  && SUI_Price_Refresh_Required__c to true
@@ -426,6 +572,12 @@ public class AddSORController {
        @AuraEnabled public String subComponent                              {get;set;}
        @AuraEnabled public Decimal quantity                                 {get;set;} 
        @AuraEnabled public String location                                  {get;set;} 
+       @AuraEnabled public String activityType                                  {get;set;}
+       @AuraEnabled public String financeCat                                  {get;set;}
+       @AuraEnabled public String tradeName                                  {get;set;}
+       @AuraEnabled public String serviceItemShortDesc                       {get;set;} 
+                
+       
 
        public serviceCatalougeWrapper( SUI_Service_Catalogue__c cataloughDetails , Decimal quantity, String location){
            this.Id = cataloughDetails.Id;
@@ -439,6 +591,68 @@ public class AddSORController {
            this.componentType  = cataloughDetails.SUI_Component_Type__r?.Name;
            this.subComponent = cataloughDetails.SUI_Sub_Component__r?.Name;
            this.location = location;
+           this.activityType = cataloughDetails.SUI_Activity_Type__c;
+           this.financeCat = cataloughDetails.SUI_Finance_Category__c;
+           this.tradeName = cataloughDetails.SUI_Trade_Name__c;
+           this.serviceItemShortDesc = cataloughDetails.SUI_Service_Item_Short_Description__c;
+           System.debug('this.subComponent='+this.subComponent);
        }
    }
+    
+    
+
+    
+    /**
+     * Method to get combined data by WorkOrderLine and Service Catalog
+    */
+    @AuraEnabled 
+    public static List<CombinedData> getCombinedWoliData(Id workOrderId) {
+        List<CombinedData> results = new List<CombinedData>();
+
+        // Step 1: Query WorkOrderLineItems
+        List<WorkOrderLineItem> lineItems = [
+            SELECT Id, SUI_Quantity__c, SUI_Location_Type__r.Name, SUI_Service_Item_Code__c, SUI_Service_Item_Long_Description__c,SUI_Supplementary_Works_Type__c,Status
+            FROM WorkOrderLineItem
+            WHERE WorkOrderId = :workOrderId
+        ];
+
+        // Step 2: Collect service item codes
+        Set<String> serviceItemCodes = new Set<String>();
+        for (WorkOrderLineItem item : lineItems) {
+            if (item.SUI_Service_Item_Code__c != null) {
+                serviceItemCodes.add(item.SUI_Service_Item_Code__c);
+            }
+        }
+
+        // Step 3: Query Service Catalogue records
+        Map<String, SUI_Service_Catalogue__c> catalogueMap = new Map<String, SUI_Service_Catalogue__c>();
+        if (!serviceItemCodes.isEmpty()) {
+            for (SUI_Service_Catalogue__c cat : [
+                SELECT Id, SUI_Service_Item_Code__c, SUI_Component__r.Name, SUI_Component_Type__r.Name, SUI_Sub_Component__r.Name
+                FROM SUI_Service_Catalogue__c
+                WHERE SUI_Service_Item_Code__c IN :serviceItemCodes
+            ]) {
+                catalogueMap.put(cat.SUI_Service_Item_Code__c, cat);
+            }
+        }
+
+        // Step 4: Combine data into wrapper
+        for (WorkOrderLineItem item : lineItems) {
+            CombinedData combined = new CombinedData();
+            
+            combined.lineItem = item;
+            combined.catalogue = catalogueMap.get(item.SUI_Service_Item_Code__c);
+            results.add(combined);
+        }
+
+            System.debug('##'+results);
+        return results;
+    }
+    // Wrapper class to hold combined data
+    public class CombinedData {
+        @AuraEnabled public WorkOrderLineItem lineItem { get; set; }
+        @AuraEnabled  public SUI_Service_Catalogue__c catalogue { get; set; }
+    }
+
+
 }
