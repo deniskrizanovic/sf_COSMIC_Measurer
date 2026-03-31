@@ -619,3 +619,103 @@ public class BatchBlankLine implements Database.Batchable {
     _apply_execution_order(src, movements, class_name)
     assert read.execution_order is None
     assert _line_number(src, src.find("List<Account>")) > 0
+
+
+# ---------------------------------------------------------------------------
+# Database.query(variable) — dynamic query detection (Option C)
+# ---------------------------------------------------------------------------
+
+def test_find_reads_database_query_variable_list_lhs():
+    """List<X> var = Database.query(q) — resolved via LHS type."""
+    src = """
+public class DynQ {
+    @AuraEnabled
+    public static List<Service_Catalogue__c> fetch(String contractType) {
+        String q = 'SELECT Id FROM Service_Catalogue__c WHERE SUI_Contract_Type__c = :contractType';
+        List<Service_Catalogue__c> result = Database.query(q);
+        return result;
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Service_Catalogue__c" for r in reads)
+
+
+def test_find_reads_database_query_variable_set_lhs():
+    """Set<X> var = Database.query(q) — resolved via LHS type."""
+    src = """
+public class DynQSet {
+    void run(String filter) {
+        String q = 'SELECT Id FROM Account WHERE Name = :filter';
+        Set<Account> results = Database.query(q);
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Account" for r in reads)
+
+
+def test_find_reads_database_query_variable_array_lhs():
+    """X[] var = Database.query(q) — resolved via LHS array type."""
+    src = """
+public class DynQArr {
+    void run() {
+        String q = 'SELECT Id FROM Contact WHERE IsDeleted = false';
+        Contact[] contacts = Database.query(q);
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Contact" for r in reads)
+
+
+def test_find_reads_database_query_variable_generic_lhs_falls_back_to_string_tracing():
+    """List<sObject> LHS — LHS is generic so string-tracing fallback recovers the object."""
+    src = """
+public class DynQGeneric {
+    void run(String contractType) {
+        String query = 'SELECT Id FROM Opportunity__c WHERE Type = :contractType';
+        List<sObject> rows = Database.query(query);
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "Opportunity__c" for r in reads)
+
+
+def test_find_reads_database_query_variable_no_double_count():
+    """Typed LHS should not produce a duplicate movement from the fallback pass."""
+    src = """
+public class DynQNoDupe {
+    void run() {
+        String q = 'SELECT Id FROM Case WHERE IsClosed = false';
+        List<Case> cases = Database.query(q);
+    }
+}
+"""
+    reads = find_reads(src)
+    case_reads = [r for r in reads if r.data_group_ref == "Case"]
+    assert len(case_reads) == 1
+
+
+def test_find_reads_database_query_variable_sui_addsor_pattern():
+    """Mirrors the exact pattern from SUI_AddSORController line 148."""
+    src = """
+public class SUI_AddSORController {
+    @AuraEnabled
+    public static list<serviceCatalougeWrapper> fetchAllSORList(
+        String workOrderId, String componentId, String contractType, boolean isSupplementaryWorksFlag
+    ) {
+        String query = 'SELECT Id, Name FROM SUI_Service_Catalogue__c' +
+            ' WHERE SUI_Contract_Type__c=:contractType';
+        if (componentId != null) {
+            query += ' AND SUI_Component__c =:componentId';
+        }
+        System.debug('The query is' + query);
+        list<SUI_Service_Catalogue__c> serviceCatalougeList = database.query(query);
+        return null;
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "SUI_Service_Catalogue__c" for r in reads)
