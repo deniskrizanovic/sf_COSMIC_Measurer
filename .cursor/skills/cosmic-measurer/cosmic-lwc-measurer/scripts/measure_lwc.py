@@ -15,7 +15,7 @@ for path_entry in [str(_SCRIPT_DIR), str(_COSMIC_MEASURER_DIR)]:
     if path_entry not in sys.path:
         sys.path.insert(0, path_entry)
 
-from lwc_parser import detect_apex_imports, infer_bundle_name, parse_lwc_native_movements  # noqa: E402
+from lwc_parser import detect_apex_import_vars, detect_apex_imports, infer_bundle_name, parse_lwc_native_movements  # noqa: E402
 from shared.models import RawMovement  # noqa: E402
 from shared.output import (  # noqa: E402
     CANONICAL_EXIT_DATA_GROUP_REF,
@@ -168,11 +168,12 @@ def measure_lwc_bundle(
 
     js_source = js_path.read_text(encoding="utf-8", errors="replace")
     html_source = html_path.read_text(encoding="utf-8", errors="replace")
-    movements = parse_lwc_native_movements(js_source, html_source)
 
     warnings: list[str] = []
     inferred_user_output_group: str | None = None
     imports = detect_apex_imports(js_source)
+    apex_import_vars = detect_apex_import_vars(js_source)
+    movements = parse_lwc_native_movements(js_source, html_source, apex_import_names=apex_import_vars)
     search_paths = [Path(path) for path in (apex_search_paths or [])]
     order_hint_start = 10000
     if imports:
