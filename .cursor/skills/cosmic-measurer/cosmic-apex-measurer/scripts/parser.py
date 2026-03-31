@@ -34,15 +34,22 @@ SYSTEM_SCHEDULE_NEW = re.compile(
 
 
 # SOQL: [SELECT ... FROM ObjectName ...] — object after FROM
+# [^\]]+ allows any character (including /* block comments */ in SELECT) up to the closing bracket
 SOQL_FROM = re.compile(
-    r"\[\s*SELECT\s+[\w\s,\.\(\):]+FROM\s+(\w+)\s+",
+    r"\[\s*SELECT\s+[^\]]+?FROM\s+(\w+)\s+",
     re.IGNORECASE | re.DOTALL,
 )
 
 # Database.getQueryLocator([SELECT ... FROM X ...])
 GET_QUERY_LOCATOR = re.compile(
-    r"Database\.getQueryLocator\s*\(\s*\[\s*SELECT\s+[\w\s,\.\(\):]+FROM\s+(\w+)\s+",
+    r"Database\.getQueryLocator\s*\(\s*\[\s*SELECT\s+[^\]]+?FROM\s+(\w+)\s+",
     re.IGNORECASE | re.DOTALL,
+)
+
+# CustomMetadata__mdt.getInstance('...') — platform API metadata read (no SOQL)
+MDT_GET_INSTANCE = re.compile(
+    r"\b(\w+__mdt)\s*\.\s*getInstance\s*\(",
+    re.IGNORECASE,
 )
 
 # Database.query('SELECT ... FROM X ...') — static string
@@ -501,6 +508,14 @@ def find_reads(source: str) -> list[RawMovement]:
             process_soql_block(
                 obj, _line_number(source, m.start()), qstr
             )
+
+    # CustomMetadata__mdt.getInstance('...') — platform API, no SOQL emitted
+    seen_mdt: set[str] = set()
+    for m in MDT_GET_INSTANCE.finditer(source):
+        obj = m.group(1)
+        if obj.lower() not in seen_mdt:
+            seen_mdt.add(obj.lower())
+            append_read(obj, _line_number(source, m.start()))
 
     return movements
 
