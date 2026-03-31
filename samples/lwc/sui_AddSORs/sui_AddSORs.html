@@ -1,0 +1,222 @@
+<template>
+    <div class="slds-box regular-text">  
+        <!--Show errors if any-->
+        <div lwc:if={error}>
+            <c-sui_-generic-error-panel show-only-system-validation-message=true errors={error}></c-sui_-generic-error-panel>
+        </div>
+       
+        <div class="slds-page-header">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:work_order_item"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                            <div if:false={supplementaryWorksFlag} class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate main-header " title={label.SUI_ADDSOR_Title}>{label.SUI_ADDSOR_Title}</span>
+                                </h1>
+                            </div>
+                            <div if:true={supplementaryWorksFlag} class="slds-page-header__name-title regular-text ">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate main-header " title={label.SUI_ADDSupplementarySOR_Title}>{label.SUI_ADDSupplementarySOR_Title}</span>
+                                </h1>
+                            </div>
+                            </div>
+                          
+                            <p class="slds-page-header__name-meta small-header">
+                                {label.SUI_ADDSOR_Subtitle}
+                            </p>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+
+        <div class="slds-var-p-top_medium">
+            <lightning-spinner alternative-text="Loading" size="large" if:true={showLoader}></lightning-spinner>
+        </div> 
+
+        <div class="slds-box ">
+            <div if:false = {disableComponentFlag} class="filter-label-container small-header ">
+                <div >{label.SUI_ADDSOR_Lookup_Label}</div> 
+                <div class="slds-m-left_small">
+                    {label.SUI_ADDSOR_Search_Label}
+                </div>
+            </div>
+            <div if:true = {disableComponentFlag} class="filter-label-container small-header ">
+                <div ><p>Selected Component</p></div> 
+            </div>
+            
+            <div class="filter-container">   
+                <!--<div class={componentClass}><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange}></c-sui_-lwc-lookup></div>-->
+                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange} is-componet-disable = {disableComponentFlag} ></c-sui_-lwc-lookup></div>
+                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" where={componentTypeWhereClause} initial-lookup-value={selectedComponentType} placeholder="Component Type" display-label-field='Name' oncustomlookupupdateevent={handleComponentTypeChange} ></c-sui_-lwc-lookup></div>
+                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" where={subComponentWhereClause} initial-lookup-value={selectedSubComponent} placeholder="Sub Component" display-label-field='Name' oncustomlookupupdateevent={handleSubComponentChange}  ></c-sui_-lwc-lookup></div>
+                <div></div>
+                <div> 
+                    <lightning-input type="text" class="search-input regular-text" placeholder="Search..." value={searchKey} onchange={handleSearchChange}></lightning-input>
+                </div>
+            </div>
+        </div>
+         
+        <div if:false={supplementaryWorksFlag} class="note text-color-subtitle regular-text"> 
+           {label.SUI_ADDSOR_Note}
+        </div>
+
+        <div class="table-container" >
+            <div if:false={isNoData}>
+                <div class="slds-var-m-bottom_large" if:true={isEdidenceVisible}> 
+                    <c-sui_-upload-evidence evidence-required={isEvidenceRequired} record-id={recordId} evidence-flag=true></c-sui_-upload-evidence>
+                </div> 
+            </div>
+        </div>
+
+    <div class="table-fixed-height">
+        <table aria-multiselectable="true" class="slds-table slds-table_bordered slds-table_fixed-layout slds-table_resizable-cols regular-text " role="grid">
+            <thead class="table-head">
+                <!--Check box for all record selection-->
+                <tr class="slds-line-height_reset">
+                    <th class="slds-text-align_right slds-p-left_xxx-small slds-cell_action-mode" scope="col" style="width:0.85rem">
+                        <div class="slds-th__action slds-th__action_form slds-checkbox">
+                            <input type="checkbox" id="checkbox-unique-id-1" tabindex="0" class="headerCheckbox"  onclick={handleAllCheck}/>
+                            <label class="slds-checkbox__label" for="checkbox-unique-id-1" id="check-select-all-label">
+                                <span class="slds-checkbox_faux"></span>
+                        </label>
+                        </div>
+                    </th>
+                    <!--Header for The Columns-->
+                    <template for:each={headers} for:item="item">  
+                        <th key={item.header} aria-sort="none" class={item.class} scope="col">
+                            <div class="slds-grid slds-m-left_x-small slds-grid_vertical-align-center slds-has-flexi-truncate small-header">
+                                <span class="slds-truncate" title="Name">{item.header}</span>
+                            </div>
+                            <button class="slds-button slds-button_icon slds-th__action-button slds-button_icon-xx-small" aria-haspopup="true" tabindex="-1" title="Wrap/Unwrap" onclick={setWrapCell}>
+                                <svg class="slds-button__icon slds-button__icon_hint slds-button__icon_xx-small" aria-hidden="true">
+                                <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#chevrondown"></use>
+                                </svg>
+                                <span class="slds-assistive-text">Wrap Text</span>
+                            </button>
+                            <div class="slds-resizable">
+                                <span class="slds-resizable__handle">
+                                    <span class="slds-resizable__divider"></span>
+                                </span>
+                            </div>
+                        </th>
+                    </template>
+                </tr>
+            </thead>    
+            
+            <tbody>
+                <template for:each={tempSorList} for:item="sList" for:index="index">  
+                    <!--Row creation using Record List-->    
+                    <tr key={sList.Id} aria-selected="false" class="slds-hint-parent">
+                        <!--Input check-box for row selection-->
+                        <td class="slds-text-align_right slds-cell_action-mode" role="gridcell">
+                            <div class="slds-checkbox">
+                            <input  class="selectionCheckbox" 
+                                    type="checkbox" 
+                                    data-index={index}
+                                    name="options" 
+                                    id={sList.Id} 
+                                    value={sList.Id} 
+                                    tabindex="0" 
+                                    aria-labelledby="check-button-label column-group-header" 
+                                    onchange={handlecheck} 
+                                    data-id={sList.Id}
+                                    data-type="SelectionCheckbox"/>
+                            <label class="slds-checkbox__label" for={sList.Id} id={sList.Id}>
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-form-element__label slds-assistive-text">Select item</span>
+                            </label>
+                            </div>
+                        </td>
+                        <td class="slds-cell_action-mode" role="gridcell">
+                            <div class="slds-truncate" title={sList.SUI_Service_Item_Code}>{sList.SUI_Service_Item_Code}</div>
+                        </td>
+                        <td class="slds-cell_action-mode " >
+                            <!-- <div class={customClass} title={sList.SUI_Service_Item_Short_Description}>{sList.SUI_Service_Item_Short_Description}</div> -->
+                            <div class={customClass} title={sList.SUI_Service_Item_Long_Description}>{sList.SUI_Service_Item_Long_Description}</div>
+                        </td>
+                        <td class="slds-cell_action-mode" role="gridcell">
+                            <div class="slds-truncate" title={sList.component} >{sList.component}</div>
+                        </td>
+                        <td class="slds-cell_action-mode" role="gridcell">
+                            <div class="slds-truncate" title={sList.componentType}>{sList.componentType}</div>
+                        </td>
+                        <td class="slds-cell_action-mode" role="gridcell">
+                            <div class={customClass} title={sList.subComponent}>{sList.subComponent}</div>
+                        </td>
+                        <!-- Quantity Input-->
+                        <td class="slds-cell-edit slds-cell_action-mode " role="gridcell">
+                            <input type="number" max="9999" step="1"
+                                class="slds-input quantityInput text-alignment" 
+                                id={sList.Id}
+                                name={sList.Id} 
+                                style="width:70px;"
+                                data-type="Quantity"  
+                                data-id={sList.Id}
+                                onblur={handleQtyInput} 
+                               />
+                            <!--Edit button for Quantity Input-->   
+                            <lightning-button-icon class="slds-cell-edit__button slds-m-left_x-small" 
+                                                icon-name="utility:edit" 
+                                                icon-class="slds-button__icon_edit" 
+                                                title="Settings" 
+                                                variant="bare" 
+                                                data-id={sList.Id}
+                                                onclick={handleQuantityEditClick}>
+                            </lightning-button-icon>
+                            <div class="error-message" data-id={sList.Id} style="display: none; color: red;">Quantity cannot be negative</div>
+                        </td>
+                        <!-- Location Type Input-->
+                        <td class="slds-cell_action-mode" role="gridcell" data-id={index}>
+                            <div>
+                                <c-sui_searchable-combobox
+                                    data-id={sList.Id}
+                                    data-type = "LocationType"
+                                    placeholder="Search..."
+                                    options={locationTypeOptions}
+                                    custom-id={sList.Id}
+                                    type = "LocationType"
+                                    required
+                                    onselect={handleLocationInput} 
+                                >
+                                </c-sui_searchable-combobox>
+
+                            </div>
+                        </td>
+                    </tr>
+                </template>    
+            </tbody>      
+        </table>
+    </div>
+            <!--Display previous and Next button for data-table-->
+            <div if:true={showPreviousNext} class="slds-m-around_medium">
+                <center>
+                    <lightning-button label="Previous" variant="neutral" 
+                        icon-name="utility:chevronleft" onclick={previousHandler}>
+                     </lightning-button>
+                    &nbsp; Page {page} of {totalPage} &nbsp;
+                    <lightning-button label="Next" variant="neutral" icon-name="utility:chevronright" 
+                        icon-position="right" onclick={nextHandler}>
+                    </lightning-button>
+                </center>
+            </div>
+            <div if:true={isNoData}>
+                <c-sui_-illustration heading= {label.SUI_ADDSORNoRecordMessage} 
+                                message-body= {label.SUI_ADDSORNoRecordHeading} 
+                                image-name="no_data:desert"
+                                image-size="small">
+                </c-sui_-illustration>
+            </div>
+    </div>    
+  
+    <div class="button-container">
+        <lightning-button if:false={isButtondisable} label="Cancel" onclick={handleCancel}></lightning-button>
+        <div class="slds-m-right_xx-small"></div>
+        <lightning-button if:false={isButtondisable} label="Save" variant="brand" onclick={handleSave}></lightning-button>    
+    </div>
+</template>

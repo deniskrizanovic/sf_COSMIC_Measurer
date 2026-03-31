@@ -1,0 +1,111 @@
+.filter-container{ 
+	display : grid;
+	grid-template-columns:  1fr 1fr 1fr 1fr 1fr;
+	column-gap: 15px;  
+	padding-bottom: 20px;
+}
+.table-fixed-height{
+	max-height: 50vh;
+	overflow-y: scroll;
+}
+.table-data{
+	max-height: 250px;
+	overflow-y: auto;
+}
+
+.toggle-button{ 
+	padding-top: 20px;
+    padding-left: 40px;
+} 
+.text-alignment{
+	text-align: center;
+}
+.table-container{
+	margin-top:15px;
+}
+.note{
+	padding-top: 10px;
+	text-align: end; 
+}
+.text-color-subtitle{
+	color: gray;
+}
+.search-dont-know{
+	font-size: 12px;
+    color: black;
+    padding-top: 0px;
+}
+.search-input{
+	margin-top: 0px;
+}
+
+.filter-label-container{
+	display : grid;
+	grid-template-columns:  4fr 1fr;
+}
+
+.disabled-div {
+	opacity: 0.6; /* Apply a lower opacity */
+	pointer-events: none; /* Disable pointer events */
+}
+.enabled-div {
+	color: black;
+}
+
+.button-container {
+    display: flex;
+	align-items: center;
+    justify-content: center;
+    padding: 10px; /* Optional: Add padding for spacing around the buttons */
+}
+
+.small-size{
+	width:70px;
+}
+.extra-small-size{
+	width:65px;
+}
+.medium-size{
+	width:85px; 
+}
+.extra-medium-size{
+	width:80px;
+}
+
+.main-header {
+	-webkit-text-fill-color: black;
+	font-family:'customfont';
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.small-header {
+	-webkit-text-fill-color: black;
+	font-family:'customfont';
+	font-size: 12px;
+}
+
+.regular-text {
+   /* -webkit-text-fill-color: black; */
+   font-family:'customfont';
+   font-size: 12px;
+}
+
+.evidence-text {
+	-webkit-text-fill-color:#BA0517;
+}
+
+@font-face{
+	font-family:'customfont';
+	src:url('/resource/SUI_SalseforceSans/SalesforceSans-Regular.ttf') format('TrueType');	
+}
+
+.table-head {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.error-message{
+	white-space: break-spaces;
+}
