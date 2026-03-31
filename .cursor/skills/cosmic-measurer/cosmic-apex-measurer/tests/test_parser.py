@@ -570,6 +570,36 @@ public class CtorName {
     assert entries[0].name.startswith("Receive accountId")
 
 
+def test_find_reads_soql_with_inline_block_comment_in_select():
+    src = """
+public class C {
+    @AuraEnabled
+    public static WorkOrder getWorkOrderDetails(String workOrderId) {
+        WorkOrder wo = [SELECT Id,CaseId,
+                        /*Component*/
+                        SUI_Ref__r.SUI_Master_Component__c,Contract_Type__c
+                        FROM WorkOrder WHERE Id = :workOrderId LIMIT 1];
+        return wo;
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "WorkOrder" for r in reads)
+
+
+def test_find_reads_mdt_get_instance():
+    src = """
+public class C {
+    @AuraEnabled
+    public static boolean checkIfEvidenceRequired() {
+        return SUI_Milestone_Metadata__mdt.getInstance('Supplementary_Works_SUP1_SUP2').SUI_Evidence_Required__c;
+    }
+}
+"""
+    reads = find_reads(src)
+    assert any(r.data_group_ref == "SUI_Milestone_Metadata__mdt" for r in reads)
+
+
 def test_parse_batch_with_blank_source_line_read_keeps_execution_order_none():
     src = """
 public class BatchBlankLine implements Database.Batchable {
