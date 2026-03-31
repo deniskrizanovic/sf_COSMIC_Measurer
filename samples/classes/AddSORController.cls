@@ -7,7 +7,7 @@
 * @version        1.0
 * @created        2023-18-07
 * @modified       YYYY-MM-DD
-* @testClass      SUI_AddSORController_Test
+* @testClass      AddSORController_Test
 * ──────────────────────────────────────────────────────────────────────────────────────────────────
 * @changes
 * v1.0            swapnil.barad@sauceconsulting.com.au
@@ -23,7 +23,7 @@
   2024-04-03      Removed everything added under v2.0
 * ─────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
-public class SUI_AddSORController {
+public class AddSORController {
 
     /**   
     * Custom exception class
@@ -275,7 +275,7 @@ public class SUI_AddSORController {
                update workOrderRecord;
            }    
        }catch(Exception ex){
-           ApplicationLogHandler.addLog('SUI_AddSORController','save',ex);
+           ApplicationLogHandler.addLog('AddSORController','save',ex);
            ApplicationLogHandler.saveLog();
            throw new CustomException('Exception occured while saving SoR. Please contact system admin :=> '+ ex.getMessage());
        }
@@ -336,7 +336,7 @@ public class SUI_AddSORController {
            }
 
        }catch(Exception ex){
-           ApplicationLogHandler.addLog('SUI_AddSORController','save',ex);
+           ApplicationLogHandler.addLog('AddSORController','save',ex);
            ApplicationLogHandler.saveLog();
            throw new CustomException('Exception occured while saving SoR. Please contact system admin :=> '+ ex.getMessage());
        }
@@ -375,7 +375,7 @@ public class SUI_AddSORController {
        try {
            update wo;
        } catch(exception ex) {
-           ApplicationLogHandler.addLog('SUI_AddSORController','updateWorkOrder',ex);
+           ApplicationLogHandler.addLog('AddSORController','updateWorkOrder',ex);
            ApplicationLogHandler.saveLog();
            throw new SUI_CustomException('Exception occured while updating work order. Please contact system admin :=> '+ ex.getMessage());
        }

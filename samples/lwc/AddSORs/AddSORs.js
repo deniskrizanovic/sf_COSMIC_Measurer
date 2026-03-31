@@ -1,14 +1,14 @@
 import { LightningElement,api, wire , track } from 'lwc';
-import save from "@salesforce/apex/SUI_AddSORController.save";
-import saveSupplementaryWoli from "@salesforce/apex/SUI_AddSORController.saveSupplementaryWoli";
-import fetchAllSORList from "@salesforce/apex/SUI_AddSORController.fetchAllSORList";
-import fetchSOLRList from "@salesforce/apex/SUI_AddSORController.fetchSOLRList";
-import getWorkOrderDetails from "@salesforce/apex/SUI_AddSORController.getWorkOrderDetails";
-import updateComment from "@salesforce/apex/SUI_AddSORController.updateComments";
-import fetchMetadataRecs from '@salesforce/apex/SUI_AddSORController.fetchMetadataRecs';
-import fetchScopCompId from '@salesforce/apex/SUI_AddSORController.fetchScopCompId';
+import save from "@salesforce/apex/AddSORController.save";
+import saveSupplementaryWoli from "@salesforce/apex/AddSORController.saveSupplementaryWoli";
+import fetchAllSORList from "@salesforce/apex/AddSORController.fetchAllSORList";
+import fetchSOLRList from "@salesforce/apex/AddSORController.fetchSOLRList";
+import getWorkOrderDetails from "@salesforce/apex/AddSORController.getWorkOrderDetails";
+import updateComment from "@salesforce/apex/AddSORController.updateComments";
+import fetchMetadataRecs from '@salesforce/apex/AddSORController.fetchMetadataRecs';
+import fetchScopCompId from '@salesforce/apex/AddSORController.fetchScopCompId';
 
-import checkIfEvidenceRequired from "@salesforce/apex/SUI_AddSORController.checkIfEvidenceRequired";
+import checkIfEvidenceRequired from "@salesforce/apex/AddSORController.checkIfEvidenceRequired";
 import LightningConfirm from 'lightning/confirm';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import SUI_ADDSOR_Subtitle from '@salesforce/label/c.SUI_ADDSOR_Subtitle';
@@ -30,10 +30,10 @@ import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import userId from '@salesforce/user/Id';
 import { registerListener, unregisterAllListeners } from 'c/pubsub';
 import { CurrentPageReference } from 'lightning/navigation';
-import getLocations from '@salesforce/apex/SUI_AddSORController.getLocations';
+import getLocations from '@salesforce/apex/AddSORController.getLocations';
 
 
-export default class Sui_AddSORs extends LightningElement {
+export default class AddSORs extends LightningElement {
 
     //Column Header with class values for respective Column
     headers = [{ header: 'Service Item Code', class: 'slds-is-resizable slds-is-sortable slds-cell_action-mod extra-medium-size' },
