@@ -1,14 +1,14 @@
 import { LightningElement,api, wire , track } from 'lwc';
-import save from "@salesforce/apex/SUI_AddSORController.save";
-import saveSupplementaryWoli from "@salesforce/apex/SUI_AddSORController.saveSupplementaryWoli";
-import fetchAllSORList from "@salesforce/apex/SUI_AddSORController.fetchAllSORList";
-import fetchSOLRList from "@salesforce/apex/SUI_AddSORController.fetchSOLRList";
-import getWorkOrderDetails from "@salesforce/apex/SUI_AddSORController.getWorkOrderDetails";
-import updateComment from "@salesforce/apex/SUI_AddSORController.updateComments";
-import fetchMetadataRecs from '@salesforce/apex/SUI_AddSORController.fetchMetadataRecs';
-import fetchScopCompId from '@salesforce/apex/SUI_AddSORController.fetchScopCompId';
+import save from "@salesforce/apex/AddSORController.save";
+import saveSupplementaryWoli from "@salesforce/apex/AddSORController.saveSupplementaryWoli";
+import fetchAllSORList from "@salesforce/apex/AddSORController.fetchAllSORList";
+import fetchSOLRList from "@salesforce/apex/AddSORController.fetchSOLRList";
+import getWorkOrderDetails from "@salesforce/apex/AddSORController.getWorkOrderDetails";
+import updateComment from "@salesforce/apex/AddSORController.updateComments";
+import fetchMetadataRecs from '@salesforce/apex/AddSORController.fetchMetadataRecs';
+import fetchScopCompId from '@salesforce/apex/AddSORController.fetchScopCompId';
 
-import checkIfEvidenceRequired from "@salesforce/apex/SUI_AddSORController.checkIfEvidenceRequired";
+import checkIfEvidenceRequired from "@salesforce/apex/AddSORController.checkIfEvidenceRequired";
 import LightningConfirm from 'lightning/confirm';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import SUI_ADDSOR_Subtitle from '@salesforce/label/c.SUI_ADDSOR_Subtitle';
@@ -25,15 +25,18 @@ import SUI_ADDSOR_SaveLabel from '@salesforce/label/c.SUI_ADDSOR_SaveLabel';
 import SUI_ADDSOR_LocationRequired from '@salesforce/label/c.SUI_Add_SOR_Location_Required';
 import SUI_ADDSOR_QuantityNotValid from '@salesforce/label/c.SUI_ADDSOR_QuantityNotValid';
 import SUI_ADDSOR_Page_Size from '@salesforce/label/c.SUI_ADDSOR_Page_Size';
+import SUI_Update_WOLI_not_Available_for_Contract_Type from '@salesforce/label/c.SUI_Update_WOLI_not_Available_for_Contract_Type';
 import isPortalEnabled from '@salesforce/schema/User.IsPortalEnabled';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import userId from '@salesforce/user/Id';
 import { registerListener, unregisterAllListeners } from 'c/pubsub';
 import { CurrentPageReference } from 'lightning/navigation';
-import getLocations from '@salesforce/apex/SUI_AddSORController.getLocations';
+import getLocations from '@salesforce/apex/AddSORController.getLocations';
+import submitForApproval from '@salesforce/apex/SUI_WorkOrderLineItemTableController.submitForApproval';
+import validateUpdates from '@salesforce/apex/SUI_WorkOrderLineItemTableController.validateUpdates';
 
 
-export default class Sui_AddSORs extends LightningElement {
+export default class AddSORs extends LightningElement {
 
     //Column Header with class values for respective Column
     headers = [{ header: 'Service Item Code', class: 'slds-is-resizable slds-is-sortable slds-cell_action-mod extra-medium-size' },
@@ -108,9 +111,9 @@ export default class Sui_AddSORs extends LightningElement {
     @track pageSize = SUI_ADDSOR_Page_Size;
     @track totalRecountCount = 0;
     @track totalPage = 0;
-    @track tempSorList =[];
-  
-    
+    @track tempSorList = [];
+    @track allowSave;
+
     //Custom Labels 
     @track label = {
         SUI_ADDSOR_Title,
@@ -123,7 +126,8 @@ export default class Sui_AddSORs extends LightningElement {
         SUI_ADDSORNoRecordHeading,
         SUI_ADDSupplementarySOR_SaveMessage,
         SUI_ADDSOR_SaveMessage,
-        SUI_ADDSOR_SaveLabel
+        SUI_ADDSOR_SaveLabel,
+        SUI_Update_WOLI_not_Available_for_Contract_Type
     };
 
     //Lookup setup for Location
@@ -168,6 +172,7 @@ export default class Sui_AddSORs extends LightningElement {
         this.fetchScopeData();
         this.fetchWorkOrderInfo();
         this.fetchEvidenceStatus();
+        this.validateSaving();
 
     }
 
@@ -237,8 +242,14 @@ export default class Sui_AddSORs extends LightningElement {
                 let recordType = result?.SUI_Ref__r?.RecordType?.DeveloperName;
                 //Check if WorkOrder SubMilestone is Commenced Work or Resume Work
                 this.workOrderSubMilestoneStatus = result?.SUI_Sub_Milestone__c;
+                let woStatus = result?.Status;
                 console.log('The Work Order Status is===>'+this.workOrderSubMilestoneStatus);
-                if(this.workOrderSubMilestoneStatus == 'Commenced Work' || this.workOrderSubMilestoneStatus == 'Resume Work'){
+                if(this.workOrderSubMilestoneStatus == 'Commenced Work' || this.workOrderSubMilestoneStatus == 'Resume Work' 
+                    || this.workOrderSubMilestoneStatus == 'Work Impacted'
+                    || this.workOrderSubMilestoneStatus == 'EoT Requested' || this.workOrderSubMilestoneStatus == 'SUPW2 Requested'
+                    || this.workOrderSubMilestoneStatus == 'SUPW1 Identified'
+                    || woStatus == 'On-hold'){  //MA2-298 - TUS 3 - Added Work Impacted sub milestone 
+                        
                     this.supplementaryWorksFlag = true;
                     
                 }
@@ -633,10 +644,27 @@ export default class Sui_AddSORs extends LightningElement {
                 }
             });
         });
-   }
+    }
+
+    validateSaving() {
+
+        validateUpdates({
+            workOrderId: this.recordId
+        })
+            .then((result) => {
+                console.log('check result>>:>:>'+result);
+               this.allowSave = result; 
+            }).catch((err) => {
+                console.log('error occured while checking decision matrix Records:>>' + JSON.stringify(err));
+            });
+    }
 
     //handles the SOR Save process to add the SOR and to create the work order line item
     async handleSave(event) {
+
+        console.log('validate saving>::>>'+this.validateSaving());
+        if (this.allowSave) {
+
         this.handlefinalSelection();
         const requiredFields = this.template.querySelectorAll('c-sui_searchable-combobox');
         const allcheckboxes = this.template.querySelectorAll(".selectionCheckbox");
@@ -722,6 +750,7 @@ export default class Sui_AddSORs extends LightningElement {
                                 variant: 'success',
                                 mode: 'dismissable',
                             });
+                            this.SendForAprroval();
                             this.dispatchEvent(evt);
                             comp?.resetEvidence();
                             this.isPortalUser == true ? location.reload() : '';
@@ -745,6 +774,7 @@ export default class Sui_AddSORs extends LightningElement {
                             variant: 'success',
                             mode: 'dismissable',
                         });
+                        this.SendForAprroval();
                         this.dispatchEvent(evt);
                         comp?.resetEvidence();
                         this.isPortalUser == true ?  location.reload() : '';
@@ -770,6 +800,14 @@ export default class Sui_AddSORs extends LightningElement {
         } else {
             this.handleCancel();
             this.fetchSORList();
+            }
+        } else {
+            const evt = new ShowToastEvent({
+                title: 'Error',
+                message: SUI_Update_WOLI_not_Available_for_Contract_Type,
+                variant: 'error'
+            });
+            this.dispatchEvent(evt);
         }
     }
 
@@ -917,6 +955,13 @@ export default class Sui_AddSORs extends LightningElement {
         this.processRecords(data);
         this.displayRecordPerPage(1);
         this.maintainSelection();
+    }
+    SendForAprroval(){
+        console.log('In Send For Approval');
+        submitForApproval({ 
+                recId: this.recordId, 
+            })
+            .then(result => {});
     }
      
 }
