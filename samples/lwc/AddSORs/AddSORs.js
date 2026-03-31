@@ -11,29 +11,29 @@ import fetchScopCompId from '@salesforce/apex/AddSORController.fetchScopCompId';
 import checkIfEvidenceRequired from "@salesforce/apex/AddSORController.checkIfEvidenceRequired";
 import LightningConfirm from 'lightning/confirm';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import SUI_ADDSOR_Subtitle from '@salesforce/label/c.SUI_ADDSOR_Subtitle';
-import SUI_ADDSOR_Title from '@salesforce/label/c.SUI_ADDSOR_Title';
-import SUI_ADDSupplementarySOR_Title from '@salesforce/label/c.SUI_ADDSupplementarySOR_Title';
-import SUI_ADDSOR_Note from '@salesforce/label/c.SUI_ADDSOR_Note';
-import SUI_ADDSOR_Search_Label from '@salesforce/label/c.SUI_ADDSOR_Search_Label';
-import SUI_ADDSOR_Lookup_Label from '@salesforce/label/c.SUI_ADDSOR_Lookup_Label';
-import SUI_ADDSORNoRecordHeading from '@salesforce/label/c.SUI_ADDSORNoRecordHeading';
-import SUI_ADDSORNoRecordMessage from '@salesforce/label/c.SUI_ADDSORNoRecordMessage';
-import SUI_ADDSupplementarySOR_SaveMessage from '@salesforce/label/c.SUI_ADDSupplementarySOR_SaveMessage';
-import SUI_ADDSOR_SaveMessage from '@salesforce/label/c.SUI_ADDSOR_SaveMessage';
-import SUI_ADDSOR_SaveLabel from '@salesforce/label/c.SUI_ADDSOR_SaveLabel';
-import SUI_ADDSOR_LocationRequired from '@salesforce/label/c.SUI_Add_SOR_Location_Required';
-import SUI_ADDSOR_QuantityNotValid from '@salesforce/label/c.SUI_ADDSOR_QuantityNotValid';
-import SUI_ADDSOR_Page_Size from '@salesforce/label/c.SUI_ADDSOR_Page_Size';
-import SUI_Update_WOLI_not_Available_for_Contract_Type from '@salesforce/label/c.SUI_Update_WOLI_not_Available_for_Contract_Type';
+import ADDSOR_Subtitle from '@salesforce/label/c.ADDSOR_Subtitle';
+import ADDSOR_Title from '@salesforce/label/c.ADDSOR_Title';
+import ADDSupplementarySOR_Title from '@salesforce/label/c.ADDSupplementarySOR_Title';
+import ADDSOR_Note from '@salesforce/label/c.ADDSOR_Note';
+import ADDSOR_Search_Label from '@salesforce/label/c.ADDSOR_Search_Label';
+import ADDSOR_Lookup_Label from '@salesforce/label/c.ADDSOR_Lookup_Label';
+import ADDSORNoRecordHeading from '@salesforce/label/c.ADDSORNoRecordHeading';
+import ADDSORNoRecordMessage from '@salesforce/label/c.ADDSORNoRecordMessage';
+import ADDSupplementarySOR_SaveMessage from '@salesforce/label/c.ADDSupplementarySOR_SaveMessage';
+import ADDSOR_SaveMessage from '@salesforce/label/c.ADDSOR_SaveMessage';
+import ADDSOR_SaveLabel from '@salesforce/label/c.ADDSOR_SaveLabel';
+import ADDSOR_LocationRequired from '@salesforce/label/c.Add_SOR_Location_Required';
+import ADDSOR_QuantityNotValid from '@salesforce/label/c.ADDSOR_QuantityNotValid';
+import ADDSOR_Page_Size from '@salesforce/label/c.ADDSOR_Page_Size';
+import Update_WOLI_not_Available_for_Contract_Type from '@salesforce/label/c.Update_WOLI_not_Available_for_Contract_Type';
 import isPortalEnabled from '@salesforce/schema/User.IsPortalEnabled';
 import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import userId from '@salesforce/user/Id';
 import { registerListener, unregisterAllListeners } from 'c/pubsub';
 import { CurrentPageReference } from 'lightning/navigation';
 import getLocations from '@salesforce/apex/AddSORController.getLocations';
-import submitForApproval from '@salesforce/apex/SUI_WorkOrderLineItemTableController.submitForApproval';
-import validateUpdates from '@salesforce/apex/SUI_WorkOrderLineItemTableController.validateUpdates';
+import submitForApproval from '@salesforce/apex/WorkOrderLineItemTableController.submitForApproval';
+import validateUpdates from '@salesforce/apex/WorkOrderLineItemTableController.validateUpdates';
 
 
 export default class AddSORs extends LightningElement {
@@ -57,9 +57,9 @@ export default class AddSORs extends LightningElement {
     @track errorMessage;
     @track showOnlyError;
 
-    componentWhereClause = 'RecordType.DeveloperName = \'SUI_Component\'';
-    componentTypeWhereClause = 'RecordType.DeveloperName = \'SUI_Component_Type\'';
-    subComponentWhereClause = 'RecordType.DeveloperName = \'SUI_Sub_Component\'';
+    componentWhereClause = 'RecordType.DeveloperName = \'Component\'';
+    componentTypeWhereClause = 'RecordType.DeveloperName = \'Component_Type\'';
+    subComponentWhereClause = 'RecordType.DeveloperName = \'Sub_Component\'';
 
     @track sorList = [];
     masterSorList;
@@ -85,8 +85,8 @@ export default class AddSORs extends LightningElement {
     @track isEvidenceRequired = false;
 
     //location Mandatory
-    @track locationRequiredMessage = SUI_ADDSOR_LocationRequired;
-    @track quantityNotValidMessage = SUI_ADDSOR_QuantityNotValid;
+    @track locationRequiredMessage = ADDSOR_LocationRequired;
+    @track quantityNotValidMessage = ADDSOR_QuantityNotValid;
 
     //Location, Quantity values and Checkbox status
     @track isButtondisable = true;
@@ -108,7 +108,7 @@ export default class AddSORs extends LightningElement {
     @track page = 1;
     @track startingRecord = 1;
     @track endingRecord = 0;
-    @track pageSize = SUI_ADDSOR_Page_Size;
+    @track pageSize = ADDSOR_Page_Size;
     @track totalRecountCount = 0;
     @track totalPage = 0;
     @track tempSorList = [];
@@ -116,18 +116,18 @@ export default class AddSORs extends LightningElement {
 
     //Custom Labels 
     @track label = {
-        SUI_ADDSOR_Title,
-        SUI_ADDSOR_Subtitle,
-        SUI_ADDSOR_Note,
-        SUI_ADDSOR_Search_Label,
-        SUI_ADDSOR_Lookup_Label,
-        SUI_ADDSupplementarySOR_Title,
-        SUI_ADDSORNoRecordMessage,
-        SUI_ADDSORNoRecordHeading,
-        SUI_ADDSupplementarySOR_SaveMessage,
-        SUI_ADDSOR_SaveMessage,
-        SUI_ADDSOR_SaveLabel,
-        SUI_Update_WOLI_not_Available_for_Contract_Type
+        ADDSOR_Title,
+        ADDSOR_Subtitle,
+        ADDSOR_Note,
+        ADDSOR_Search_Label,
+        ADDSOR_Lookup_Label,
+        ADDSupplementarySOR_Title,
+        ADDSORNoRecordMessage,
+        ADDSORNoRecordHeading,
+        ADDSupplementarySOR_SaveMessage,
+        ADDSOR_SaveMessage,
+        ADDSOR_SaveLabel,
+        Update_WOLI_not_Available_for_Contract_Type
     };
 
     //Lookup setup for Location
@@ -140,9 +140,9 @@ export default class AddSORs extends LightningElement {
     filter = {
         criteria: [
             {
-                fieldPath: "SUI_Record_Type_Developer_Name__c",
+                fieldPath: "Record_Type_Developer_Name__c",
                 operator: "eq",
-                value: "SUI_Location_Type",
+                value: "Location_Type",
             }
         ],
     };
@@ -239,9 +239,9 @@ export default class AddSORs extends LightningElement {
                 this.selectedComponent = '';
                 this.selectedComponentType = '';
                 this.selectedSubComponent = '';
-                let recordType = result?.SUI_Ref__r?.RecordType?.DeveloperName;
+                let recordType = result?.Ref__r?.RecordType?.DeveloperName;
                 //Check if WorkOrder SubMilestone is Commenced Work or Resume Work
-                this.workOrderSubMilestoneStatus = result?.SUI_Sub_Milestone__c;
+                this.workOrderSubMilestoneStatus = result?.Sub_Milestone__c;
                 let woStatus = result?.Status;
                 console.log('The Work Order Status is===>'+this.workOrderSubMilestoneStatus);
                 if(this.workOrderSubMilestoneStatus == 'Commenced Work' || this.workOrderSubMilestoneStatus == 'Resume Work' 
@@ -256,23 +256,23 @@ export default class AddSORs extends LightningElement {
 
                this.contractType = result.Contract_Type__c; 
                 console.log('=====Work Order Info====',result);
-                console.log('=====recordType====',result?.SUI_Ref__r?.RecordType?.DeveloperName);
-                if (recordType == 'SUI_Component') {
-                    console.log('====SUI_Component=====',result);
-                    this.selectedComponent = result?.SUI_Ref__r?.SUI_Master_Component__c;
+                console.log('=====recordType====',result?.Ref__r?.RecordType?.DeveloperName);
+                if (recordType == 'Component') {
+                    console.log('====Component=====',result);
+                    this.selectedComponent = result?.Ref__r?.Master_Component__c;
                 }
 
-                if (recordType == 'SUI_Component_Type') {
-                    console.log('====SUI_Component_Type=====',result);
-                    this.selectedComponent = result?.SUI_Ref__r?.SUI_Reference_Component__r?.SUI_Master_Component__c;
-                    this.selectedComponentType = result?.SUI_Ref__r?.SUI_Master_Component_Type__c ;
+                if (recordType == 'Component_Type') {
+                    console.log('====Component_Type=====',result);
+                    this.selectedComponent = result?.Ref__r?.Reference_Component__r?.Master_Component__c;
+                    this.selectedComponentType = result?.Ref__r?.Master_Component_Type__c ;
                 }
 
-                if (recordType == 'SUI_Sub_Component') {
-                    console.log('====SUI_Sub_Component=====', result);
-                    this.selectedComponent = result.SUI_Ref__r?.SUI_Reference_Component_Type__r?.SUI_Reference_Component__r?.SUI_Master_Component__c;
-                    this.selectedComponentType = result.SUI_Ref__r?.SUI_Reference_Component_Type__r?.SUI_Master_Component_Type__c;
-                    this.selectedSubComponent = result?.SUI_Ref__r?.SUI_Master_Sub_Component__c;
+                if (recordType == 'Sub_Component') {
+                    console.log('====Sub_Component=====', result);
+                    this.selectedComponent = result.Ref__r?.Reference_Component_Type__r?.Reference_Component__r?.Master_Component__c;
+                    this.selectedComponentType = result.Ref__r?.Reference_Component_Type__r?.Master_Component_Type__c;
+                    this.selectedSubComponent = result?.Ref__r?.Master_Sub_Component__c;
                 }
                 this.showLoader=false;
 
@@ -283,13 +283,13 @@ export default class AddSORs extends LightningElement {
             }).finally(() => {
                 console.log('Inside finally ===>');
                 this.showLoader = false;
-                if (this.workOrderDetails?.SUI_Record_Type_developer_Name__c == 'SUI_Scoping') {
+                if (this.workOrderDetails?.Record_Type_developer_Name__c == 'Scoping') {
                     this.disableComponentFlag = true;
                     this.selectedComponent = this.scopeID;
                     this.selectedComponentType = '';
                     this.selectedSubComponent = '';
                 }
-                //if(this.supplementaryWorksFlag == true || this.workOrderDetails?.SUI_Record_Type_developer_Name__c=='SUI_Scoping'){
+                //if(this.supplementaryWorksFlag == true || this.workOrderDetails?.Record_Type_developer_Name__c=='Scoping'){
                 if (this.supplementaryWorksFlag == true) {
                     console.log('Fetching socping or supplimentary service catalouge items');
                     this.fetchSORList();
@@ -402,7 +402,7 @@ export default class AddSORs extends LightningElement {
         const { data, error } = value;
         if (data) {
             this.addSORMetavalue = data;
-            this.maxSelection = this.addSORMetavalue[0].SUI_Value__c;
+            this.maxSelection = this.addSORMetavalue[0].Value__c;
         } else if (error) {
             this.error = error;
         }
@@ -710,8 +710,8 @@ export default class AddSORs extends LightningElement {
             }
         }
         const result = await LightningConfirm.open({
-            message: this.supplementaryWorksFlag == true ? this.label.SUI_ADDSupplementarySOR_SaveMessage : this.label.SUI_ADDSOR_SaveMessage,
-            label: this.label.SUI_ADDSOR_SaveLabel,
+            message: this.supplementaryWorksFlag == true ? this.label.ADDSupplementarySOR_SaveMessage : this.label.ADDSOR_SaveMessage,
+            label: this.label.ADDSOR_SaveLabel,
             theme:'warning',
         });
         if (result) {
@@ -804,7 +804,7 @@ export default class AddSORs extends LightningElement {
         } else {
             const evt = new ShowToastEvent({
                 title: 'Error',
-                message: SUI_Update_WOLI_not_Available_for_Contract_Type,
+                message: Update_WOLI_not_Available_for_Contract_Type,
                 variant: 'error'
             });
             this.dispatchEvent(evt);
@@ -944,9 +944,9 @@ export default class AddSORs extends LightningElement {
         let lowercaseSearchKey = '' + this.searchKey?.toLowerCase();
         data = this.masterSorList.filter(record => {
             return (record.Name?.toLowerCase().includes(lowercaseSearchKey) ||
-                record.SUI_Service_Item_Code?.toLowerCase().includes(lowercaseSearchKey) ||
-                //record.SUI_Service_Item_Short_Description?.toLowerCase().includes(this.searchKey?.toLowerCase()) || 
-                record.SUI_Service_Item_Long_Description?.toLowerCase().includes(lowercaseSearchKey) ||
+                record.Service_Item_Code?.toLowerCase().includes(lowercaseSearchKey) ||
+                //record.Service_Item_Short_Description?.toLowerCase().includes(this.searchKey?.toLowerCase()) || 
+                record.Service_Item_Long_Description?.toLowerCase().includes(lowercaseSearchKey) ||
                 record.component?.toLowerCase().includes(lowercaseSearchKey) ||
                 record.componentType?.toLowerCase().includes(lowercaseSearchKey) ||
                 record.subComponent?.toLowerCase().includes(lowercaseSearchKey));

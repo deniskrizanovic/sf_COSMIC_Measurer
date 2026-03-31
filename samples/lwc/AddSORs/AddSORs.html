@@ -16,18 +16,18 @@
                             <div class="slds-page-header__name">
                             <div if:false={supplementaryWorksFlag} class="slds-page-header__name-title">
                                 <h1>
-                                    <span class="slds-page-header__title slds-truncate main-header " title={label.SUI_ADDSOR_Title}>{label.SUI_ADDSOR_Title}</span>
+                                    <span class="slds-page-header__title slds-truncate main-header " title={label.ADDSOR_Title}>{label.ADDSOR_Title}</span>
                                 </h1>
                             </div>
                             <div if:true={supplementaryWorksFlag} class="slds-page-header__name-title regular-text ">
                                 <h1>
-                                    <span class="slds-page-header__title slds-truncate main-header " title={label.SUI_ADDSupplementarySOR_Title}>{label.SUI_ADDSupplementarySOR_Title}</span>
+                                    <span class="slds-page-header__title slds-truncate main-header " title={label.ADDSupplementarySOR_Title}>{label.ADDSupplementarySOR_Title}</span>
                                 </h1>
                             </div>
                             </div>
                           
                             <p class="slds-page-header__name-meta small-header">
-                                {label.SUI_ADDSOR_Subtitle}
+                                {label.ADDSOR_Subtitle}
                             </p>
                         </div>
                     </div> 
@@ -41,9 +41,9 @@
 
         <div class="slds-box ">
             <div if:false = {disableComponentFlag} class="filter-label-container small-header ">
-                <div >{label.SUI_ADDSOR_Lookup_Label}</div> 
+                <div >{label.ADDSOR_Lookup_Label}</div> 
                 <div class="slds-m-left_small">
-                    {label.SUI_ADDSOR_Search_Label}
+                    {label.ADDSOR_Search_Label}
                 </div>
             </div>
             <div if:true = {disableComponentFlag} class="filter-label-container small-header ">
@@ -51,10 +51,10 @@
             </div>
             
             <div class="filter-container">   
-                <!--<div class={componentClass}><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange}></c-sui_-lwc-lookup></div>-->
-                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange} is-componet-disable = {disableComponentFlag} ></c-sui_-lwc-lookup></div>
-                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" where={componentTypeWhereClause} initial-lookup-value={selectedComponentType} placeholder="Component Type" display-label-field='Name' oncustomlookupupdateevent={handleComponentTypeChange} ></c-sui_-lwc-lookup></div>
-                <div><c-sui_-lwc-lookup object-a-p-i-name="SUI_Master_Data__c" label-for-component="" where={subComponentWhereClause} initial-lookup-value={selectedSubComponent} placeholder="Sub Component" display-label-field='Name' oncustomlookupupdateevent={handleSubComponentChange}  ></c-sui_-lwc-lookup></div>
+                <!--<div class={componentClass}><c-sui_-lwc-lookup object-a-p-i-name="Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange}></c-sui_-lwc-lookup></div>-->
+                <div><c-sui_-lwc-lookup object-a-p-i-name="Master_Data__c" label-for-component="" initial-lookup-value={selectedComponent}  where={componentWhereClause} placeholder="Component"  display-label-field='Name' oncustomlookupupdateevent={handleComponentChange} is-componet-disable = {disableComponentFlag} ></c-sui_-lwc-lookup></div>
+                <div><c-sui_-lwc-lookup object-a-p-i-name="Master_Data__c" label-for-component="" where={componentTypeWhereClause} initial-lookup-value={selectedComponentType} placeholder="Component Type" display-label-field='Name' oncustomlookupupdateevent={handleComponentTypeChange} ></c-sui_-lwc-lookup></div>
+                <div><c-sui_-lwc-lookup object-a-p-i-name="Master_Data__c" label-for-component="" where={subComponentWhereClause} initial-lookup-value={selectedSubComponent} placeholder="Sub Component" display-label-field='Name' oncustomlookupupdateevent={handleSubComponentChange}  ></c-sui_-lwc-lookup></div>
                 <div></div>
                 <div> 
                     <lightning-input type="text" class="search-input regular-text" placeholder="Search..." value={searchKey} onchange={handleSearchChange}></lightning-input>
@@ -63,7 +63,7 @@
         </div>
          
         <div if:false={supplementaryWorksFlag} class="note text-color-subtitle regular-text"> 
-           {label.SUI_ADDSOR_Note}
+           {label.ADDSOR_Note}
         </div>
 
         <div class="table-container" >
@@ -134,11 +134,11 @@
                             </div>
                         </td>
                         <td class="slds-cell_action-mode" role="gridcell">
-                            <div class="slds-truncate" title={sList.SUI_Service_Item_Code}>{sList.SUI_Service_Item_Code}</div>
+                            <div class="slds-truncate" title={sList.Service_Item_Code}>{sList.Service_Item_Code}</div>
                         </td>
                         <td class="slds-cell_action-mode " >
-                            <!-- <div class={customClass} title={sList.SUI_Service_Item_Short_Description}>{sList.SUI_Service_Item_Short_Description}</div> -->
-                            <div class={customClass} title={sList.SUI_Service_Item_Long_Description}>{sList.SUI_Service_Item_Long_Description}</div>
+                            <!-- <div class={customClass} title={sList.Service_Item_Short_Description}>{sList.Service_Item_Short_Description}</div> -->
+                            <div class={customClass} title={sList.Service_Item_Long_Description}>{sList.Service_Item_Long_Description}</div>
                         </td>
                         <td class="slds-cell_action-mode" role="gridcell">
                             <div class="slds-truncate" title={sList.component} >{sList.component}</div>
@@ -206,8 +206,8 @@
                 </center>
             </div>
             <div if:true={isNoData}>
-                <c-sui_-illustration heading= {label.SUI_ADDSORNoRecordMessage} 
-                                message-body= {label.SUI_ADDSORNoRecordHeading} 
+                <c-sui_-illustration heading= {label.ADDSORNoRecordMessage} 
+                                message-body= {label.ADDSORNoRecordHeading} 
                                 image-name="no_data:desert"
                                 image-size="small">
                 </c-sui_-illustration>
