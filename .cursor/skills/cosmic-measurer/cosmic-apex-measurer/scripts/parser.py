@@ -59,6 +59,20 @@ DB_QUERY_STRING = re.compile(
 )
 FROM_IN_STRING = re.compile(r"FROM\s+(\w+)", re.IGNORECASE)
 
+# Database.query(variable) — dynamic query; LHS typed as List<X>, Set<X>, or X[]
+# Groups: 1=List inner type, 2=Set inner type, 3=array element type, 4=query variable name
+DB_QUERY_VAR_LHS = re.compile(
+    r"(?:[Ll]ist\s*<\s*(\w+)\s*>|[Ss]et\s*<\s*(\w+)\s*>|(\w+)\s*\[\])"
+    r"\s+\w+\s*=\s*[Dd]atabase\.query\s*\(\s*(\w+)\s*\)",
+    re.IGNORECASE,
+)
+
+# Database.query(variable) — any call with a bare identifier (not a string literal)
+DB_QUERY_VAR_ONLY = re.compile(
+    r"[Dd]atabase\.query\s*\(\s*([A-Za-z_]\w*)\s*\)",
+    re.IGNORECASE,
+)
+
 # DML: insert x; update y; upsert z; delete w;
 DML_STATEMENT = re.compile(
     r"\b(insert|update|upsert|delete)\s+(\w+)\b",
@@ -440,6 +454,46 @@ def _infer_write_data_group_ref(
     return obj
 
 
+def _extract_method_body_lines(source: str, boundaries: list[tuple[str, int]], line: int) -> str:
+    """Return the source lines that form the method body containing the given line number."""
+    method_name = _method_containing_line(boundaries, line)
+    if not method_name:
+        return source
+    lines = source.split("\n")
+    # Find the start line of the containing method
+    start_line = 0
+    for name, mline in sorted(boundaries, key=lambda x: x[1]):
+        if name == method_name:
+            start_line = mline
+            break
+    # Find the end line: start of the next method, or EOF
+    end_line = len(lines)
+    for name, mline in sorted(boundaries, key=lambda x: x[1]):
+        if mline > start_line:
+            end_line = mline
+            break
+    return "\n".join(lines[start_line - 1 : end_line - 1])
+
+
+# String assigned to a variable containing a FROM clause:
+# query = 'SELECT ... FROM ObjectName ...'  or  query += '... FROM ObjectName ...'
+_STRING_ASSIGN_FROM = re.compile(
+    r"\b(\w+)\s*\+?=\s*'([^']*FROM\s+(\w+)[^']*)'",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _trace_query_var_to_object(var_name: str, method_body: str) -> Optional[str]:
+    """
+    Scan a method body for string assignments to var_name that contain a FROM clause.
+    Returns the first object name found, or None.
+    """
+    for m in _STRING_ASSIGN_FROM.finditer(method_body):
+        if m.group(1).lower() == var_name.lower():
+            return m.group(3)
+    return None
+
+
 def find_reads(source: str) -> list[RawMovement]:
     """Collect all reads (including duplicates) so execution_order can pick earliest."""
     movements: list[RawMovement] = []
@@ -508,6 +562,32 @@ def find_reads(source: str) -> list[RawMovement]:
             process_soql_block(
                 obj, _line_number(source, m.start()), qstr
             )
+
+    # Database.query(variable) — typed LHS: List<X>, Set<X>, or X[]
+    # Track (line, var_name) pairs already resolved so the fallback pass doesn't double-count.
+    _dyn_query_handled: set[tuple[int, str]] = set()
+    _generic_lhs = frozenset({"sobject", "object"}) | PRIMITIVE_TYPES | FRAMEWORK_TYPES
+    for m in DB_QUERY_VAR_LHS.finditer(source):
+        obj = m.group(1) or m.group(2) or m.group(3) or ""
+        var_name = m.group(4) or ""
+        line = _line_number(source, m.start())
+        if obj.lower() in _generic_lhs:
+            # LHS type is too generic — defer to string-tracing fallback below
+            continue
+        if obj:
+            process_soql_block(obj, line, "")
+            _dyn_query_handled.add((line, var_name.lower()))
+
+    # Database.query(variable) — string-tracing fallback for untyped / generic LHS
+    for m in DB_QUERY_VAR_ONLY.finditer(source):
+        arg = m.group(1)
+        line = _line_number(source, m.start())
+        if (line, arg.lower()) in _dyn_query_handled:
+            continue
+        method_body = _extract_method_body_lines(source, boundaries, line)
+        obj = _trace_query_var_to_object(arg, method_body)
+        if obj and obj.lower() not in _generic_lhs:
+            process_soql_block(obj, line, "")
 
     # CustomMetadata__mdt.getInstance('...') — platform API, no SOQL emitted
     seen_mdt: set[str] = set()
