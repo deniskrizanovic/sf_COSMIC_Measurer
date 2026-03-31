@@ -9,30 +9,35 @@
                         <valueListItems>
                             <value>Submit</value>
                             <visibilityRule>
-                                <booleanFilter>((1 AND 5) OR 2) AND 3 AND 4</booleanFilter>
+                                <booleanFilter>1 AND 4 AND  ( 2 OR (5 AND 6)) AND 3</booleanFilter>
                                 <criteria>
                                     <leftValue>{!Record.Status}</leftValue>
                                     <operator>EQUAL</operator>
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.Sub_Milestone__c}</leftValue>
-                                    <operator>EQUAL</operator>
-                                    <rightValue>SUPW2 Requested</rightValue>
-                                </criteria>
-                                <criteria>
-                                    <leftValue>{!Record.LineItemCount}</leftValue>
+                                    <leftValue>{!Record.SUI_Active_Line_Items__c}</leftValue>
                                     <operator>GT</operator>
                                     <rightValue>0</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.Work_Priority__r.Name}</leftValue>
+                                    <leftValue>{!Record.SUI_Work_Priority__r.Name}</leftValue>
                                     <operator>NE</operator>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.ParentWorkOrder.Record_Type_developer_Name__c}</leftValue>
+                                    <leftValue>{!Record.ParentWorkOrder.SUI_Record_Type_developer_Name__c}</leftValue>
                                     <operator>NE</operator>
-                                    <rightValue>Jobs</rightValue>
+                                    <rightValue>SUI_Jobs</rightValue>
+                                </criteria>
+                                <criteria>
+                                    <leftValue>{!Record.LineItemCount}</leftValue>
+                                    <operator>GT</operator>
+                                    <rightValue>2</rightValue>
+                                </criteria>
+                                <criteria>
+                                    <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
+                                    <operator>EQUAL</operator>
+                                    <rightValue>SUI_Programmed</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -46,19 +51,19 @@
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.Approval_Indicator__c}</leftValue>
+                                    <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
                                     <operator>EQUAL</operator>
                                     <rightValue>Not Applicable</rightValue>
                                 </criteria>
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>Maintenance</rightValue>
+                                    <rightValue>SUI_Maintenance</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Edit_Request</value>
+                            <value>WorkOrder.SUI_Edit_Request</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2</booleanFilter>
                                 <criteria>
@@ -67,24 +72,19 @@
                                     <rightValue>Raised</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
+                                    <leftValue>{!Record.SUI_Record_Type_developer_Name__c}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>Maintenance</rightValue>
+                                    <rightValue>SUI_Maintenance</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Add_Comment</value>
+                            <value>WorkOrder.SUI_Add_Comment</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Manage_Work_Order</value>
+                            <value>WorkOrder.SUI_Manage_Work_Order</value>
                             <visibilityRule>
-                                <booleanFilter>1 AND 2 AND 3 AND 4 AND 5</booleanFilter>
-                                <criteria>
-                                    <leftValue>{!Record.EOT_Request_Status__c}</leftValue>
-                                    <operator>NE</operator>
-                                    <rightValue>Requested</rightValue>
-                                </criteria>
+                                <booleanFilter>1 AND 2 AND 3 AND ( ( 4 AND 5 AND 6 ) OR NOT (6))</booleanFilter>
                                 <criteria>
                                     <leftValue>{!Record.Status}</leftValue>
                                     <operator>NE</operator>
@@ -101,14 +101,24 @@
                                     <rightValue>Payment Made</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.Supplementary_Works_Indicator__c}</leftValue>
+                                    <leftValue>{!Record.SUI_EOT_Request_Status__c}</leftValue>
                                     <operator>NE</operator>
                                     <rightValue>In-Review</rightValue>
+                                </criteria>
+                                <criteria>
+                                    <leftValue>{!Record.SUI_Supplementary_Works_Indicator__c}</leftValue>
+                                    <operator>NE</operator>
+                                    <rightValue>In-Review</rightValue>
+                                </criteria>
+                                <criteria>
+                                    <leftValue>{!Record.SUI_Assigned_to__r.SUI_Contractor_API_Version__c}</leftValue>
+                                    <operator>EQUAL</operator>
+                                    <rightValue>V1</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Create_Ad_hoc_Assessment</value>
+                            <value>WorkOrder.SUI_Create_Ad_hoc_Assessment</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2 AND 3 AND 4 AND 5</booleanFilter>
                                 <criteria>
@@ -139,7 +149,7 @@
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Raise_Access_Issue</value>
+                            <value>WorkOrder.SUI_Raise_Access_Issue</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2</booleanFilter>
                                 <criteria>
@@ -148,19 +158,19 @@
                                     <rightValue>On-hold</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.AI_Raised_By__r.FirstName}</leftValue>
+                                    <leftValue>{!Record.SUI_AI_Raised_By__r.FirstName}</leftValue>
                                     <operator>EQUAL</operator>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Create_Child_WO_Association</value>
+                            <value>WorkOrder.SUI_Create_Child_WO_Association</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Create_Warranty</value>
+                            <value>WorkOrder.SUI_Create_Warranty</value>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Report_Visible_Damage</value>
+                            <value>WorkOrder.SUI_Report_Visible_Damage</value>
                             <visibilityRule>
                                 <booleanFilter>1 AND 2 AND 3 AND 4</booleanFilter>
                                 <criteria>
@@ -174,7 +184,7 @@
                                     <rightValue>Payment Made</rightValue>
                                 </criteria>
                                 <criteria>
-                                    <leftValue>{!Record.VD_Identified_By__c}</leftValue>
+                                    <leftValue>{!Record.SUI_VD_Identified_By__c}</leftValue>
                                     <operator>EQUAL</operator>
                                 </criteria>
                                 <criteria>
@@ -185,9 +195,9 @@
                             </visibilityRule>
                         </valueListItems>
                         <valueListItems>
-                            <value>WorkOrder.Create_Credit_Note</value>
+                            <value>WorkOrder.SUI_Create_Credit_Note</value>
                             <visibilityRule>
-                                <booleanFilter>(1 OR 2) AND (3 OR 5) AND 4</booleanFilter>
+                                <booleanFilter>(1 OR 2) AND (3 OR 5) AND (4 OR 6)</booleanFilter>
                                 <criteria>
                                     <leftValue>{!Record.Status}</leftValue>
                                     <operator>EQUAL</operator>
@@ -201,7 +211,7 @@
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>Maintenance</rightValue>
+                                    <rightValue>SUI_Maintenance</rightValue>
                                 </criteria>
                                 <criteria>
                                     <leftValue>{!Record.Contract_Type__c}</leftValue>
@@ -211,7 +221,12 @@
                                 <criteria>
                                     <leftValue>{!Record.RecordType.DeveloperName}</leftValue>
                                     <operator>EQUAL</operator>
-                                    <rightValue>Programmed</rightValue>
+                                    <rightValue>SUI_Programmed</rightValue>
+                                </criteria>
+                                <criteria>
+                                    <leftValue>{!Record.Contract_Type__c}</leftValue>
+                                    <operator>EQUAL</operator>
+                                    <rightValue>SFSS</rightValue>
                                 </criteria>
                             </visibilityRule>
                         </valueListItems>
@@ -274,6 +289,72 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>contractorPortal</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>editableFields</name>
+                    <value>SUI_Quantity__c,SUI_Deactivation_Requested__c,SUI_Location_Type__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>fieldApiNames</name>
+                    <value>LineItemNumber,SUI_Service_Item_Code__c,SUI_Deactivation_Requested__c,Status,Sui_Original_Quantity__c,SUI_Quantity__c,SUI_Unit_of_Measure__c,SUI_Total_Cost__c,Sui_Original_Location_Type__r.Name,SUI_Location_Type__c,SUI_Service_Item_Long_Description__c,SUI_Approver_Comment__c,SUI_Supplementary_Works_Type__c,SUI_Visible_Damage__c,SUI_Finance_Category__c,SUI_Change_Request_Reason__c</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>filterField</name>
+                    <value>WorkOrderId</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>isRequestFromSORTab</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>objectApiName</name>
+                    <value>WorkOrderLineItem</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>recordId</name>
+                    <value>{recordId}</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListObjectAPIName</name>
+                    <value>WorkOrderLineItem</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>sortingOrder</name>
+                </componentInstanceProperties>
+                <componentName>WorkOrderLineItemTable</componentName>
+                <identifier>c_WorkOrderLineItemTable3</identifier>
+                <visibilityRule>
+                    <booleanFilter>1 OR 2</booleanFilter>
+                    <criteria>
+                        <leftValue>{!Record.Status}</leftValue>
+                        <operator>EQUAL</operator>
+                        <rightValue>Work In-progress</rightValue>
+                    </criteria>
+                    <criteria>
+                        <leftValue>{!Record.Status}</leftValue>
+                        <operator>EQUAL</operator>
+                        <rightValue>On-hold</rightValue>
+                    </criteria>
+                </visibilityRule>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>actionNames</name>
+                    <valueList>
+                        <valueListItems>
+                            <value>CustomButton.WorkOrderLineItem.Add_SOR</value>
+                        </valueListItems>
+                    </valueList>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>maxRecordsToDisplay</name>
+                    <value>10</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>parentFieldApiName</name>
                     <value>WorkOrder.Id</value>
                 </componentInstanceProperties>
@@ -282,95 +363,172 @@
                     <value>WorkOrderLineItems</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <name>relatedListComponentOverride</name>
+                    <name>relatedListDisplayType</name>
                     <value>ADVGRID</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
-                    <name>rowsToDisplay</name>
-                    <value>10</value>
+                    <name>relatedListFieldAliases</name>
+                    <valueList>
+                        <valueListItems>
+                            <value>Name</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Service_Item_Code__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Service_Item_Long_Description__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>Status</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Quantity__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Total_Cost__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Location_Type__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Supplementary_Works_Type__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Finance_Category__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Visible_Damage__c</value>
+                        </valueListItems>
+                    </valueList>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListLabel</name>
+                    <value>Work Order Line Items</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>showActionBar</name>
                     <value>true</value>
                 </componentInstanceProperties>
-                <componentName>force:relatedListSingleContainer</componentName>
-                <identifier>force_relatedListSingleContainer</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
-                <componentName>sui_AddSORs</componentName>
-                <identifier>c_sui_AddSORs</identifier>
+                <componentInstanceProperties>
+                    <name>sortFieldAlias</name>
+                    <value>__DEFAULT__</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>sortFieldOrder</name>
+                    <value>Default</value>
+                </componentInstanceProperties>
+                <componentName>lst:dynamicRelatedList</componentName>
+                <identifier>lst_dynamicRelatedList</identifier>
                 <visibilityRule>
-                    <booleanFilter>((1 AND 2 AND (3 OR 4 OR 5)) OR (6 AND 2 AND NOT(7) AND (3 OR 4 OR 5)) OR (6 AND 2 AND 7 AND (4 OR 5)) )</booleanFilter>
+                    <booleanFilter>1 AND 2 AND 3</booleanFilter>
                     <criteria>
-                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
+                        <leftValue>{!Record.SUI_Add_SOR_Visibility__c}</leftValue>
                         <operator>EQUAL</operator>
-                        <rightValue>Maintenance</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Supplementary_Works_Indicator__c}</leftValue>
-                        <operator>NE</operator>
-                        <rightValue>In-Review</rightValue>
+                        <rightValue>true</rightValue>
                     </criteria>
                     <criteria>
                         <leftValue>{!Record.Status}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Raised</rightValue>
+                        <operator>NE</operator>
+                        <rightValue>Work In-progress</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.Sub_Milestone__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Commenced Work</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Sub_Milestone__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Resume Work</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Programmed</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.ParentWorkOrder.Record_Type_developer_Name__c}</leftValue>
-                        <operator>CONTAINS</operator>
-                        <rightValue>Jobs</rightValue>
+                        <leftValue>{!Record.Status}</leftValue>
+                        <operator>NE</operator>
+                        <rightValue>On-hold</rightValue>
                     </criteria>
                 </visibilityRule>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
-                <componentName>sui_AddSORs</componentName>
-                <identifier>c_sui_AddSORs2</identifier>
+                <componentInstanceProperties>
+                    <name>actionNames</name>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>maxRecordsToDisplay</name>
+                    <value>10</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>parentFieldApiName</name>
+                    <value>WorkOrder.Id</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>WorkOrderLineItems</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListDisplayType</name>
+                    <value>ADVGRID</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListFieldAliases</name>
+                    <valueList>
+                        <valueListItems>
+                            <value>Name</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Service_Item_Code__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Service_Item_Long_Description__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>Status</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Quantity__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Total_Cost__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Location_Type__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Supplementary_Works_Type__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Finance_Category__c</value>
+                        </valueListItems>
+                        <valueListItems>
+                            <value>SUI_Visible_Damage__c</value>
+                        </valueListItems>
+                    </valueList>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListLabel</name>
+                    <value>Work Order Line Items</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>showActionBar</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>sortFieldAlias</name>
+                    <value>__DEFAULT__</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>sortFieldOrder</name>
+                    <value>Default</value>
+                </componentInstanceProperties>
+                <componentName>lst:dynamicRelatedList</componentName>
+                <identifier>lst_dynamicRelatedList2</identifier>
                 <visibilityRule>
-                    <booleanFilter>1 AND 5 AND (2 OR 3 OR 4)</booleanFilter>
+                    <booleanFilter>1 AND 2 AND 3</booleanFilter>
+                    <criteria>
+                        <leftValue>{!Record.SUI_Add_SOR_Visibility__c}</leftValue>
+                        <operator>EQUAL</operator>
+                        <rightValue>false</rightValue>
+                    </criteria>
                     <criteria>
                         <leftValue>{!Record.Status}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Closed</rightValue>
+                        <operator>NE</operator>
+                        <rightValue>Work In-progress</rightValue>
                     </criteria>
                     <criteria>
-                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Access Issue - Work NOT commenced</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Access Issue - After Work commenced</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Works_Closed_Reason__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>No work undertaken/required</rightValue>
-                    </criteria>
-                    <criteria>
-                        <leftValue>{!Record.Record_Type_developer_Name__c}</leftValue>
-                        <operator>EQUAL</operator>
-                        <rightValue>Maintenance</rightValue>
+                        <leftValue>{!Record.Status}</leftValue>
+                        <operator>NE</operator>
+                        <rightValue>On-hold</rightValue>
                     </criteria>
                 </visibilityRule>
             </componentInstance>
@@ -412,6 +570,40 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>componentLabel</name>
+                    <value>Work Guide</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>isHiddenWhenEmpty</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>isRunNameDisplayed</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>isStageNameDisplayed</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>isStepNameDisplayed</name>
+                    <value>false</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>prioritizationCriteria</name>
+                    <value>Last Modified Date (Ascending)</value>
+                </componentInstanceProperties>
+                <componentName>interaction_orchestrator:workGuide</componentName>
+                <identifier>interaction_orchestrator_workGuide</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-7072ef8d-8d5c-41ef-9dda-18b3da804afd</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
                     <name>lookupFieldName</name>
                     <value>Id</value>
                 </componentInstanceProperties>
@@ -421,7 +613,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Access_Issue_Details</value>
+                    <value>WorkOrder.SUI_Access_Issue_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord2</identifier>
@@ -439,7 +631,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Access_Issue_NCAT_Details</value>
+                    <value>WorkOrder.SUI_Access_Issue_NCAT_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord3</identifier>
@@ -457,7 +649,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Access_Issue_Appointment_Details</value>
+                    <value>WorkOrder.SUI_Access_Issue_Appointment_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord4</identifier>
@@ -479,7 +671,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>flowName</name>
-                    <value>Work_Order_Display_Warranties</value>
+                    <value>SUI_Work_Order_Display_Warranties</value>
                 </componentInstanceProperties>
                 <componentName>flowruntime:interview</componentName>
                 <identifier>flowruntime_interview</identifier>
@@ -501,7 +693,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Visible_Damage_Details</value>
+                    <value>WorkOrder.SUI_Visible_Damage_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord</identifier>
@@ -519,7 +711,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Visible_Damage_NCAT_Details</value>
+                    <value>WorkOrder.SUI_Visible_Damage_NCAT_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord5</identifier>
@@ -537,7 +729,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Visible_Damage_Tenant_Details</value>
+                    <value>WorkOrder.SUI_Visible_Damage_Tenant_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord6</identifier>
@@ -555,7 +747,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Visible_Damage_Recovery_Details</value>
+                    <value>WorkOrder.SUI_Visible_Damage_Recovery_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord8</identifier>
@@ -573,7 +765,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>WorkOrder.Visible_Damage_Debt_Recovery_Details</value>
+                    <value>WorkOrder.SUI_Visible_Damage_Debt_Recovery_Details</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord7</identifier>
@@ -595,7 +787,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>flowName</name>
-                    <value>Associations_Show_Work_Order_Associations</value>
+                    <value>SUI_Associations_Show_Work_Order_Associations</value>
                 </componentInstanceProperties>
                 <componentName>flowruntime:interview</componentName>
                 <identifier>flowruntime_interview2</identifier>
@@ -649,6 +841,20 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:tab</componentName>
                 <identifier>flexipage_tab5</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-7072ef8d-8d5c-41ef-9dda-18b3da804afd</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Pending Approvals</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab17</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>
@@ -714,6 +920,10 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Tabs</value>
+                </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tabs</name>
                     <value>sidebartabs</value>
@@ -790,6 +1000,36 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>parentFieldApiName</name>
+                    <value>WorkOrder.Id</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListApiName</name>
+                    <value>Approval_Work_Items__r</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>relatedListComponentOverride</name>
+                    <value>NONE</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>rowsToDisplay</name>
+                    <value>10</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>showActionBar</name>
+                    <value>true</value>
+                </componentInstanceProperties>
+                <componentName>force:relatedListSingleContainer</componentName>
+                <identifier>force_relatedListSingleContainer4</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-63e61fe9-e31e-434a-95ab-cc938fdc6fb6</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
                     <name>active</name>
                     <value>false</value>
                 </componentInstanceProperties>
@@ -817,6 +1057,20 @@
                 </componentInstanceProperties>
                 <componentName>flexipage:tab</componentName>
                 <identifier>flexipage_tab13</identifier>
+            </componentInstance>
+        </itemInstances>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties>
+                    <name>body</name>
+                    <value>Facet-63e61fe9-e31e-434a-95ab-cc938fdc6fb6</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
+                    <name>title</name>
+                    <value>Approval Actions</value>
+                </componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>flexipage_tab12</identifier>
             </componentInstance>
         </itemInstances>
         <name>Facet-c5c71813-8889-46f3-99bd-133b80631fad</name>
@@ -1150,7 +1404,7 @@
                 <identifier>flexipage_richText4</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Supplementary Request</rightValue>
                     </criteria>
@@ -1171,7 +1425,7 @@
                 <identifier>flexipage_richText3</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>EoT Request</rightValue>
                     </criteria>
@@ -1192,7 +1446,7 @@
                 <identifier>flexipage_richText</identifier>
                 <visibilityRule>
                     <criteria>
-                        <leftValue>{!Record.Approval_Indicator__c}</leftValue>
+                        <leftValue>{!Record.SUI_Approval_Indicator__c}</leftValue>
                         <operator>EQUAL</operator>
                         <rightValue>Issuing Work Order</rightValue>
                     </criteria>
@@ -1201,6 +1455,10 @@
         </itemInstances>
         <itemInstances>
             <componentInstance>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Tabs</value>
+                </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tabs</name>
                     <value>Facet-c5c71813-8889-46f3-99bd-133b80631fad</value>
@@ -1212,6 +1470,10 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Tabs</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>tabs</name>
                     <value>Facet-4e9f9c0f-be9d-4f98-943a-774aaa5b1eab</value>
                 </componentInstanceProperties>
@@ -1222,6 +1484,10 @@
         <itemInstances>
             <componentInstance>
                 <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Tabs</value>
+                </componentInstanceProperties>
+                <componentInstanceProperties>
                     <name>tabs</name>
                     <value>tabs</value>
                 </componentInstanceProperties>
@@ -1231,6 +1497,10 @@
         </itemInstances>
         <itemInstances>
             <componentInstance>
+                <componentInstanceProperties>
+                    <name>label</name>
+                    <value>Tabs</value>
+                </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>tabs</name>
                     <value>Facet-fca5cefc-524c-4e7f-b605-830555b5390b</value>
@@ -1255,7 +1525,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>Case.Related_Case</value>
+                    <value>Case.SUI_Related_Case</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord9</identifier>
