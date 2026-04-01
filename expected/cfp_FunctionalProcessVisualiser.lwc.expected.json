@@ -13,7 +13,9 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 7,
-      "viaArtifact": "cfp_getDataMovements"
+      "viaArtifact": "cfp_getDataMovements",
+      "tier": 1,
+      "tierLabel": "Init"
     },
     {
       "name": "Read cfp_Data_Movements__c list",
@@ -23,7 +25,9 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 9,
-      "viaArtifact": "cfp_getDataMovements"
+      "viaArtifact": "cfp_getDataMovements",
+      "tier": 1,
+      "tierLabel": "Init"
     },
     {
       "name": "Display LWC output to user",
@@ -31,7 +35,9 @@
       "movementType": "X",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "lwc",
-      "isApiCall": false
+      "isApiCall": false,
+      "tier": 1,
+      "tierLabel": "Init"
     },
     {
       "name": "Errors/notifications",
@@ -39,7 +45,9 @@
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "lwc",
-      "isApiCall": false
+      "isApiCall": false,
+      "tier": 3,
+      "tierLabel": "Terminal"
     }
   ],
   "requiredMovementTypes": [

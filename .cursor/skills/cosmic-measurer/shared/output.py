@@ -28,6 +28,9 @@ class DataMovementRowOptional(DataMovementRow, total=False):
     mergedFrom: list[dict[str, Any]]
     viaArtifact: str
     isAsync: bool
+    tier: int
+    tierLabel: str
+    triggeringBlock: str
 
 
 class CosmicMeasureOutputCore(TypedDict):
@@ -52,13 +55,14 @@ def cap_movement_name(name: str) -> str:
 
 
 def order_movements(movements: list[RawMovement]) -> list[tuple[RawMovement, list]]:
-    """Sort movements; dedupe R/W. Returns (movement, merged_from)."""
+    """Sort movements by tier then type; dedupe R/W. Returns (movement, merged_from)."""
     def sort_key(m: RawMovement) -> tuple:
+        tier_ord = m.tier if m.tier is not None else 1
         type_ord = TYPE_ORDER.get(m.movement_type, 1)
         exec_ord = m.execution_order if m.execution_order is not None else 999999
         hint = m.order_hint
         line_ord = m.source_line if m.source_line is not None else 999999
-        return (type_ord, exec_ord, hint, line_ord)
+        return (tier_ord, type_ord, exec_ord, hint, line_ord)
 
     ordered = sorted(movements, key=sort_key)
 
@@ -111,6 +115,12 @@ def to_json_movement(
         out["viaArtifact"] = m.via_artifact
     if m.is_async:
         out["isAsync"] = True
+    if m.tier is not None:
+        out["tier"] = m.tier
+    if m.tier_label is not None:
+        out["tierLabel"] = m.tier_label
+    if m.triggering_block is not None:
+        out["triggeringBlock"] = m.triggering_block
     return out
 
 
@@ -135,6 +145,8 @@ def build_output(
             "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
             "implementationType": implementation_type,
             "isApiCall": False,
+            "tier": 3,
+            "tierLabel": "Terminal",
         }
     )
     result: CosmicMeasureOutput = {
@@ -213,12 +225,10 @@ def to_human_summary(output: CosmicMeasureOutput) -> str:
     return "\n".join(lines)
 
 
-def to_table(output: CosmicMeasureOutput) -> str:
-    """Format data movements as a markdown-style table."""
-    rows = output["dataMovements"]
-    if not rows:
-        return f"{output['artifact']['name']}: no data movements"
+_TIER_LABELS_IN_ORDER = ["Init", "Interactions", "Terminal"]
 
+
+def _table_rows_block(rows: list) -> list[str]:
     lines: list[str] = []
     lines.append("| Order | Type | Name | Data group | LineNumber | Via | Merged |")
     lines.append("|-------|------|------|------------|------------|-----|--------|")
@@ -241,9 +251,45 @@ def to_table(output: CosmicMeasureOutput) -> str:
         lines.append(
             f"| {order} | {mtype} | {name} | {dg} | {line} | {via} | {merged_str} |"
         )
+    return lines
+
+
+def to_table(output: CosmicMeasureOutput) -> str:
+    """Format data movements as a markdown table, grouped by tier when tier data is present."""
+    rows = output["dataMovements"]
+    if not rows:
+        return f"{output['artifact']['name']}: no data movements"
 
     artifact = output["artifact"]
     header = f"**{artifact['name']}** ({artifact['type']})"
-    out = header + "\n\n" + "\n".join(lines)
+
+    has_tiers = any(r.get("tierLabel") for r in rows)
+    if not has_tiers:
+        lines = _table_rows_block(rows)
+        out = header + "\n\n" + "\n".join(lines)
+        out += to_human_summary(output)
+        return out
+
+    grouped: dict[str, list] = {}
+    ungrouped: list = []
+    for r in rows:
+        label = r.get("tierLabel")
+        if label:
+            grouped.setdefault(label, []).append(r)
+        else:
+            ungrouped.append(r)
+
+    sections: list[str] = [header]
+    for label in _TIER_LABELS_IN_ORDER:
+        group = grouped.get(label)
+        if not group:
+            continue
+        sections.append(f"\n## {label}")
+        sections.append("\n".join(_table_rows_block(group)))
+    if ungrouped:
+        sections.append("\n## Other")
+        sections.append("\n".join(_table_rows_block(ungrouped)))
+
+    out = "\n\n".join(sections)
     out += to_human_summary(output)
     return out

@@ -59,7 +59,9 @@
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "tier": 3,
+      "tierLabel": "Terminal"
     }
   ]
 }
