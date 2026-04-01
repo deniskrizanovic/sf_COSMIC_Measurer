@@ -23,7 +23,7 @@ from lwc_parser import (  # noqa: E402
     infer_bundle_name,
     parse_lwc_native_movements,
 )
-from shared.models import RawMovement  # noqa: E402
+from shared.models import LwcRawMovement, RawMovement  # noqa: E402
 from shared.output import (  # noqa: E402
     CANONICAL_EXIT_DATA_GROUP_REF,
     CANONICAL_EXIT_NAME,
@@ -46,9 +46,12 @@ class TabContext(TypedDict, total=False):
     title: str
 
 
-class LwcMeasureRequest(TypedDict, total=False):
-    lwc_name: str
+class _LwcMeasureRequestRequired(TypedDict):
     lwc_bundle_dir: str
+
+
+class LwcMeasureRequest(_LwcMeasureRequestRequired, total=False):
+    lwc_name: str
     functional_process_id: str
     apex_search_paths: list[str]
     required_movement_types: list[MovementType]
@@ -97,10 +100,9 @@ def _is_canonical_exit_row(row: dict[str, Any]) -> bool:
 
 
 def _build_class_to_block_map(
-    movements: list[RawMovement],
+    movements: list[LwcRawMovement],
     js_source: str,
 ) -> dict[str, str]:
-    """Return apex_class_name → block_label for E blocks whose handlers call that class."""
     apex_var_map = _detect_apex_import_var_map(js_source)
     if not apex_var_map:
         return {}
@@ -116,12 +118,11 @@ def _build_class_to_block_map(
     return class_to_block
 
 
-def _assign_tiers(movements: list[RawMovement], js_source: str) -> None:
-    """Mutate each RawMovement to set tier, tier_label, triggering_block in-place."""
+def _assign_tiers(movements: list[LwcRawMovement], js_source: str) -> None:
     class_to_block = _build_class_to_block_map(movements, js_source)
 
     has_interaction_linked_r = False
-    display_x_movements: list[RawMovement] = []
+    display_x_movements: list[LwcRawMovement] = []
 
     for m in movements:
         if m.tier is not None:
@@ -161,8 +162,8 @@ def _apex_rows_to_raw_movements(
     *,
     via_artifact: str,
     order_hint_start: int,
-) -> list[RawMovement]:
-    raw: list[RawMovement] = []
+) -> list[LwcRawMovement]:
+    raw: list[LwcRawMovement] = []
     hint = order_hint_start
     for row in rows:
         # Imported Apex exits are internal handoffs to LWC code, not user-visible exits.
@@ -177,7 +178,7 @@ def _apex_rows_to_raw_movements(
             continue
         hint += 1
         raw.append(
-            RawMovement(
+            LwcRawMovement(
                 movement_type=movement_type,
                 data_group_ref=data_group_ref,
                 name=name,

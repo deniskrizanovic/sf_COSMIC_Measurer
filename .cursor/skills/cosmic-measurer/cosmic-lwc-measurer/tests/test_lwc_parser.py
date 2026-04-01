@@ -1,6 +1,6 @@
 """Unit tests for lwc_parser helpers."""
 
-from shared.models import RawMovement
+from shared.models import LwcRawMovement, RawMovement
 from lwc_parser import (
     detect_apex_imports,
     extract_handler_apex_calls,
@@ -14,7 +14,7 @@ from lwc_parser import (
 # ---------------------------------------------------------------------------
 
 def test_raw_movement_has_tier_fields():
-    m = RawMovement(movement_type="E", data_group_ref="User", name="Test", order_hint=1)
+    m = LwcRawMovement(movement_type="E", data_group_ref="User", name="Test", order_hint=1)
     assert m.tier is None
     assert m.tier_label is None
     assert m.block_label is None
@@ -22,7 +22,7 @@ def test_raw_movement_has_tier_fields():
 
 
 def test_raw_movement_tier_fields_accept_values():
-    m = RawMovement(
+    m = LwcRawMovement(
         movement_type="R",
         data_group_ref="Account",
         name="Read Account",
@@ -37,7 +37,7 @@ def test_raw_movement_tier_fields_accept_values():
 
 
 def test_raw_movement_interactions_tier_fields():
-    m = RawMovement(
+    m = LwcRawMovement(
         movement_type="E",
         data_group_ref="FilterCriteria",
         name="Receive filter criteria",
@@ -52,7 +52,7 @@ def test_raw_movement_interactions_tier_fields():
 
 
 def test_raw_movement_triggering_block_field():
-    m = RawMovement(
+    m = LwcRawMovement(
         movement_type="R",
         data_group_ref="Service_Catalogue__c",
         name="Read Service_Catalogue__c list",

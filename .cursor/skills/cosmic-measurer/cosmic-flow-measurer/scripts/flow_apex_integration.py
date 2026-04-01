@@ -3,28 +3,25 @@ Helpers for integrating Flow invocable Apex actions into Flow measurements.
 """
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from shared.models import RawMovement
 from shared.output import CANONICAL_EXIT_DATA_GROUP_REF, CANONICAL_EXIT_NAME
 
 
 def parse_search_paths(csv_paths: str) -> list[Path]:
-    """Parse comma-separated search paths into Path objects."""
     return [Path(p.strip()) for p in csv_paths.split(",") if p.strip()]
 
 
 def resolve_invocable_apex_class_file(
     action_name: str,
     search_paths: list[Path],
-    find_class_file: Any,
+    find_class_file: Callable[[str, list[Path]], Optional[Path]],
 ) -> Optional[Path]:
-    """Resolve actionName to an Apex class file path if available."""
     return find_class_file(action_name, search_paths)
 
 
 def is_canonical_exit_row(row: dict[str, Any]) -> bool:
-    """True when row is the canonical synthetic Errors/notifications exit."""
     return (
         row.get("movementType") == "X"
         and row.get("name") == CANONICAL_EXIT_NAME
@@ -38,7 +35,6 @@ def apex_rows_to_raw_movements(
     via_artifact: str,
     order_hint_start: int,
 ) -> list[RawMovement]:
-    """Convert Apex measurer rows into RawMovement records for Flow ordering."""
     raw: list[RawMovement] = []
     hint = order_hint_start
     for row in rows:
