@@ -7,7 +7,7 @@ from dataclasses import dataclass, field as dc_field
 from html.parser import HTMLParser
 from pathlib import Path
 
-from shared.models import RawMovement
+from shared.models import LwcRawMovement, RawMovement
 
 # ---------------------------------------------------------------------------
 # Regex helpers (kept for wire/LDS/schema/Apex detection)
@@ -153,7 +153,7 @@ class _BlockInfo:
     block_label: str
     e_name: str
     data_group: str
-    handler_names: list
+    handler_names: list[str]
     order_hint: int
 
 
@@ -354,14 +354,14 @@ def parse_lwc_native_movements(
     js_source: str,
     html_source: str,
     apex_import_names: set[str] | None = None,
-) -> list[RawMovement]:
+) -> list[LwcRawMovement]:
     """Extract native LWC E/R/W/X movement candidates from JS/HTML."""
-    movements: list[RawMovement] = []
+    movements: list[LwcRawMovement] = []
     known_apex = apex_import_names or set()
 
     blocks = _classify_html_blocks(html_source)
     for block in blocks:
-        movements.append(RawMovement(
+        movements.append(LwcRawMovement(
             movement_type="E",
             data_group_ref=block.data_group,
             name=block.e_name,
@@ -374,7 +374,7 @@ def parse_lwc_native_movements(
 
     wire_order_hint = (max(b.order_hint for b in blocks) + 1) if blocks else 1
     for name, data_group_ref in _resolve_wire_reads(js_source, known_apex):
-        movements.append(RawMovement(
+        movements.append(LwcRawMovement(
             movement_type="R",
             data_group_ref=data_group_ref,
             name=name,
@@ -383,7 +383,7 @@ def parse_lwc_native_movements(
         wire_order_hint += 1
 
     if _LDS_READ_RE.search(js_source):
-        movements.append(RawMovement(
+        movements.append(LwcRawMovement(
             movement_type="R",
             data_group_ref="Unknown",
             name="Read data via LWC data services",
@@ -392,7 +392,7 @@ def parse_lwc_native_movements(
         wire_order_hint += 1
 
     if _LDS_WRITE_RE.search(js_source):
-        movements.append(RawMovement(
+        movements.append(LwcRawMovement(
             movement_type="W",
             data_group_ref="Unknown",
             name="Write data via LWC data services",
@@ -401,7 +401,7 @@ def parse_lwc_native_movements(
         wire_order_hint += 1
 
     if _TEMPLATE_BINDING_RE.search(html_source):
-        movements.append(RawMovement(
+        movements.append(LwcRawMovement(
             movement_type="X",
             data_group_ref="User",
             name="Display LWC output to user",

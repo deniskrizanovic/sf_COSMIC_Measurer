@@ -6,7 +6,7 @@ Parameterized for artifact_type and implementation_type so all measurer skills c
 import json
 from typing import Any, Optional, TypedDict
 
-from .models import RawMovement
+from .models import MovementType, RawMovement
 
 
 class ArtifactDict(TypedDict):
@@ -17,7 +17,7 @@ class ArtifactDict(TypedDict):
 class DataMovementRow(TypedDict):
     name: str
     order: int
-    movementType: str
+    movementType: MovementType
     dataGroupRef: str
     implementationType: str
     isApiCall: bool
@@ -57,7 +57,7 @@ def cap_movement_name(name: str) -> str:
 def order_movements(movements: list[RawMovement]) -> list[tuple[RawMovement, list]]:
     """Sort movements by tier then type; dedupe R/W. Returns (movement, merged_from)."""
     def sort_key(m: RawMovement) -> tuple:
-        tier_ord = m.tier if m.tier is not None else 1
+        tier_ord = getattr(m, "tier", None) or 1
         type_ord = TYPE_ORDER.get(m.movement_type, 1)
         exec_ord = m.execution_order if m.execution_order is not None else 999999
         hint = m.order_hint
@@ -115,12 +115,15 @@ def to_json_movement(
         out["viaArtifact"] = m.via_artifact
     if m.is_async:
         out["isAsync"] = True
-    if m.tier is not None:
-        out["tier"] = m.tier
-    if m.tier_label is not None:
-        out["tierLabel"] = m.tier_label
-    if m.triggering_block is not None:
-        out["triggeringBlock"] = m.triggering_block
+    tier = getattr(m, "tier", None)
+    if tier is not None:
+        out["tier"] = tier
+    tier_label = getattr(m, "tier_label", None)
+    if tier_label is not None:
+        out["tierLabel"] = tier_label
+    triggering_block = getattr(m, "triggering_block", None)
+    if triggering_block is not None:
+        out["triggeringBlock"] = triggering_block
     return out
 
 
