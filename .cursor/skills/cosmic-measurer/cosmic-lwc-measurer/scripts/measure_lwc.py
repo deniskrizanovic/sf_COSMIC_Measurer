@@ -15,7 +15,14 @@ for path_entry in [str(_SCRIPT_DIR), str(_COSMIC_MEASURER_DIR)]:
     if path_entry not in sys.path:
         sys.path.insert(0, path_entry)
 
-from lwc_parser import detect_apex_import_vars, detect_apex_imports, infer_bundle_name, parse_lwc_native_movements  # noqa: E402
+from lwc_parser import (  # noqa: E402
+    _detect_apex_import_var_map,
+    detect_apex_import_vars,
+    detect_apex_imports,
+    extract_handler_apex_calls,
+    infer_bundle_name,
+    parse_lwc_native_movements,
+)
 from shared.models import RawMovement  # noqa: E402
 from shared.output import (  # noqa: E402
     CANONICAL_EXIT_DATA_GROUP_REF,
@@ -87,6 +94,66 @@ def _is_canonical_exit_row(row: dict[str, Any]) -> bool:
         and row.get("name") == CANONICAL_EXIT_NAME
         and row.get("dataGroupRef") == CANONICAL_EXIT_DATA_GROUP_REF
     )
+
+
+def _build_class_to_block_map(
+    movements: list[RawMovement],
+    js_source: str,
+) -> dict[str, str]:
+    """Return apex_class_name → block_label for E blocks whose handlers call that class."""
+    apex_var_map = _detect_apex_import_var_map(js_source)
+    if not apex_var_map:
+        return {}
+    handler_apex_map = extract_handler_apex_calls(js_source, apex_var_map)
+    class_to_block: dict[str, str] = {}
+    for m in movements:
+        if m.movement_type != "E" or not m.block_label or not m.handler_names:
+            continue
+        for handler in m.handler_names:
+            for cls in handler_apex_map.get(handler, []):
+                if cls not in class_to_block:
+                    class_to_block[cls] = m.block_label
+    return class_to_block
+
+
+def _assign_tiers(movements: list[RawMovement], js_source: str) -> None:
+    """Mutate each RawMovement to set tier, tier_label, triggering_block in-place."""
+    class_to_block = _build_class_to_block_map(movements, js_source)
+
+    has_interaction_linked_r = False
+    display_x_movements: list[RawMovement] = []
+
+    for m in movements:
+        if m.tier is not None:
+            continue
+        if m.movement_type == "E":
+            m.tier = 1
+            m.tier_label = "Init"
+        elif m.movement_type == "R":
+            via = m.via_artifact
+            if via and via in class_to_block:
+                m.tier = 2
+                m.tier_label = "Interactions"
+                m.triggering_block = class_to_block[via]
+                has_interaction_linked_r = True
+            else:
+                m.tier = 1
+                m.tier_label = "Init"
+        elif m.movement_type == "W":
+            m.tier = 3
+            m.tier_label = "Terminal"
+        elif m.movement_type == "X":
+            if m.name == CANONICAL_EXIT_NAME:
+                m.tier = 3
+                m.tier_label = "Terminal"
+            else:
+                display_x_movements.append(m)
+
+    tier = 2 if has_interaction_linked_r else 1
+    label = "Interactions" if has_interaction_linked_r else "Init"
+    for m in display_x_movements:
+        m.tier = tier
+        m.tier_label = label
 
 
 def _apex_rows_to_raw_movements(
@@ -211,6 +278,8 @@ def measure_lwc_bundle(
                 )
             )
             order_hint_start += 10000
+
+    _assign_tiers(movements, js_source)
 
     output = build_output(
         "LWC",

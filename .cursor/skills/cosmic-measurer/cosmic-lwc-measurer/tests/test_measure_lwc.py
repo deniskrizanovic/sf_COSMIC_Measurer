@@ -272,3 +272,244 @@ def test_measure_lwc_bundle_apex_import_dedup_and_group_inference(tmp_path: Path
     assert any(row.get("name") == "Read account" for row in apex_rows)
     assert any(row.get("name") == "Write" for row in apex_rows)
     assert not any(row.get("name") == "Errors/notifications" and row.get("implementationType") == "apex" for row in apex_rows)
+
+
+# ---------------------------------------------------------------------------
+# Step 3 RED: tier assignment
+# ---------------------------------------------------------------------------
+
+def test_wire_r_movements_get_init_tier(tmp_path: Path, monkeypatch):
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text(
+        "import { wire } from 'lwc'; import { CurrentPageReference } from 'lightning/navigation';\n"
+        "@wire(CurrentPageReference) pageRef;",
+        encoding="utf-8",
+    )
+    (bundle_dir / "cmp.html").write_text("<template><p>{pageRef}</p></template>", encoding="utf-8")
+
+    result = measure_lwc_bundle(bundle_dir)
+    r_rows = [row for row in result["dataMovements"] if row.get("movementType") == "R"]
+    assert r_rows, "Expected at least one R movement"
+    for row in r_rows:
+        assert row.get("tier") == 1, f"Expected tier=1 for wire R, got {row.get('tier')} on {row}"
+        assert row.get("tierLabel") == "Init"
+
+
+def test_interaction_linked_apex_r_gets_interactions_tier(tmp_path: Path, monkeypatch):
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text(
+        "import loadSORs from '@salesforce/apex/SORController.loadSORs';\n"
+        "export default class Cmp extends LightningElement {\n"
+        "  handleFilter() { loadSORs({ filter: this.filter }); }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (bundle_dir / "cmp.html").write_text(
+        "<template>"
+        "<div><c-lookup oncustomlookupupdateevent={handleFilter}></c-lookup></div>"
+        "<p>{result}</p>"
+        "</template>",
+        encoding="utf-8",
+    )
+
+    def fake_find_class_file(class_name, _paths):
+        from pathlib import Path as P
+        return P(f"/tmp/{class_name}.cls")
+
+    def fake_measure_apex(cls_file, _fp, search_paths, traverse):
+        return {"dataMovements": [
+            {"movementType": "R", "name": "Read SOR list", "dataGroupRef": "SOR__c", "sourceLine": 10},
+            {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
+        ]}
+
+    monkeypatch.setattr("measure_lwc._load_apex_measurer_helpers", lambda: (fake_find_class_file, fake_measure_apex))
+    result = measure_lwc_bundle(bundle_dir, apex_search_paths=[tmp_path / "classes"])
+
+    sor_rows = [r for r in result["dataMovements"] if r.get("dataGroupRef") == "SOR__c"]
+    assert sor_rows, "Expected SOR__c R row"
+    assert sor_rows[0].get("tier") == 2, f"Expected tier=2 for interaction-linked R, got {sor_rows[0].get('tier')}"
+    assert sor_rows[0].get("tierLabel") == "Interactions"
+    assert sor_rows[0].get("triggeringBlock") == "filter"
+
+
+def test_w_movements_get_terminal_tier(tmp_path: Path, monkeypatch):
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text(
+        "import saveRec from '@salesforce/apex/SaveController.save';\n"
+        "export default class Cmp extends LightningElement {\n"
+        "  handleSave() { saveRec({ rec: this.record }); }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (bundle_dir / "cmp.html").write_text(
+        "<template>"
+        "<div><lightning-button label=\"Save\" onclick={handleSave}></lightning-button></div>"
+        "<p>{result}</p>"
+        "</template>",
+        encoding="utf-8",
+    )
+
+    def fake_find_class_file(class_name, _paths):
+        from pathlib import Path as P
+        return P(f"/tmp/{class_name}.cls")
+
+    def fake_measure_apex(cls_file, _fp, search_paths, traverse):
+        return {"dataMovements": [
+            {"movementType": "W", "name": "Update Record", "dataGroupRef": "Record__c", "sourceLine": 5},
+            {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
+        ]}
+
+    monkeypatch.setattr("measure_lwc._load_apex_measurer_helpers", lambda: (fake_find_class_file, fake_measure_apex))
+    result = measure_lwc_bundle(bundle_dir, apex_search_paths=[tmp_path / "classes"])
+
+    w_rows = [r for r in result["dataMovements"] if r.get("movementType") == "W"]
+    assert w_rows, "Expected W row"
+    for row in w_rows:
+        assert row.get("tier") == 3, f"Expected tier=3 for W, got {row.get('tier')}"
+        assert row.get("tierLabel") == "Terminal"
+
+
+def test_canonical_x_is_terminal_tier(tmp_path: Path):
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text("", encoding="utf-8")
+    (bundle_dir / "cmp.html").write_text("<template><p>{value}</p></template>", encoding="utf-8")
+
+    result = measure_lwc_bundle(bundle_dir)
+    canonical = [r for r in result["dataMovements"] if r.get("name") == "Errors/notifications"]
+    assert canonical, "Expected canonical X"
+    assert canonical[0].get("tier") == 3
+    assert canonical[0].get("tierLabel") == "Terminal"
+
+
+def test_display_x_follows_first_interaction_cluster_with_r(tmp_path: Path, monkeypatch):
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text(
+        "import loadData from '@salesforce/apex/DataController.load';\n"
+        "export default class Cmp extends LightningElement {\n"
+        "  handleFilter() { loadData({ filter: this.f }); }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (bundle_dir / "cmp.html").write_text(
+        "<template>"
+        "<div><c-lookup oncustomlookupupdateevent={handleFilter}></c-lookup></div>"
+        "<p>{result}</p>"
+        "</template>",
+        encoding="utf-8",
+    )
+
+    def fake_find(cn, _p):
+        from pathlib import Path as P
+        return P(f"/tmp/{cn}.cls")
+
+    def fake_measure(f, _fp, search_paths, traverse):
+        return {"dataMovements": [
+            {"movementType": "R", "name": "Read Data", "dataGroupRef": "Data__c", "sourceLine": 5},
+            {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
+        ]}
+
+    monkeypatch.setattr("measure_lwc._load_apex_measurer_helpers", lambda: (fake_find, fake_measure))
+    result = measure_lwc_bundle(bundle_dir, apex_search_paths=[tmp_path / "classes"])
+
+    display_x = [r for r in result["dataMovements"] if r.get("name") == "Display LWC output to user"]
+    assert display_x, "Expected display X"
+    assert display_x[0].get("tier") == 2, "Display X should be in Interactions tier when filter has linked R"
+    assert display_x[0].get("tierLabel") == "Interactions"
+
+
+# ── Step 4 RED: 3-tier ordering ────────────────────────────────────────────
+
+
+def _make_bundle_with_filter_and_save(tmp_path: Path, monkeypatch) -> list[dict]:
+    """Helper: LWC with a filter E (tier 2) and a save W (tier 3); wire R (tier 1)."""
+    bundle_dir = tmp_path / "cmp"
+    bundle_dir.mkdir(parents=True)
+    (bundle_dir / "cmp.js").write_text(
+        "import { wire } from 'lwc'; import { CurrentPageReference } from 'lightning/navigation';\n"
+        "import saveRec from '@salesforce/apex/SaveCtrl.save';\n"
+        "import loadData from '@salesforce/apex/LoadCtrl.load';\n"
+        "export default class Cmp extends LightningElement {\n"
+        "  @wire(CurrentPageReference) pageRef;\n"
+        "  handleFilter() { loadData({ f: this.f }); }\n"
+        "  handleSave() { saveRec({ r: this.r }); }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (bundle_dir / "cmp.html").write_text(
+        "<template>"
+        "<div><c-lookup oncustomlookupupdateevent={handleFilter}></c-lookup></div>"
+        "<div><lightning-button label='Save' onclick={handleSave}></lightning-button></div>"
+        "<p>{result}</p>"
+        "</template>",
+        encoding="utf-8",
+    )
+
+    call_count = [0]
+
+    def fake_find(cn, _p):
+        from pathlib import Path as P
+        return P(f"/tmp/{cn}.cls")
+
+    def fake_measure(f, _fp, search_paths, traverse):
+        call_count[0] += 1
+        name = str(f)
+        if "LoadCtrl" in name:
+            return {"dataMovements": [
+                {"movementType": "R", "name": "Read Data", "dataGroupRef": "Data__c", "sourceLine": 5},
+            ]}
+        return {"dataMovements": [
+            {"movementType": "W", "name": "Write Record", "dataGroupRef": "Record__c", "sourceLine": 10},
+        ]}
+
+    monkeypatch.setattr("measure_lwc._load_apex_measurer_helpers", lambda: (fake_find, fake_measure))
+    result = measure_lwc_bundle(bundle_dir, apex_search_paths=[tmp_path / "classes"])
+    return result["dataMovements"]
+
+
+def test_tier_ordering_init_before_interactions_before_terminal(tmp_path: Path, monkeypatch):
+    rows = _make_bundle_with_filter_and_save(tmp_path, monkeypatch)
+    tiers = [r.get("tier") for r in rows if r.get("tier") is not None]
+    assert tiers == sorted(tiers), f"Rows not in ascending tier order: {tiers}"
+
+
+def test_tier_ordering_w_before_canonical_x(tmp_path: Path, monkeypatch):
+    rows = _make_bundle_with_filter_and_save(tmp_path, monkeypatch)
+    tier3 = [r for r in rows if r.get("tier") == 3]
+    types = [r["movementType"] for r in tier3]
+    w_idx = next((i for i, t in enumerate(types) if t == "W"), None)
+    x_idx = next((i for i, t in enumerate(types) if t == "X"), None)
+    assert w_idx is not None and x_idx is not None
+    assert w_idx < x_idx, f"W should precede canonical X in terminal tier: {types}"
+
+
+def test_tier_ordering_e_before_r_within_interactions_tier(tmp_path: Path, monkeypatch):
+    rows = _make_bundle_with_filter_and_save(tmp_path, monkeypatch)
+    tier2 = [r for r in rows if r.get("tier") == 2]
+    types = [r["movementType"] for r in tier2]
+    if "E" in types and "R" in types:
+        e_idx = types.index("E")
+        r_idx = types.index("R")
+        assert e_idx < r_idx, f"E should precede R in Interactions tier: {types}"
+
+
+# ── Step 5 RED: to_table() tier-grouped output ─────────────────────────────
+
+
+def test_to_table_includes_tier_section_headers(tmp_path: Path, monkeypatch):
+    from shared.output import to_table
+
+    rows = _make_bundle_with_filter_and_save(tmp_path, monkeypatch)
+    dummy_output = {
+        "functionalProcessId": "<Id>",
+        "artifact": {"type": "LWC", "name": "cmp"},
+        "dataMovements": rows,
+    }
+    table = to_table(dummy_output)
+    assert "## Init" in table, "Expected '## Init' section header in table"
+    assert "## Interactions" in table, "Expected '## Interactions' section header in table"
+    assert "## Terminal" in table, "Expected '## Terminal' section header in table"
