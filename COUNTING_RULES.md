@@ -104,19 +104,36 @@ Implementation sources live under `.cursor/skills/cosmic-measurer/`.
 
 ## LWC Rules
 
-### Native extraction
+LWC uses a **3-tier ordering model** (Init → Interactions → Terminal) rather than a flat `E → R → W → X` sequence. HTML is parsed into structural blocks; each block emits a semantically named `E` movement. Apex R movements are linked to blocks via a JS handler → Apex call graph, and assigned to Init or Interactions accordingly. W movements and the canonical X always appear last.
 
-- JS/HTML analysis produces native `E/R/W/X` candidates (events, reads, writes, rendered outputs).
+See [COUNTING_RULES_LWC.md](COUNTING_RULES_LWC.md) for full detail on block classification, tier assignment, and ordering rules.
 
-### Apex import integration
-
-- Imported Apex methods are measured through Apex measurer.
-- Imported Apex exits are treated as internal handoff and excluded from LWC visible exits.
-- Canonical final exit is appended once at LWC output stage.
-
-### Validation contract
-
-- Optional `--required-type` validates presence of required movement types and reports missing ones.
+```mermaid
+flowchart TD
+    HTML[LWC .html file] --> Classifier[HtmlBlockClassifier]
+    Classifier --> Blocks["Structural blocks\nDOM order\nhandler names collected"]
+    Blocks --> BlockEs["E movements\ntier=2 Interactions"]
+    JS[LWC .js file] --> Classifier
+    JS --> CallGraph["extract_handler_apex_calls\nbrace-depth method body scan"]
+    Blocks --> CallGraph
+    CallGraph --> BlockApexMap["block -> apex_classes map"]
+    JS --> NativeParser[parse_lwc_native_movements]
+    NativeParser --> WireRs["R via @wire\ntier=1 Init"]
+    NativeParser --> DisplayX["X Display output\ntier assigned in Step 3"]
+    ApexClass[Apex .cls files] --> ApexMeasurer[measure_apex_file]
+    ApexMeasurer --> ApexEs["Apex E movements\ntier=1 Init"]
+    ApexMeasurer --> ApexRs["Apex R movements\ntier assigned by block link"]
+    ApexMeasurer --> ApexWs["Apex W movements\ntier=3 Terminal"]
+    BlockEs --> TierAssigner["Tier Assignment\nmeasure_lwc.py"]
+    BlockApexMap --> TierAssigner
+    WireRs --> TierAssigner
+    DisplayX --> TierAssigner
+    ApexEs --> TierAssigner
+    ApexRs --> TierAssigner
+    ApexWs --> TierAssigner
+    TierAssigner --> OrderedMovements["order_movements\n3-tier sort\nE -> R -> X within Interactions"]
+    OrderedMovements --> OutputJSON["JSON output\ntier + tierLabel + triggeringBlock"]
+```
 
 ## FlexiPage Rules
 
