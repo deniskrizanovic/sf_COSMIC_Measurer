@@ -169,7 +169,8 @@ def test_block_classifier_save_command_block():
     assert e_movements[0].tier == 2
 
 
-def test_block_classifier_pagination_block():
+def test_block_classifier_pagination_ignored():
+    """Pagination buttons should not create Entry movements in COSMIC LWC."""
     html = """
 <template>
   <div>
@@ -181,10 +182,28 @@ def test_block_classifier_pagination_block():
 """
     movements = parse_lwc_native_movements("", html)
     e_movements = [m for m in movements if m.movement_type == "E"]
+    assert len(e_movements) == 0
+
+
+def test_block_classifier_save_merge():
+    """Save button should merge with preceding row-edit in same container."""
+    html = """
+<template>
+  <div>
+    <template for:each={rows} for:item="row">
+      <input key={row.Id} onchange={handleEdit}/>
+    </template>
+    <lightning-button label="Save" onclick={handleSave}></lightning-button>
+  </div>
+</template>
+"""
+    movements = parse_lwc_native_movements("", html)
+    e_movements = [m for m in movements if m.movement_type == "E"]
     assert len(e_movements) == 1
-    assert e_movements[0].block_label == "pagination"
-    assert e_movements[0].name == "Receive page navigation"
-    assert e_movements[0].data_group_ref == "PageNavigation"
+    assert e_movements[0].block_label == "row-edit"
+    assert e_movements[0].name == "Receive row edits and save command"
+    assert "handleEdit" in e_movements[0].handler_names
+    assert "handleSave" in e_movements[0].handler_names
 
 
 def test_block_classifier_row_edit_block():
@@ -263,7 +282,7 @@ def test_block_classifier_multiple_blocks_dom_order():
     <c-lookup oncustomlookupupdateevent={handleFilter}></c-lookup>
   </div>
   <div>
-    <lightning-button label="Save" onclick={handleSave}></lightning-button>
+    <button onclick={handleOther}>Other</button>
   </div>
   <p>{result}</p>
 </template>
@@ -272,7 +291,7 @@ def test_block_classifier_multiple_blocks_dom_order():
     e_movements = [m for m in movements if m.movement_type == "E"]
     assert len(e_movements) == 2
     assert e_movements[0].block_label == "filter"
-    assert e_movements[1].block_label == "save-command"
+    assert e_movements[1].block_label == "generic"
     assert e_movements[0].order_hint < e_movements[1].order_hint
 
 

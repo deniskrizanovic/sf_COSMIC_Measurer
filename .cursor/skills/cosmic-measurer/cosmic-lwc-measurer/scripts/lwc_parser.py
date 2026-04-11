@@ -160,11 +160,11 @@ class _BlockInfo:
     order_hint: int
 
 
-def _classify_node(node: _HtmlNode, base_order_hint: int) -> list[_BlockInfo]:
+def _classify_node(node: _HtmlNode, blocks: list[_BlockInfo], base_order_hint: int) -> int:
     """Classify a structural container node into 0 or more interaction blocks."""
     handlers = _collect_handlers(node)
     if not handlers:
-        return []
+        return base_order_hint
 
     row_edit_handlers = [h for h in handlers if h.inside_for_each]
     select_all_handlers = [
@@ -190,41 +190,57 @@ def _classify_node(node: _HtmlNode, base_order_hint: int) -> list[_BlockInfo]:
         or _PAGINATION_LABELS_RE.search(h.element_attrs.get("value", ""))
     ]
 
-    blocks: list[_BlockInfo] = []
     hint = base_order_hint
+    any_action = False
 
     if filter_handlers:
         all_names = list(dict.fromkeys(h.handler_name for h in handlers))
         blocks.append(_BlockInfo("filter", "Receive filter criteria", "FilterCriteria", all_names, hint))
         hint += 1
+        any_action = True
 
-    if select_all_handlers and not filter_handlers:
+    if select_all_handlers and not any(b.block_label == "filter" for b in blocks[-1:]):
         names = list(dict.fromkeys(
             h.handler_name for h in handlers if not h.inside_for_each
         ))
         blocks.append(_BlockInfo("select-all", "Receive select-all", "RowSelection", names, hint))
         hint += 1
+        any_action = True
 
     if row_edit_handlers:
         names = list(dict.fromkeys(h.handler_name for h in row_edit_handlers))
         blocks.append(_BlockInfo("row-edit", "Receive row edits", "RowData", names, hint))
         hint += 1
-
-    if pagination_handlers and not save_handlers:
-        names = list(dict.fromkeys(h.handler_name for h in handlers))
-        blocks.append(_BlockInfo("pagination", "Receive page navigation", "PageNavigation", names, hint))
-        hint += 1
+        any_action = True
 
     if save_handlers:
-        names = list(dict.fromkeys(h.handler_name for h in handlers))
-        blocks.append(_BlockInfo("save-command", "Receive save command", "SaveCommand", names, hint))
-        hint += 1
+        # COSMIC refinement: Merge save command into existing interaction block (filter/row-edit/select-all)
+        # across nodes to treat them as one functional process.
+        merged = False
+        if blocks:
+            last = blocks[-1]
+            if last.block_label in ("filter", "row-edit", "select-all"):
+                last.handler_names = list(dict.fromkeys(last.handler_names + [h.handler_name for h in save_handlers]))
+                if "save command" not in last.e_name:
+                    last.e_name += " and save command"
+                merged = True
+        
+        if not merged:
+            save_names = list(dict.fromkeys(h.handler_name for h in save_handlers))
+            blocks.append(_BlockInfo("save-command", "Receive save command", "SaveCommand", save_names, hint))
+            hint += 1
+        any_action = True
 
-    if not blocks:
-        names = list(dict.fromkeys(h.handler_name for h in handlers))
-        blocks.append(_BlockInfo("generic", "Receive user interaction", "User", names, hint))
+    if not any_action:
+        # COSMIC refinement: Only create generic block if there are meaningful non-pagination handlers.
+        # Pagination is a UI control, not a functional data movement.
+        meaningful = [h for h in handlers if h not in pagination_handlers]
+        if meaningful:
+            names = list(dict.fromkeys(h.handler_name for h in meaningful))
+            blocks.append(_BlockInfo("generic", "Receive user interaction", "User", names, hint))
+            hint += 1
 
-    return blocks
+    return hint
 
 
 def _classify_html_blocks(html_source: str) -> list[_BlockInfo]:
@@ -244,9 +260,7 @@ def _classify_html_blocks(html_source: str) -> list[_BlockInfo]:
     blocks: list[_BlockInfo] = []
     order_hint = 1
     for child in template_node.children:
-        child_blocks = _classify_node(child, order_hint)
-        blocks.extend(child_blocks)
-        order_hint += len(child_blocks) + 1
+        order_hint = _classify_node(child, blocks, order_hint)
 
     return blocks
 
