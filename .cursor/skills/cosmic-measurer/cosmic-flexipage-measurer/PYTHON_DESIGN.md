@@ -25,4 +25,7 @@
 
 - Metadata-only inference can over/under-count true runtime writes.
 - Custom component internals are not analyzed in v1.
-- Related list data-group mapping uses API-name normalization (`__r` -> `__c`).
+- Related list data-group mapping uses API-name normalization:
+  - Rule 1: `__r` -> `__c`.
+  - Rule 2: `AttachedContentDocuments` -> `ContentDocument`.
+  - Rule 3: `Histories` -> `parentObjectName_History` (mapping to the parent object's history table via `parentFieldApiName`).
