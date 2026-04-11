@@ -279,7 +279,11 @@ def _strip_comments(source: str) -> str:
 def find_static_calls(source: str) -> set[str]:
     """Return unique class names from static method calls (ClassName.methodName)."""
     clean_source = _strip_comments(source)
-    return {m.group(1) for m in STATIC_CALL.finditer(clean_source) if m.group(1).lower() not in FRAMEWORK_TYPES}
+    return {
+        m.group(1) for m in STATIC_CALL.finditer(clean_source) 
+        if m.group(1).lower() not in FRAMEWORK_TYPES 
+        and not m.group(1).lower().endswith(('__c', '__mdt'))
+    }
 
 
 def find_execute_batch_calls(source: str) -> set[str]:
@@ -351,7 +355,11 @@ EXTERNAL_CONSTANT_REF = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([A-Z0-9_]+)\
 def find_external_constant_calls(source: str) -> set[str]:
     """Return unique class names from external constant calls (ClassName.CONSTANT)."""
     clean_source = _strip_comments(source)
-    return {m.group(1) for m in EXTERNAL_CONSTANT_REF.finditer(clean_source) if m.group(1).lower() not in FRAMEWORK_TYPES}
+    return {
+        m.group(1) for m in EXTERNAL_CONSTANT_REF.finditer(clean_source) 
+        if m.group(1).lower() not in FRAMEWORK_TYPES 
+        and not m.group(1).lower().endswith(('__c', '__mdt'))
+    }
 
 
 def _parse_record_type_string_constants(source: str) -> dict[str, str]:
