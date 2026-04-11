@@ -138,6 +138,9 @@ def build_output(
     *,
     implementation_type: str = "apex",
 ) -> CosmicMeasureOutput:
+    # Append filetype so artifacts and movements identify their source clearly
+    artifact_name = f"{artifact_name}.{artifact_type.lower()}"
+
     for m in movements:
         if m.artifact_name is None:
             m.artifact_name = artifact_name

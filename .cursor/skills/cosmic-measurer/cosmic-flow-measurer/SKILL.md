@@ -113,7 +113,7 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
 ```json
 {
   "functionalProcessId": "<placeholder or user-provided>",
-  "artifact": { "type": "Flow", "name": "FlowApiName" },
+  "artifact": { "type": "Flow", "name": "FlowApiName.flow" },
   "dataMovements": [
     { "name": "Receive recordId", "order": 1, "movementType": "E", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
     { "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)", "order": 2, "movementType": "R", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },

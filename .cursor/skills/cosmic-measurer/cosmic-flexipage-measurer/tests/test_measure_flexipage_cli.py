@@ -583,7 +583,7 @@ def test_cli_resolves_lwc_candidates_by_default(monkeypatch, capsys, project_roo
     resolved = payload.get("resolvedLwcMeasurements") or []
     assert len(resolved) == 1
     assert resolved[0]["artifact"]["type"] == "LWC"
-    assert resolved[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
+    assert resolved[0]["artifact"]["name"] == "cfp_FunctionalProcessVisualiser.lwc"
     movement_names = [row["name"] for row in payload.get("dataMovements") or []]
     assert any(name.endswith("| tab:Visualiser") for name in movement_names)
     assert "Potential write via imperative Apex call | tab:Visualiser" not in movement_names

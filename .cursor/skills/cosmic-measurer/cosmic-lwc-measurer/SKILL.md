@@ -54,7 +54,7 @@ JSON:
 ```json
 {
   "functionalProcessId": "<Id>",
-  "artifact": { "type": "LWC", "name": "cfp_FunctionalProcessVisualiser" },
+  "artifact": { "type": "LWC", "name": "cfp_FunctionalProcessVisualiser.lwc" },
   "dataMovements": [
     { "name": "Receive user interaction", "order": 1, "movementType": "E", "dataGroupRef": "User", "implementationType": "lwc", "isApiCall": false },
     { "name": "Read data via LWC data services", "order": 2, "movementType": "R", "dataGroupRef": "Unknown", "implementationType": "lwc", "isApiCall": false },

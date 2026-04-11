@@ -573,6 +573,7 @@ def measure_file(
         fp_id,
         implementation_type="flexipage",
     )
+    full_artifact_name = output["artifact"]["name"]
     _promote_primary_record_rows(output, metadata.sobject_type)
     if actions:
         action_list = ", ".join(actions)
@@ -582,7 +583,7 @@ def measure_file(
         ]
         if include_action_candidates:
             output["actionCandidateMeasurements"] = _build_action_candidate_outputs(
-                metadata.name, metadata.sobject_type, actions, fp_id
+                full_artifact_name, metadata.sobject_type, actions, fp_id
             )
     if tab_labels:
         tab_list = ", ".join(tab_labels)
@@ -603,13 +604,13 @@ def measure_file(
         output.setdefault("traversalWarnings", []).append(warning)
     for warning in sidebar_component_warnings:
         output.setdefault("traversalWarnings", []).append(warning)
-    lwc_candidates = _build_lwc_candidate_outputs(metadata.name, tab_bindings, fp_id)
-    flow_candidates = _build_flow_candidate_outputs(metadata.name, tab_bindings, fp_id)
+    lwc_candidates = _build_lwc_candidate_outputs(full_artifact_name, tab_bindings, fp_id)
+    flow_candidates = _build_flow_candidate_outputs(full_artifact_name, tab_bindings, fp_id)
     if lwc_candidates:
         if include_resolution_details:
             output["lwcCandidateMeasurements"] = lwc_candidates
         output["dataMovements"] = (output.get("dataMovements") or []) + _build_lwc_tbc_data_movements(
-            metadata.name, lwc_candidates
+            full_artifact_name, lwc_candidates
         )
         lwc_names = ", ".join(candidate["artifact"]["name"] for candidate in lwc_candidates)
         output.setdefault("traversalWarnings", []).append(

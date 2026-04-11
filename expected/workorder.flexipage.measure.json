@@ -2,7 +2,7 @@
   "functionalProcessId": "<Id>",
   "artifact": {
     "type": "FlexiPage",
-    "name": "WorkOrder"
+    "name": "WorkOrder.flexipage"
   },
   "dataMovements": [
     {
@@ -12,7 +12,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read page record (WorkOrder)",
@@ -21,7 +21,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display page record (WorkOrder)",
@@ -30,7 +30,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Edit page record (WorkOrder)",
@@ -39,7 +39,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Write page record (WorkOrder)",
@@ -48,7 +48,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read highlights panel fields (WorkOrder)",
@@ -57,7 +57,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display highlights panel fields (WorkOrder)",
@@ -66,7 +66,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathA",
@@ -75,7 +75,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list WorkOrderLineItems",
@@ -84,7 +84,7 @@
       "dataGroupRef": "WorkOrderLineItems",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list WorkOrderLineItems",
@@ -93,7 +93,7 @@
       "dataGroupRef": "WorkOrderLineItems",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Work_Order_Milestones__r",
@@ -102,7 +102,7 @@
       "dataGroupRef": "Work_Order_Milestones__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Work_Order_Milestones__r",
@@ -111,7 +111,7 @@
       "dataGroupRef": "Work_Order_Milestones__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list ProcessSteps",
@@ -120,7 +120,7 @@
       "dataGroupRef": "ProcessSteps",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list ProcessSteps",
@@ -129,7 +129,7 @@
       "dataGroupRef": "ProcessSteps",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Histories",
@@ -138,7 +138,7 @@
       "dataGroupRef": "Histories",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Histories",
@@ -147,7 +147,7 @@
       "dataGroupRef": "Histories",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Approval_Work_Items__r",
@@ -156,7 +156,7 @@
       "dataGroupRef": "Approval_Work_Items__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Approval_Work_Items__r",
@@ -165,7 +165,7 @@
       "dataGroupRef": "Approval_Work_Items__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Payment_Claims__r",
@@ -174,7 +174,7 @@
       "dataGroupRef": "Payment_Claims__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Payment_Claims__r",
@@ -183,7 +183,7 @@
       "dataGroupRef": "Payment_Claims__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Credit_Notes__r",
@@ -192,7 +192,7 @@
       "dataGroupRef": "Credit_Notes__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Credit_Notes__r",
@@ -201,7 +201,7 @@
       "dataGroupRef": "Credit_Notes__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list ServiceAppointments",
@@ -210,7 +210,7 @@
       "dataGroupRef": "ServiceAppointments",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list ServiceAppointments",
@@ -219,7 +219,7 @@
       "dataGroupRef": "ServiceAppointments",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Assessments__r",
@@ -228,7 +228,7 @@
       "dataGroupRef": "Assessments__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Assessments__r",
@@ -237,7 +237,7 @@
       "dataGroupRef": "Assessments__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list Comments__r",
@@ -246,7 +246,7 @@
       "dataGroupRef": "Comments__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list Comments__r",
@@ -255,7 +255,7 @@
       "dataGroupRef": "Comments__c",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related list AttachedContentDocuments",
@@ -264,7 +264,7 @@
       "dataGroupRef": "AttachedContentDocuments",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related list AttachedContentDocuments",
@@ -273,7 +273,7 @@
       "dataGroupRef": "AttachedContentDocuments",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Access Issue Details | tab:Access Issue",
@@ -282,7 +282,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Access Issue Details | tab:Access Issue",
@@ -291,7 +291,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record NCAT Details | tab:Access Issue",
@@ -300,7 +300,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record NCAT Details | tab:Access Issue",
@@ -309,7 +309,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Appointment Details | tab:Access Issue",
@@ -318,7 +318,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Appointment Details | tab:Access Issue",
@@ -327,7 +327,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Visible Damage Details | tab:Visible Damage",
@@ -336,7 +336,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Visible Damage Details | tab:Visible Damage",
@@ -345,7 +345,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Tenant Details | tab:Visible Damage",
@@ -354,7 +354,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Tenant Details | tab:Visible Damage",
@@ -363,7 +363,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Recovery Details | tab:Visible Damage",
@@ -372,7 +372,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Recovery Details | tab:Visible Damage",
@@ -381,7 +381,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Debt Recovery Details | tab:Visible Damage",
@@ -390,7 +390,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Debt Recovery Details | tab:Visible Damage",
@@ -399,7 +399,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Read related record Request Details",
@@ -408,7 +408,7 @@
       "dataGroupRef": "Case",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display related record Request Details",
@@ -417,7 +417,7 @@
       "dataGroupRef": "Case",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display flow interview SUI_Work_Order_Display_Warranties | tab:Warranties",
@@ -426,7 +426,7 @@
       "dataGroupRef": "Flow:SUI_Work_Order_Display_Warranties",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display flow interview SUI_Associations_Show_Work_Order_Associations | tab:Relat",
@@ -435,7 +435,7 @@
       "dataGroupRef": "Flow:SUI_Associations_Show_Work_Order_Associations",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pa",
@@ -444,7 +444,7 @@
       "dataGroupRef": "WorkOrder",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Inspect LWC WorkOrderLineItemTable data movements (TBC) on tab SoRs",
@@ -453,7 +453,7 @@
       "dataGroupRef": "tbc",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     },
     {
       "name": "Errors/notifications",
@@ -462,7 +462,7 @@
       "dataGroupRef": "status/errors/etc",
       "implementationType": "flexipage",
       "isApiCall": false,
-      "artifactName": "WorkOrder"
+      "artifactName": "WorkOrder.flexipage"
     }
   ],
   "traversalWarnings": [

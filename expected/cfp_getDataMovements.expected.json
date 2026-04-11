@@ -1,6 +1,6 @@
 {
   "functionalProcessId": "<Id>",
-  "artifact": { "type": "Apex", "name": "cfp_getDataMovements" },
+  "artifact": { "type": "Apex", "name": "cfp_getDataMovements.apex" },
   "dataMovements": [
     {
       "name": "Receive fpId (Functional Process)",
@@ -10,7 +10,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 7,
-      "artifactName": "cfp_getDataMovements"
+      "artifactName": "cfp_getDataMovements.apex"
     },
     {
       "name": "Read cfp_Data_Movements__c list",
@@ -20,7 +20,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 9,
-      "artifactName": "cfp_getDataMovements"
+      "artifactName": "cfp_getDataMovements.apex"
     },
     {
       "name": "Return cfp_Data_Movements__c list",
@@ -29,7 +29,7 @@
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "apex",
       "isApiCall": false,
-      "artifactName": "cfp_getDataMovements"
+      "artifactName": "cfp_getDataMovements.apex"
     },
     {
       "name": "Errors/notifications",
@@ -38,7 +38,7 @@
       "dataGroupRef": "status/errors/etc",
       "implementationType": "apex",
       "isApiCall": false,
-      "artifactName": "cfp_getDataMovements"
+      "artifactName": "cfp_getDataMovements.apex"
     }
   ],
   "calledClassesNotFound": []

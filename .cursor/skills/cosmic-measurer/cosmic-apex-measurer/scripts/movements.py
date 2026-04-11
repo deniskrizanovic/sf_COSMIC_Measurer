@@ -76,6 +76,9 @@ def build_output(
     called_classes_not_found: Optional[list[str]] = None,
     implementation_type: str = "apex",
 ) -> CosmicMeasureOutput:
+    # Append filetype so artifacts and movements identify their source clearly
+    class_name = f"{class_name}.apex"
+
     for m in movements:
         if m.artifact_name is None:
             m.artifact_name = class_name

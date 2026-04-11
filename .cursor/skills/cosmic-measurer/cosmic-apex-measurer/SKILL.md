@@ -130,7 +130,7 @@ Produce JSON matching the schema in [reference.md](../reference.md):
 ```json
 {
   "functionalProcessId": "<placeholder or user-provided>",
-  "artifact": { "type": "Apex", "name": "ClassName" },
+  "artifact": { "type": "Apex", "name": "ClassName.apex" },
   "dataMovements": [
     { "name": "...", "order": 1, "movementType": "E", "dataGroupRef": "...", "implementationType": "apex", "isApiCall": false },
     { "name": "Upsert Application_Log__c records", "movementType": "W", "viaClass": "ApplicationLogHandler", ... },

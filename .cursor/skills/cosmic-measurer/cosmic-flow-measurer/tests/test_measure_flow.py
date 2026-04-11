@@ -74,7 +74,7 @@ def test_measure_minimal_flow(tmp_path):
     f.write_text(xml, encoding="utf-8")
     result = measure_file(f)
     assert result["artifact"]["type"] == "Flow"
-    assert result["artifact"]["name"] == "MinimalFlow"
+    assert result["artifact"]["name"] == "MinimalFlow.flow"
     types = [m["movementType"] for m in result["dataMovements"]]
     assert "R" in types
     assert "W" in types
@@ -264,6 +264,6 @@ def test_measure_flow_missing_invocable_apex_class_is_non_fatal(tmp_path):
     flow_file.write_text(xml, encoding="utf-8")
 
     result = measure_file(flow_file, apex_search_paths=[tmp_path])
-    assert result["artifact"]["name"] == "MissingInvocable"
+    assert result["artifact"]["name"] == "MissingInvocable.flow"
     assert result.get("invocableApexClassesNotFound") == ["ClassThatDoesNotExist"]
     assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME
