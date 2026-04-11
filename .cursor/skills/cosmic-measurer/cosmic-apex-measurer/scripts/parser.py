@@ -267,24 +267,37 @@ def extract_class_name(source: str) -> str:
     return m.group(1) if m else "Unknown"
 
 
+def _strip_comments(source: str) -> str:
+    """Remove single-line and multi-line comments from source."""
+    # Remove multi-line comments
+    source = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
+    # Remove single-line comments
+    source = re.sub(r"//.*", "", source)
+    return source
+
+
 def find_static_calls(source: str) -> set[str]:
     """Return unique class names from static method calls (ClassName.methodName)."""
-    return {m.group(1) for m in STATIC_CALL.finditer(source)}
+    clean_source = _strip_comments(source)
+    return {m.group(1) for m in STATIC_CALL.finditer(clean_source) if m.group(1).lower() not in FRAMEWORK_TYPES}
 
 
 def find_execute_batch_calls(source: str) -> set[str]:
     """Return unique batch class names from Database.executeBatch(new ClassName(...))."""
-    return {m.group(1) for m in EXECUTE_BATCH_NEW.finditer(source)}
+    clean_source = _strip_comments(source)
+    return {m.group(1) for m in EXECUTE_BATCH_NEW.finditer(clean_source)}
 
 
 def find_enqueue_job_calls(source: str) -> set[str]:
     """Return unique queueable class names from System.enqueueJob(new ClassName(...))."""
-    return {m.group(1) for m in ENQUEUE_JOB_NEW.finditer(source)}
+    clean_source = _strip_comments(source)
+    return {m.group(1) for m in ENQUEUE_JOB_NEW.finditer(clean_source)}
 
 
 def find_system_schedule_calls(source: str) -> set[str]:
     """Return unique schedulable class names from System.schedule(..., new ClassName(...))."""
-    return {m.group(1) for m in SYSTEM_SCHEDULE_NEW.finditer(source)}
+    clean_source = _strip_comments(source)
+    return {m.group(1) for m in SYSTEM_SCHEDULE_NEW.finditer(clean_source)}
 
 
 def _line_number(source: str, pos: int) -> int:
@@ -337,7 +350,8 @@ EXTERNAL_CONSTANT_REF = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([A-Z0-9_]+)\
 
 def find_external_constant_calls(source: str) -> set[str]:
     """Return unique class names from external constant calls (ClassName.CONSTANT)."""
-    return {m.group(1) for m in EXTERNAL_CONSTANT_REF.finditer(source)}
+    clean_source = _strip_comments(source)
+    return {m.group(1) for m in EXTERNAL_CONSTANT_REF.finditer(clean_source) if m.group(1).lower() not in FRAMEWORK_TYPES}
 
 
 def _parse_record_type_string_constants(source: str) -> dict[str, str]:
