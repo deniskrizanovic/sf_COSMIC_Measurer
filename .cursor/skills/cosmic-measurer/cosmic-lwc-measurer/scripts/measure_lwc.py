@@ -262,6 +262,11 @@ def measure_lwc_bundle(
                 search_paths=search_paths,
                 traverse=True,
             )
+            # Propagate traversal warnings from Apex measurement
+            for missing in apex_output.get("calledClassesNotFound", []):
+                if missing not in warnings:
+                    warnings.append(f"Unable to resolve Apex class: {missing} (called via {class_name})")
+
             apex_rows = apex_output.get("dataMovements", [])
             for row in apex_rows:
                 if _is_canonical_exit_row(row):
