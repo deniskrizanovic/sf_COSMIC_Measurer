@@ -36,6 +36,9 @@ _WIRE_CALL_RE = re.compile(
 )
 _WIRE_FIELDS_RE = re.compile(r"fields\s*:\s*\[(?P<fields>[^\]]*)\]")
 
+_IGNORED_LWC_ADAPTERS = {"CurrentPageReference", "PageReference"}
+_IGNORED_LWC_OBJECTS = {"User", "PageReference"}
+
 _HANDLER_BINDING_RE = re.compile(r"^\{([A-Za-z_][A-Za-z0-9_]*)\}/?$")
 _SAVE_LABELS_RE = re.compile(r"\b(save|submit|confirm|done|cancel)\b", re.IGNORECASE)
 _PAGINATION_LABELS_RE = re.compile(r"\b(previous|next|prev)\b", re.IGNORECASE)
@@ -283,22 +286,27 @@ def _extract_schema_object_map(js_source: str) -> dict[str, str]:
 
 
 def _resolve_wire_reads(js_source: str, apex_import_names: set[str]) -> list[tuple[str, str]]:
-    """Return (name, data_group_ref) per LWC-native @wire call, skipping Apex wires."""
+    """Return (name, data_group_ref) per LWC-native @wire call, skipping Apex and ignored wires."""
     schema_map = _extract_schema_object_map(js_source)
     results: list[tuple[str, str]] = []
     for m in _WIRE_CALL_RE.finditer(js_source):
         adapter = m.group("adapter")
-        if adapter in apex_import_names:
+        if adapter in apex_import_names or adapter in _IGNORED_LWC_ADAPTERS:
             continue
         if adapter == "getRecord":
             args_text = m.group("args") or ""
             fields_match = _WIRE_FIELDS_RE.search(args_text)
             if fields_match:
                 field_vars = [v.strip() for v in fields_match.group("fields").split(",") if v.strip()]
-                objects = list(dict.fromkeys(schema_map[v] for v in field_vars if v in schema_map))
+                objects = []
+                for v in field_vars:
+                    if v in schema_map:
+                        obj = schema_map[v]
+                        if obj not in _IGNORED_LWC_OBJECTS and obj not in objects:
+                            objects.append(obj)
                 for obj in objects:
                     results.append((f"Read {obj} record", obj))
-                if not objects:
+                if not objects and not any(schema_map.get(v) in _IGNORED_LWC_OBJECTS for v in field_vars):
                     results.append(("Read record via getRecord", "Unknown"))
             else:
                 results.append(("Read record via getRecord", "Unknown"))

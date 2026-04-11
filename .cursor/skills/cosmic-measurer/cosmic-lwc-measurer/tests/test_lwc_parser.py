@@ -356,3 +356,38 @@ def test_extract_handler_apex_calls_returns_empty_for_no_methods():
     js_source = "export default class Example extends LightningElement {}"
     result = extract_handler_apex_calls(js_source, {"someApex": "SomeClass"})
     assert result == {}
+
+
+def test_resolve_wire_reads_filters_ignored_adapters():
+    js_source = """
+import { wire } from 'lwc';
+import { CurrentPageReference } from 'lightning/navigation';
+import { getRecord } from 'lightning/uiRecordApi';
+import ACCOUNT_NAME from '@salesforce/schema/Account.Name';
+export default class Example extends LightningElement {
+    @wire(CurrentPageReference) pageRef;
+    @wire(getRecord, { recordId: '$recordId', fields: [ACCOUNT_NAME] }) account;
+}
+"""
+    # parse_lwc_native_movements calls _resolve_wire_reads internally
+    movements = parse_lwc_native_movements(js_source, "<template></template>")
+    r_movements = [m for m in movements if m.movement_type == "R"]
+    # Should only have Account read, not CurrentPageReference
+    assert len(r_movements) == 1
+    assert r_movements[0].data_group_ref == "Account"
+    assert "CurrentPageReference" not in r_movements[0].name
+
+
+def test_resolve_wire_reads_filters_ignored_objects():
+    js_source = """
+import { wire } from 'lwc';
+import { getRecord } from 'lightning/uiRecordApi';
+import IS_PORTAL_ENABLED from '@salesforce/schema/User.IsPortalEnabled';
+export default class Example extends LightningElement {
+    @wire(getRecord, { recordId: '$userId', fields: [IS_PORTAL_ENABLED] }) userData;
+}
+"""
+    movements = parse_lwc_native_movements(js_source, "<template></template>")
+    r_movements = [m for m in movements if m.movement_type == "R"]
+    # User should be ignored
+    assert len(r_movements) == 0

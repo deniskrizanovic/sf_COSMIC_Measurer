@@ -283,14 +283,17 @@ def test_wire_r_movements_get_init_tier(tmp_path: Path, monkeypatch):
     bundle_dir.mkdir(parents=True)
     (bundle_dir / "cmp.js").write_text(
         "import { wire } from 'lwc'; import { CurrentPageReference } from 'lightning/navigation';\n"
-        "@wire(CurrentPageReference) pageRef;",
+        "import { getRecord } from 'lightning/uiRecordApi';\n"
+        "@wire(CurrentPageReference) pageRef;\n"
+        "@wire(getRecord, { recordId: '$recordId', fields: ['Account.Name'] }) account;\n",
         encoding="utf-8",
     )
-    (bundle_dir / "cmp.html").write_text("<template><p>{pageRef}</p></template>", encoding="utf-8")
+    (bundle_dir / "cmp.html").write_text("<template><p>{pageRef}</p><p>{account}</p></template>", encoding="utf-8")
 
     result = measure_lwc_bundle(bundle_dir)
     r_rows = [row for row in result["dataMovements"] if row.get("movementType") == "R"]
     assert r_rows, "Expected at least one R movement"
+    assert not any("CurrentPageReference" in row.get("name", "") for row in r_rows)
     for row in r_rows:
         assert row.get("tier") == 1, f"Expected tier=1 for wire R, got {row.get('tier')} on {row}"
         assert row.get("tierLabel") == "Init"
@@ -430,11 +433,12 @@ def _make_bundle_with_filter_and_save(tmp_path: Path, monkeypatch) -> list[dict]
     bundle_dir = tmp_path / "cmp"
     bundle_dir.mkdir(parents=True)
     (bundle_dir / "cmp.js").write_text(
-        "import { wire } from 'lwc'; import { CurrentPageReference } from 'lightning/navigation';\n"
+        "import { wire } from 'lwc';\n"
+        "import { getRecord } from 'lightning/uiRecordApi';\n"
         "import saveRec from '@salesforce/apex/SaveCtrl.save';\n"
         "import loadData from '@salesforce/apex/LoadCtrl.load';\n"
         "export default class Cmp extends LightningElement {\n"
-        "  @wire(CurrentPageReference) pageRef;\n"
+        "  @wire(getRecord, { recordId: '$recordId', fields: ['Account.Name'] }) account;\n"
         "  handleFilter() { loadData({ f: this.f }); }\n"
         "  handleSave() { saveRec({ r: this.r }); }\n"
         "}\n",
