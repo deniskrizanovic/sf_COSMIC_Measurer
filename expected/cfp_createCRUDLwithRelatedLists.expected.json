@@ -11,7 +11,8 @@
       "movementType": "E",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Screen input (Which_DataGroup) (cfp_DataGroups__c)",
@@ -19,7 +20,8 @@
       "movementType": "E",
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Read cfp_DataGroups__c (getDatagroups)",
@@ -27,7 +29,8 @@
       "movementType": "R",
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)",
@@ -35,7 +38,8 @@
       "movementType": "R",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Create cfp_Data_Movements__c (createDMs)",
@@ -43,7 +47,8 @@
       "movementType": "W",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Screen display (Which_DataGroup) (cfp_DataGroups__c)",
@@ -51,7 +56,8 @@
       "movementType": "X",
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     },
     {
       "name": "Errors/notifications",
@@ -61,7 +67,8 @@
       "implementationType": "flow",
       "isApiCall": false,
       "tier": 3,
-      "tierLabel": "Terminal"
+      "tierLabel": "Terminal",
+      "artifactName": "cfp_createCRUDLwithRelatedLists"
     }
   ]
 }

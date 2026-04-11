@@ -14,6 +14,7 @@
       "isApiCall": false,
       "sourceLine": 7,
       "viaArtifact": "cfp_getDataMovements",
+      "artifactName": "cfp_getDataMovements",
       "tier": 1,
       "tierLabel": "Init"
     },
@@ -26,6 +27,7 @@
       "isApiCall": false,
       "sourceLine": 9,
       "viaArtifact": "cfp_getDataMovements",
+      "artifactName": "cfp_getDataMovements",
       "tier": 1,
       "tierLabel": "Init"
     },
@@ -36,6 +38,7 @@
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "lwc",
       "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcessVisualiser",
       "tier": 1,
       "tierLabel": "Init"
     },
@@ -46,6 +49,7 @@
       "dataGroupRef": "status/errors/etc",
       "implementationType": "lwc",
       "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcessVisualiser",
       "tier": 3,
       "tierLabel": "Terminal"
     }

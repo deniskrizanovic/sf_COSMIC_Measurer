@@ -9,7 +9,8 @@
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "apex",
       "isApiCall": false,
-      "sourceLine": 7
+      "sourceLine": 7,
+      "artifactName": "cfp_getDataMovements"
     },
     {
       "name": "Read cfp_Data_Movements__c list",
@@ -18,7 +19,8 @@
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "apex",
       "isApiCall": false,
-      "sourceLine": 9
+      "sourceLine": 9,
+      "artifactName": "cfp_getDataMovements"
     },
     {
       "name": "Return cfp_Data_Movements__c list",
@@ -26,7 +28,8 @@
       "movementType": "X",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "apex",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_getDataMovements"
     },
     {
       "name": "Errors/notifications",
@@ -34,7 +37,8 @@
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "apex",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_getDataMovements"
     }
   ],
   "calledClassesNotFound": []

@@ -60,6 +60,8 @@ def _inline_resolved_lwc_tab_movements(
                 continue
             merged_row = dict(row)
             merged_row["name"] = f"{merged_row.get('name', '')}{tab_suffix}"
+            if "artifactName" not in merged_row and "artifact" in resolved:
+                merged_row["artifactName"] = resolved["artifact"].get("name", "")
             merged_rows.append(merged_row)
 
     merged_rows.append(
@@ -70,6 +72,7 @@ def _inline_resolved_lwc_tab_movements(
             "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
             "implementationType": "flexipage",
             "isApiCall": False,
+            "artifactName": output["artifact"]["name"],
         }
     )
     for idx, row in enumerate(merged_rows, start=1):
@@ -166,6 +169,7 @@ def _promote_primary_record_rows(output: dict, sobject_type: str) -> None:
         + leftovers
     )
     if canonical_exit is not None:
+        canonical_exit["artifactName"] = output["artifact"]["name"]
         ordered_rows.append(canonical_exit)
 
     for idx, row in enumerate(ordered_rows, start=1):
@@ -424,7 +428,7 @@ def _build_flow_candidate_outputs(
     return candidates
 
 
-def _build_lwc_tbc_data_movements(lwc_candidates: list[dict]) -> list[dict]:
+def _build_lwc_tbc_data_movements(artifact_name: str, lwc_candidates: list[dict]) -> list[dict]:
     key_counts: dict[tuple[str, str], int] = {}
     for candidate in lwc_candidates:
         artifact = candidate.get("artifact") or {}
@@ -457,6 +461,7 @@ def _build_lwc_tbc_data_movements(lwc_candidates: list[dict]) -> list[dict]:
                 "dataGroupRef": "tbc",
                 "implementationType": "flexipage",
                 "isApiCall": False,
+                "artifactName": artifact_name,
             }
         )
     return placeholder_rows
@@ -491,6 +496,8 @@ def _inline_resolved_flow_tab_movements(output: dict, resolved_flow_measurements
                 continue
             merged_row = dict(row)
             merged_row["name"] = f"{merged_row.get('name', '')}{tab_suffix}"
+            if "artifactName" not in merged_row and "artifact" in resolved:
+                merged_row["artifactName"] = resolved["artifact"].get("name", "")
             filtered_rows.append(merged_row)
 
     filtered_rows.append(
@@ -501,6 +508,7 @@ def _inline_resolved_flow_tab_movements(output: dict, resolved_flow_measurements
             "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
             "implementationType": "flexipage",
             "isApiCall": False,
+            "artifactName": output["artifact"]["name"],
         }
     )
     for idx, row in enumerate(filtered_rows, start=1):
@@ -601,7 +609,7 @@ def measure_file(
         if include_resolution_details:
             output["lwcCandidateMeasurements"] = lwc_candidates
         output["dataMovements"] = (output.get("dataMovements") or []) + _build_lwc_tbc_data_movements(
-            lwc_candidates
+            metadata.name, lwc_candidates
         )
         lwc_names = ", ".join(candidate["artifact"]["name"] for candidate in lwc_candidates)
         output.setdefault("traversalWarnings", []).append(

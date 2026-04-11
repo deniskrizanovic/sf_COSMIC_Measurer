@@ -27,6 +27,7 @@ class DataMovementRowOptional(DataMovementRow, total=False):
     sourceLine: int
     mergedFrom: list[dict[str, Any]]
     viaArtifact: str
+    artifactName: str
     isAsync: bool
     tier: int
     tierLabel: str
@@ -113,6 +114,8 @@ def to_json_movement(
         out["mergedFrom"] = merged_from
     if m.via_artifact:
         out["viaArtifact"] = m.via_artifact
+    if m.artifact_name:
+        out["artifactName"] = m.artifact_name
     if m.is_async:
         out["isAsync"] = True
     tier = getattr(m, "tier", None)
@@ -135,6 +138,9 @@ def build_output(
     *,
     implementation_type: str = "apex",
 ) -> CosmicMeasureOutput:
+    for m in movements:
+        if m.artifact_name is None:
+            m.artifact_name = artifact_name
     ordered = order_movements(movements)
     data_movements: list[DataMovementRowOptional] = [
         to_json_movement(m, i + 1, merged, implementation_type)
@@ -150,6 +156,7 @@ def build_output(
             "isApiCall": False,
             "tier": 3,
             "tierLabel": "Terminal",
+            "artifactName": artifact_name,
         }
     )
     result: CosmicMeasureOutput = {
@@ -233,14 +240,15 @@ _TIER_LABELS_IN_ORDER = ["Init", "Interactions", "Terminal"]
 
 def _table_rows_block(rows: list) -> list[str]:
     lines: list[str] = []
-    lines.append("| Order | Type | Name | Data group | LineNumber | Via | Merged |")
-    lines.append("|-------|------|------|------------|------------|-----|--------|")
+    lines.append("| Order | Type | Name | Data group | LineNumber | Artifact | Via | Merged |")
+    lines.append("|-------|------|------|------------|------------|----------|-----|--------|")
     for m in rows:
         order = m.get("order", "")
         mtype = m.get("movementType", "")
         dg = m.get("dataGroupRef", "")
         name = m.get("name", "")
         line = m.get("sourceLine", "—")
+        artifact = m.get("artifactName", "—")
         via = m.get("viaArtifact", "—")
         merged = m.get("mergedFrom", [])
         merged_str = (
@@ -252,7 +260,7 @@ def _table_rows_block(rows: list) -> list[str]:
             else "—"
         )
         lines.append(
-            f"| {order} | {mtype} | {name} | {dg} | {line} | {via} | {merged_str} |"
+            f"| {order} | {mtype} | {name} | {dg} | {line} | {artifact} | {via} | {merged_str} |"
         )
     return lines
 

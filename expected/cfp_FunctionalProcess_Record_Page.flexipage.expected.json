@@ -11,7 +11,8 @@
       "movementType": "E",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     },
     {
       "name": "Read page record (cfp_FunctionalProcess__c)",
@@ -19,7 +20,8 @@
       "movementType": "R",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     },
     {
       "name": "Read related list cfp_functionalsteps__r",
@@ -27,7 +29,8 @@
       "movementType": "R",
       "dataGroupRef": "cfp_functionalsteps__c",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     },
     {
       "name": "Display page record (cfp_FunctionalProcess__c)",
@@ -35,7 +38,8 @@
       "movementType": "X",
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     },
     {
       "name": "Display related list cfp_functionalsteps__r",
@@ -43,7 +47,8 @@
       "movementType": "X",
       "dataGroupRef": "cfp_functionalsteps__c",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     },
     {
       "name": "Receive fpId (Functional Process) | tab:Visualiser",
@@ -53,7 +58,8 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 7,
-      "viaArtifact": "cfp_getDataMovements"
+      "viaArtifact": "cfp_getDataMovements",
+      "artifactName": "cfp_getDataMovements"
     },
     {
       "name": "Read cfp_Data_Movements__c list | tab:Visualiser",
@@ -63,7 +69,8 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 9,
-      "viaArtifact": "cfp_getDataMovements"
+      "viaArtifact": "cfp_getDataMovements",
+      "artifactName": "cfp_getDataMovements"
     },
     {
       "name": "Display LWC output to user | tab:Visualiser",
@@ -71,7 +78,8 @@
       "movementType": "X",
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "lwc",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcessVisualiser"
     },
     {
       "name": "Errors/notifications",
@@ -79,7 +87,8 @@
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "flexipage",
-      "isApiCall": false
+      "isApiCall": false,
+      "artifactName": "cfp_FunctionalProcess_Record_Page"
     }
   ],
   "traversalWarnings": [
@@ -123,7 +132,8 @@
           "implementationType": "apex",
           "isApiCall": false,
           "sourceLine": 7,
-          "viaArtifact": "cfp_getDataMovements"
+          "viaArtifact": "cfp_getDataMovements",
+          "artifactName": "cfp_getDataMovements"
         },
         {
           "name": "Read cfp_Data_Movements__c list",
@@ -133,7 +143,8 @@
           "implementationType": "apex",
           "isApiCall": false,
           "sourceLine": 9,
-          "viaArtifact": "cfp_getDataMovements"
+          "viaArtifact": "cfp_getDataMovements",
+          "artifactName": "cfp_getDataMovements"
         },
         {
           "name": "Display LWC output to user",
@@ -141,7 +152,8 @@
           "movementType": "X",
           "dataGroupRef": "cfp_Data_Movements__c",
           "implementationType": "lwc",
-          "isApiCall": false
+          "isApiCall": false,
+          "artifactName": "cfp_FunctionalProcessVisualiser"
         },
         {
           "name": "Errors/notifications",
@@ -149,7 +161,8 @@
           "movementType": "X",
           "dataGroupRef": "status/errors/etc",
           "implementationType": "lwc",
-          "isApiCall": false
+          "isApiCall": false,
+          "artifactName": "cfp_FunctionalProcessVisualiser"
         }
       ],
       "sourceArtifact": {

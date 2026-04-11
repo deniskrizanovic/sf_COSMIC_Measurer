@@ -76,6 +76,9 @@ def build_output(
     called_classes_not_found: Optional[list[str]] = None,
     implementation_type: str = "apex",
 ) -> CosmicMeasureOutput:
+    for m in movements:
+        if m.artifact_name is None:
+            m.artifact_name = class_name
     movements, record_type_reads_excluded = partition_record_type_reads(movements)
     ordered = order_movements(movements)
     data_movements: list[DataMovementRowOptional] = [
@@ -90,6 +93,7 @@ def build_output(
             "dataGroupRef": CANONICAL_EXIT_DATA_GROUP_REF,
             "implementationType": implementation_type,
             "isApiCall": False,
+            "artifactName": class_name,
         }
     )
     result: CosmicMeasureOutput = {

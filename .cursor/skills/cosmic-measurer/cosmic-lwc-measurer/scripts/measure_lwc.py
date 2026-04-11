@@ -185,6 +185,7 @@ def _apex_rows_to_raw_movements(
                 order_hint=hint,
                 source_line=row.get("sourceLine"),
                 via_artifact=via_artifact,
+                artifact_name=row.get("artifactName"),
             )
         )
     return raw
