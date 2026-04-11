@@ -132,10 +132,10 @@
       "tierLabel": "Interactions"
     },
     {
-      "name": "Read WorkOrder::* list",
+      "name": "Read WorkOrder::unknown RT list",
       "order": 11,
       "movementType": "R",
-      "dataGroupRef": "WorkOrder::*",
+      "dataGroupRef": "WorkOrder::unknown RT",
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 56,

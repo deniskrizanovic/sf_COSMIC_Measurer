@@ -16,7 +16,7 @@ if str(_COSMIC_MEASURER_DIR) not in sys.path:
 
 from shared.models import RawMovement  # noqa: E402
 
-RT_UNSPECIFIED = "*"
+RT_UNSPECIFIED = "unknown RT"
 
 STATIC_CALL = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([a-zA-Z0-9_]+)\s*\(")
 EXECUTE_BATCH_NEW = re.compile(
@@ -420,7 +420,7 @@ def _call_site_reads_for_parametric_rt(
 
 def format_data_group_ref(obj: str, record_type_dev: Optional[str], *, unspec: bool = False) -> str:
     """
-    dataGroupRef: Object, Object::DeveloperName, or Object::* (unresolved RT, never merges with qualified).
+    dataGroupRef: Object, Object::DeveloperName, or Object::unknown RT (unresolved RT, never merges with qualified).
     """
     if unspec:
         return f"{obj}::{RT_UNSPECIFIED}"
@@ -443,7 +443,7 @@ def _class_declares_rt_named_constants(source: str) -> bool:
 def _infer_write_data_group_ref(
     obj: str, source_line: int, source: str, boundaries: list[tuple[str, int]]
 ) -> str:
-    """Combine object with RT from method name, or Object::* when RT constants exist but not inferred."""
+    """Combine object with RT from method name, or Object::unknown RT when RT constants exist but not inferred."""
     method = _method_containing_line(boundaries, source_line)
     if method:
         dev = _infer_record_type_from_method_name(method, source)

@@ -25,7 +25,7 @@ from parser import (
 
 def test_format_data_group_ref_composite_and_unspec():
     assert format_data_group_ref("Asset", "Location") == "Asset::Location"
-    assert format_data_group_ref("Asset", None, unspec=True) == "Asset::*"
+    assert format_data_group_ref("Asset", None, unspec=True) == "Asset::unknown RT"
     assert format_data_group_ref("Case", None) == "Case"
 
 
@@ -477,7 +477,7 @@ public class RTFallback {
 }
 """
     reads = find_reads(src)
-    assert any(r.data_group_ref == "Asset::*" for r in reads)
+    assert any(r.data_group_ref == "Asset::unknown RT" for r in reads)
 
 
 def test_find_reads_parametric_record_type_expands_from_call_sites():

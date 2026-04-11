@@ -37,7 +37,7 @@ All measurer skills produce this structure:
 ### Field Rules
 
 - **movementType**: Must be exactly `E`, `R`, `X`, or `W`
-- **dataGroupRef**: Salesforce object API name (e.g. `Account`, `cfp_Data_Movements__c`), or a composite `ObjectApiName::RecordTypeDeveloperName` when the movement is scoped to a record type (e.g. `Asset::Location`). Use `ObjectApiName::*` when record types apply but the DeveloperName could not be resolved. Resolution to cfp_DataGroups__c Id happens at post time.
+- **dataGroupRef**: Salesforce object API name (e.g. `Account`, `cfp_Data_Movements__c`), or a composite `ObjectApiName::RecordTypeDeveloperName` when the movement is scoped to a record type (e.g. `Asset::Location`). Use `ObjectApiName::unknown RT` when record types apply but the DeveloperName could not be resolved. Resolution to cfp_DataGroups__c Id happens at post time.
 - **implementationType**: `apex` = custom code; `flow` = declarative flow; `flexipage` = record-page metadata traversal; `lwc` = Lightning Web Component static analysis; `ootb` = standard Salesforce; `config` = declarative (non-flow)
 - **isApiCall**: `true` if movement involves external API (REST, callout)
 - **sourceLine** (optional): Apex line number for traceability
