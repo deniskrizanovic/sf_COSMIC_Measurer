@@ -19,8 +19,10 @@ if _SCRIPT_DIR not in sys.path:
 
 from parser import (
     RawMovement,
+    _parse_record_type_string_constants,
     find_enqueue_job_calls,
     find_execute_batch_calls,
+    find_external_constant_calls,
     find_static_calls,
     find_system_schedule_calls,
     get_entry_points,
@@ -129,21 +131,49 @@ def measure_file(
 ) -> CosmicMeasureOutput:
     """Measure a single Apex file; return output dict."""
     source = path.read_text(encoding="utf-8", errors="replace")
-    class_name, movements = parse(source, entry_param_filter=entry_param_filter)
-
-    called_classes_not_found: list[str] = []
-    if traverse and search_paths:
-        # Resolve search_paths relative to project root if needed
-        resolved = []
+    
+    # Resolve search_paths relative to project root if needed
+    resolved_paths = []
+    if search_paths:
         for p in search_paths:
             if not p.is_absolute():
-                resolved.append(_PROJECT_ROOT / p)
+                resolved_paths.append(_PROJECT_ROOT / p)
             else:
-                resolved.append(p)
+                resolved_paths.append(p)
+
+    # First pass: identify external constant references
+    class_name, movements = parse(source, entry_param_filter=entry_param_filter)
+    
+    external_constants: dict[str, str] = {}
+    missing_classes: set[str] = set()
+    
+    if traverse and resolved_paths:
+        provider_classes = find_external_constant_calls(source)
+        for provider in provider_classes:
+            provider_path = find_class_file(provider, resolved_paths)
+            if provider_path:
+                provider_source = provider_path.read_text(encoding="utf-8", errors="replace")
+                constants = _parse_record_type_string_constants(provider_source)
+                for cname, cval in constants.items():
+                    external_constants[f"{provider}.{cname}"] = cval
+            else:
+                missing_classes.add(provider)
+        
+        # Second pass: re-run with resolved external constants
+        if external_constants:
+            class_name, movements = parse(
+                source, 
+                entry_param_filter=entry_param_filter, 
+                external_constants=external_constants
+            )
+
+    called_classes_not_found: list[str] = list(missing_classes)
+    if traverse and resolved_paths:
         movements, called_not_found = _traverse_callees(
-            source, list(movements), resolved, set(), class_name
+            source, list(movements), resolved_paths, set(), class_name
         )
-        called_classes_not_found = sorted(called_not_found)
+        called_classes_not_found.extend(list(called_not_found))
+        called_classes_not_found = sorted(list(set(called_classes_not_found)))
 
     return build_output(
         class_name,

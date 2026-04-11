@@ -328,9 +328,16 @@ def _extract_bracket_block(source: str, bracket_open_pos: int) -> str:
 
 
 STATIC_STRING_CONST = re.compile(
-    r"private\s+static\s+final\s+String\s+(\w+)\s*=\s*'([^']+)'",
+    r"(?:public|private|global|protected)\s+static\s+final\s+String\s+(\w+)\s*=\s*'([^']+)'",
     re.IGNORECASE,
 )
+
+EXTERNAL_CONSTANT_REF = re.compile(r"\b([A-Z][a-zA-Z0-9_]*)\s*\.\s*([A-Z0-9_]+)\b")
+
+
+def find_external_constant_calls(source: str) -> set[str]:
+    """Return unique class names from external constant calls (ClassName.CONSTANT)."""
+    return {m.group(1) for m in EXTERNAL_CONSTANT_REF.finditer(source)}
 
 
 def _parse_record_type_string_constants(source: str) -> dict[str, str]:
@@ -338,23 +345,42 @@ def _parse_record_type_string_constants(source: str) -> dict[str, str]:
     return {m.group(1): m.group(2) for m in STATIC_STRING_CONST.finditer(source)}
 
 
-def _infer_record_type_from_bind(bind: str, source: str) -> Optional[str]:
+def _infer_record_type_from_bind(
+    bind: str, source: str, external_constants: Optional[dict[str, str]] = None
+) -> Optional[str]:
     """
-    Map :binding to RecordType DeveloperName using private static final String constants.
+    Map :binding to RecordType DeveloperName using static final String constants.
     E.g. locationRecordTypeId + LOCATION_RT = 'Location' -> 'Location'.
+    Supports local constants and external constants (if provided).
     """
     constants = _parse_record_type_string_constants(source)
+    if external_constants:
+        constants.update(external_constants)
+
     if not constants or not bind:
         return None
     bl = bind.lower()
     for const_name, dev_name in constants.items():
-        stem = re.sub(r"_rt$", "", const_name.lower())
+        # Handle ClassName.ConstantName in bind or constants keys
+        # If const_name is 'GlobalConstants.MY_RT', we want to match against bl
+        target_name = const_name.lower()
+        
+        stem = re.sub(r"_rt$", "", target_name)
         stem = stem.replace("_", "")
-        if len(stem) < 3:
+        # If it's a qualified constant (e.g. GlobalConstants.MY_RT), check both qualified and unqualified
+        if "." in stem:
+            parts = stem.split(".")
+            unqualified_stem = parts[-1]
+        else:
+            unqualified_stem = stem
+
+        if len(unqualified_stem) < 3:
             continue
-        if stem in re.sub(r"[^a-z0-9]", "", bl):
+            
+        clean_bind = re.sub(r"[^a-z0-9.]", "", bl)
+        if stem in clean_bind or unqualified_stem in clean_bind:
             return dev_name
-        if stem in bl:
+        if stem in bl or unqualified_stem in bl:
             return dev_name
     return None
 
@@ -374,11 +400,14 @@ def _infer_record_type_from_method_name(method_name: str, source: str) -> Option
 
 def _soql_has_record_type_clause(soql: str) -> bool:
     s = soql.upper()
-    return "RECORDTYPEID" in s or "RECORDTYPE." in s
+    return "RECORDTYPEID" in s or "RECORDTYPE." in s or "RECORD_TYPE_DEVELOPER_NAME__C" in s
 
 
-def _infer_record_type_from_soql_body(soql: str, source: str) -> Optional[str]:
+def _infer_record_type_from_soql_body(
+    soql: str, source: str, external_constants: Optional[dict[str, str]] = None
+) -> Optional[str]:
     """Return DeveloperName from SOQL, or None if not resolved."""
+    # Standard RecordType.DeveloperName
     m_lit = re.search(
         r"RecordType\.DeveloperName\s*=\s*'([^']+)'",
         soql,
@@ -386,6 +415,16 @@ def _infer_record_type_from_soql_body(soql: str, source: str) -> Optional[str]:
     )
     if m_lit:
         return m_lit.group(1)
+
+    # Custom Record_Type_Developer_Name__c literal
+    m_lit_custom = re.search(
+        r"Record_Type_Developer_Name__c\s*=\s*'([^']+)'",
+        soql,
+        re.IGNORECASE,
+    )
+    if m_lit_custom:
+        return m_lit_custom.group(1)
+
     m_lit2 = re.search(
         r'RecordType\.DeveloperName\s*=\s*"([^"]+)"',
         soql,
@@ -393,9 +432,27 @@ def _infer_record_type_from_soql_body(soql: str, source: str) -> Optional[str]:
     )
     if m_lit2:
         return m_lit2.group(1)
-    m_bind = re.search(r"RecordTypeId\s*=\s*:(\w+)", soql, re.IGNORECASE)
+
+    m_lit2_custom = re.search(
+        r'Record_Type_Developer_Name__c\s*=\s*"([^"]+)"',
+        soql,
+        re.IGNORECASE,
+    )
+    if m_lit2_custom:
+        return m_lit2_custom.group(1)
+
+    # Standard RecordTypeId bind
+    m_bind = re.search(r"RecordTypeId\s*=\s*:([\w.]+)", soql, re.IGNORECASE)
     if m_bind:
-        return _infer_record_type_from_bind(m_bind.group(1), source)
+        return _infer_record_type_from_bind(m_bind.group(1), source, external_constants)
+
+    # Custom Record_Type_Developer_Name__c bind
+    m_bind_custom = re.search(
+        r"Record_Type_Developer_Name__c\s*=\s*:([\w.]+)", soql, re.IGNORECASE
+    )
+    if m_bind_custom:
+        return _infer_record_type_from_bind(m_bind_custom.group(1), source, external_constants)
+
     return None
 
 
@@ -494,7 +551,7 @@ def _trace_query_var_to_object(var_name: str, method_body: str) -> Optional[str]
     return None
 
 
-def find_reads(source: str) -> list[RawMovement]:
+def find_reads(source: str, external_constants: Optional[dict[str, str]] = None) -> list[RawMovement]:
     """Collect all reads (including duplicates) so execution_order can pick earliest."""
     movements: list[RawMovement] = []
     boundaries = _get_method_boundaries(source)
@@ -514,10 +571,10 @@ def find_reads(source: str) -> list[RawMovement]:
         if not obj:
             return
         if soql_body and _soql_has_record_type_clause(soql_body):
-            rt = _infer_record_type_from_soql_body(soql_body, source)
+            rt = _infer_record_type_from_soql_body(soql_body, source, external_constants)
             if rt is None:
                 m_bind = re.search(
-                    r"RecordTypeId\s*=\s*:(\w+)", soql_body, re.IGNORECASE
+                    r"RecordTypeId\s*=\s*:([\w.]+)", soql_body, re.IGNORECASE
                 )
                 if m_bind:
                     meth = _method_containing_line(boundaries, line)
@@ -600,7 +657,7 @@ def find_reads(source: str) -> list[RawMovement]:
     return movements
 
 
-def find_writes(source: str) -> list[RawMovement]:
+def find_writes(source: str, external_constants: Optional[dict[str, str]] = None) -> list[RawMovement]:
     """Collect all writes (including duplicates) so execution_order can pick earliest."""
     movements: list[RawMovement] = []
     boundaries = _get_method_boundaries(source)
@@ -630,6 +687,8 @@ def find_writes(source: str) -> list[RawMovement]:
 
     def add(obj: str, dml: str, line: int):
         if obj and obj != "Unknown":
+            # For now, Writes still use local inference for RT via method names.
+            # Constant resolution for Writes would require more complex bind tracing.
             dg = _infer_write_data_group_ref(obj, line, source, boundaries)
             movements.append(
                 RawMovement(
@@ -914,12 +973,17 @@ def _apply_execution_order(source: str, movements: list[RawMovement], class_name
             m.execution_order = call_order[method]
 
 
-def parse(source: str, *, entry_param_filter: Optional[str] = None) -> tuple[str, list[RawMovement]]:
+def parse(
+    source: str,
+    *,
+    entry_param_filter: Optional[str] = None,
+    external_constants: Optional[dict[str, str]] = None,
+) -> tuple[str, list[RawMovement]]:
     """Parse Apex source; return class name and all raw movements."""
     class_name = extract_class_name(source)
     entries = find_entries(source, entry_param_filter=entry_param_filter)
-    reads = find_reads(source)
-    writes = find_writes(source)
+    reads = find_reads(source, external_constants=external_constants)
+    writes = find_writes(source, external_constants=external_constants)
     exits = find_exits(source)
 
     all_movements = entries + reads + writes + exits
