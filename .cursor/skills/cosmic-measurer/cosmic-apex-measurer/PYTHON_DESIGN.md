@@ -147,7 +147,7 @@ Multiple DML operations to the **same data group** (e.g. `insert` + `update` for
 
 **Implementation**: In `order_movements()`, dedupe Writes by `(movement_type, data_group_ref)` only — keep the first (earliest execution order). Reads remain deduped by `(type, dataGroupRef, name)` to avoid parser duplicates only.
 
-**Record types**: `data_group_ref` may be `ObjectApiName::RecordTypeDeveloperName` (e.g. `Asset::Location`) or `ObjectApiName::*` when record types are involved but unresolved. Merging applies only within the same full `data_group_ref` string.
+**Record types**: `data_group_ref` may be `ObjectApiName::RecordTypeDeveloperName` (e.g. `Asset::Location`) or `ObjectApiName::unknown RT` when record types are involved but unresolved. Merging applies only within the same full `data_group_ref` string.
 
 ---
 

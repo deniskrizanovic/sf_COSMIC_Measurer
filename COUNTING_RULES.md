@@ -44,7 +44,7 @@ Implementation sources live under `.cursor/skills/cosmic-measurer/`.
 - Count SOQL reads from inline SOQL, `Database.query(...)`, and `Database.getQueryLocator(...)`.
 - For record-type filtered queries, `dataGroupRef` can be:
   - `Object::DeveloperName` (resolved)
-  - `Object::*` (record type present but unresolved)
+  - `Object::unknown RT` (record type present but unresolved)
   - `Object` (no record type discrimination)
 - **`RecordType` object reads are excluded from CFP** and reported separately in `recordTypeReadsExcludedFromCfp`.
 
