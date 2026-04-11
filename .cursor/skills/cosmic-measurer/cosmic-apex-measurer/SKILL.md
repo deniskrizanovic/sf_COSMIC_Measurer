@@ -112,6 +112,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-apex-measurer/tests/test_measure_a
 
 When reporting measurement results to the user (from script output or synthesized manually):
 
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `artifactName`, `isApiCall`).
 - **Functional size:** Count E, R, W, and X after deduplication; **CFP = E + R + W + X** (same as the number of rows in `dataMovements`).
 - **Notes:** Call out as applicable:
   - **Canonical exit** — last row is always **Errors/notifications** (after any parser `return` exits)

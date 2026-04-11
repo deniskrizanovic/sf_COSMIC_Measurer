@@ -54,7 +54,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts/measure
 Human summary (default, table-first with roll-up totals):
 
 - Run the script first and use its produced movement rows as the single source of truth for human output ordering.
-- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `isApiCall`), including inlined tab-bound LWC movements.
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `artifactName`, `isApiCall`), including inlined tab-bound LWC movements.
 - Render markdown tables directly in the assistant response (do not wrap the full human summary in fenced code blocks).
 - Do not collapse, regroup, or re-sort movements (for example, never present all `R` rows first and `X` rows later unless that is exactly what the script emitted).
 - Do not omit inferred or placeholder rows emitted by the script (for example tab-bound `tbc` inspection rows) in full-output mode.

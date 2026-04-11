@@ -104,6 +104,7 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
 
 ### Human summary (always)
 
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `artifactName`, `isApiCall`).
 - **Functional size:** Count E, R, W, and X after deduplication; CFP = E + R + W + X.
 - **Notes:** Canonical exit, merged writes (if any).
 
