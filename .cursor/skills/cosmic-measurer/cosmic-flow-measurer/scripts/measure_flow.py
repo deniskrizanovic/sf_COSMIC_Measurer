@@ -25,6 +25,7 @@ from flow_parser import parse_flow_with_invocables  # noqa: E402
 from shared.output import (  # noqa: E402
     CosmicMeasureOutput,
     build_output,
+    filter_traversal_warnings,
     to_human_summary,
     to_json_string,
     to_table,
@@ -36,27 +37,6 @@ def mark_invocable_apex_rows(rows: list[dict[str, Any]]) -> None:
     for row in rows:
         if row.get("viaArtifact"):
             row["implementationType"] = "apex"
-
-
-def filter_framework_class_names(class_names: list[str]) -> list[str]:
-    """Keep likely custom Apex classes; drop framework/system pseudo-classes."""
-    framework = {
-        "Database",
-        "System",
-        "String",
-        "Integer",
-        "Boolean",
-        "Long",
-        "Double",
-        "Decimal",
-        "Id",
-        "List",
-        "Set",
-        "Map",
-        "Object",
-        "SObject",
-    }
-    return [name for name in class_names if name not in framework]
 
 
 def _load_apex_measurer_helpers() -> tuple[Any, Any]:
@@ -104,7 +84,7 @@ def measure_file(
                 search_paths=search_paths,
                 traverse=True,
             )
-            called_not_found = filter_framework_class_names(
+            called_not_found = filter_traversal_warnings(
                 apex_output.get("calledClassesNotFound") or []
             )
             if called_not_found:

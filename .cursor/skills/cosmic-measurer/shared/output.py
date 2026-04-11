@@ -50,6 +50,35 @@ CANONICAL_EXIT_NAME = "Errors/notifications"
 CANONICAL_EXIT_DATA_GROUP_REF = "status/errors/etc"
 MAX_MOVEMENT_NAME_LENGTH = 80
 
+# Standard Salesforce/Apex classes that should not be reported as missing traversal targets.
+EXCLUDED_TRAVERSAL_CLASSES = {
+    "Boolean",
+    "Database",
+    "Date",
+    "DateTime",
+    "Decimal",
+    "GlobalConstants",
+    "Id",
+    "InputData",
+    "Integer",
+    "JSON",
+    "List",
+    "LogEvent",
+    "Map",
+    "Object",
+    "OutPutData",
+    "Schema",
+    "SObject",
+    "String",
+    "System",
+    "Type",
+}
+
+
+def filter_traversal_warnings(class_names: list[str]) -> list[str]:
+    """Remove standard framework/system classes from the missing class list."""
+    return [name for name in class_names if name not in EXCLUDED_TRAVERSAL_CLASSES]
+
 
 def cap_movement_name(name: str) -> str:
     return name[:MAX_MOVEMENT_NAME_LENGTH]
