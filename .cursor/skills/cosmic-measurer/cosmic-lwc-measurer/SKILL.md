@@ -45,6 +45,7 @@ python3 .cursor/skills/cosmic-measurer/cosmic-lwc-measurer/scripts/measure_lwc.p
 
 Human summary:
 
+- Present data movements in a markdown table first (`order`, `movementType`, `name`, `dataGroupRef`, `implementationType`, `artifactName`, `isApiCall`).
 - Functional size with E/R/W/X counts and total CFP.
 - Notes about traversal warnings and canonical exit.
 

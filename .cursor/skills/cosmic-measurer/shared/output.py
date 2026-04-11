@@ -240,8 +240,8 @@ _TIER_LABELS_IN_ORDER = ["Init", "Interactions", "Terminal"]
 
 def _table_rows_block(rows: list) -> list[str]:
     lines: list[str] = []
-    lines.append("| Order | Type | Name | Data group | LineNumber | Artifact | Via | Merged |")
-    lines.append("|-------|------|------|------------|------------|----------|-----|--------|")
+    lines.append("| Order | Type | Name | Data group | LineNumber | ArtifactName | Via | Merged |")
+    lines.append("|-------|------|------|------------|------------|--------------|-----|--------|")
     for m in rows:
         order = m.get("order", "")
         mtype = m.get("movementType", "")
