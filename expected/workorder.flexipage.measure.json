@@ -1,0 +1,481 @@
+{
+  "functionalProcessId": "<Id>",
+  "artifact": {
+    "type": "FlexiPage",
+    "name": "WorkOrder"
+  },
+  "dataMovements": [
+    {
+      "name": "Open record page (WorkOrder)",
+      "order": 1,
+      "movementType": "E",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read page record (WorkOrder)",
+      "order": 2,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display page record (WorkOrder)",
+      "order": 3,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Edit page record (WorkOrder)",
+      "order": 4,
+      "movementType": "E",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Write page record (WorkOrder)",
+      "order": 5,
+      "movementType": "W",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read highlights panel fields (WorkOrder)",
+      "order": 6,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display highlights panel fields (WorkOrder)",
+      "order": 7,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pathA",
+      "order": 8,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list WorkOrderLineItems",
+      "order": 9,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrderLineItems",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list WorkOrderLineItems",
+      "order": 10,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrderLineItems",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Work_Order_Milestones__r",
+      "order": 11,
+      "movementType": "R",
+      "dataGroupRef": "Work_Order_Milestones__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Work_Order_Milestones__r",
+      "order": 12,
+      "movementType": "X",
+      "dataGroupRef": "Work_Order_Milestones__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list ProcessSteps",
+      "order": 13,
+      "movementType": "R",
+      "dataGroupRef": "ProcessSteps",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list ProcessSteps",
+      "order": 14,
+      "movementType": "X",
+      "dataGroupRef": "ProcessSteps",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Histories",
+      "order": 15,
+      "movementType": "R",
+      "dataGroupRef": "Histories",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Histories",
+      "order": 16,
+      "movementType": "X",
+      "dataGroupRef": "Histories",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Approval_Work_Items__r",
+      "order": 17,
+      "movementType": "R",
+      "dataGroupRef": "Approval_Work_Items__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Approval_Work_Items__r",
+      "order": 18,
+      "movementType": "X",
+      "dataGroupRef": "Approval_Work_Items__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Payment_Claims__r",
+      "order": 19,
+      "movementType": "R",
+      "dataGroupRef": "Payment_Claims__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Payment_Claims__r",
+      "order": 20,
+      "movementType": "X",
+      "dataGroupRef": "Payment_Claims__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Credit_Notes__r",
+      "order": 21,
+      "movementType": "R",
+      "dataGroupRef": "Credit_Notes__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Credit_Notes__r",
+      "order": 22,
+      "movementType": "X",
+      "dataGroupRef": "Credit_Notes__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list ServiceAppointments",
+      "order": 23,
+      "movementType": "R",
+      "dataGroupRef": "ServiceAppointments",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list ServiceAppointments",
+      "order": 24,
+      "movementType": "X",
+      "dataGroupRef": "ServiceAppointments",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Assessments__r",
+      "order": 25,
+      "movementType": "R",
+      "dataGroupRef": "Assessments__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Assessments__r",
+      "order": 26,
+      "movementType": "X",
+      "dataGroupRef": "Assessments__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list Comments__r",
+      "order": 27,
+      "movementType": "R",
+      "dataGroupRef": "Comments__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list Comments__r",
+      "order": 28,
+      "movementType": "X",
+      "dataGroupRef": "Comments__c",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related list AttachedContentDocuments",
+      "order": 29,
+      "movementType": "R",
+      "dataGroupRef": "AttachedContentDocuments",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related list AttachedContentDocuments",
+      "order": 30,
+      "movementType": "X",
+      "dataGroupRef": "AttachedContentDocuments",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Access Issue Details | tab:Access Issue",
+      "order": 31,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Access Issue Details | tab:Access Issue",
+      "order": 32,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record NCAT Details | tab:Access Issue",
+      "order": 33,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record NCAT Details | tab:Access Issue",
+      "order": 34,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Appointment Details | tab:Access Issue",
+      "order": 35,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Appointment Details | tab:Access Issue",
+      "order": 36,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Visible Damage Details | tab:Visible Damage",
+      "order": 37,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Visible Damage Details | tab:Visible Damage",
+      "order": 38,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Tenant Details | tab:Visible Damage",
+      "order": 39,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Tenant Details | tab:Visible Damage",
+      "order": 40,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Recovery Details | tab:Visible Damage",
+      "order": 41,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Recovery Details | tab:Visible Damage",
+      "order": 42,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Debt Recovery Details | tab:Visible Damage",
+      "order": 43,
+      "movementType": "R",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Debt Recovery Details | tab:Visible Damage",
+      "order": 44,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Read related record Request Details",
+      "order": 45,
+      "movementType": "R",
+      "dataGroupRef": "Case",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display related record Request Details",
+      "order": 46,
+      "movementType": "X",
+      "dataGroupRef": "Case",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display flow interview SUI_Work_Order_Display_Warranties | tab:Warranties",
+      "order": 47,
+      "movementType": "X",
+      "dataGroupRef": "Flow:SUI_Work_Order_Display_Warranties",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display flow interview SUI_Associations_Show_Work_Order_Associations | tab:Relat",
+      "order": 48,
+      "movementType": "X",
+      "dataGroupRef": "Flow:SUI_Associations_Show_Work_Order_Associations",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Display path state (WorkOrder) (region:header, id:runtime_sales_pathassistant_pa",
+      "order": 49,
+      "movementType": "X",
+      "dataGroupRef": "WorkOrder",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Inspect LWC WorkOrderLineItemTable data movements (TBC) on tab SoRs",
+      "order": 50,
+      "movementType": "X",
+      "dataGroupRef": "tbc",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    },
+    {
+      "name": "Errors/notifications",
+      "order": 51,
+      "movementType": "X",
+      "dataGroupRef": "status/errors/etc",
+      "implementationType": "flexipage",
+      "isApiCall": false,
+      "artifactName": "WorkOrder"
+    }
+  ],
+  "traversalWarnings": [
+    "Investigate configured page actions as separate functional processes: Submit, WorkOrder.Change_Contractor, WorkOrder.SUI_Edit_Request, WorkOrder.SUI_Add_Comment, WorkOrder.SUI_Manage_Work_Order, WorkOrder.SUI_Create_Ad_hoc_Assessment, WorkOrder.SUI_Raise_Access_Issue, WorkOrder.SUI_Create_Child_WO_Association, WorkOrder.SUI_Create_Warranty, WorkOrder.SUI_Report_Visible_Damage, WorkOrder.SUI_Create_Credit_Note",
+    "Tab-aware notes: page contains tabs = Standard.Tab.detail, SoRs, Milestones, Pending Approvals, Access Issue, Warranties, Visible Damage, Related WOs, Approval, History, Approval Actions, Payment Claims, Credit Notes, Service Appointments, Assessments, Comments, Files, Standard.Tab.eduActivities",
+    "Tab-component bindings: Standard.Tab.detail -> aura(force:detailPanel), SoRs -> lwc(WorkOrderLineItemTable), SoRs -> aura(lst:dynamicRelatedList), SoRs -> aura(lst:dynamicRelatedList), Milestones -> aura(force:relatedListSingleContainer), Pending Approvals -> aura(interaction_orchestrator:workGuide), Access Issue -> aura(console:relatedRecord), Access Issue -> aura(console:relatedRecord), Access Issue -> aura(console:relatedRecord), Warranties -> aura(flowruntime:interview), Visible Damage -> aura(console:relatedRecord), Visible Damage -> aura(console:relatedRecord), Visible Damage -> aura(console:relatedRecord), Visible Damage -> aura(console:relatedRecord), Visible Damage -> aura(console:relatedRecord), Related WOs -> aura(flowruntime:interview), Approval -> aura(force:relatedListSingleContainer), History -> aura(force:relatedListSingleContainer), Approval Actions -> aura(force:relatedListSingleContainer), Payment Claims -> aura(force:relatedListSingleContainer), Credit Notes -> aura(force:relatedListSingleContainer), Service Appointments -> aura(force:relatedListSingleContainer), Assessments -> aura(force:relatedListSingleContainer), Comments -> aura(force:relatedListSingleContainer), Files -> aura(force:relatedListSingleContainer), Standard.Tab.eduActivities -> aura(runtime_sales_activities:activityPanel)",
+    "Unsupported tab component Standard.Tab.detail: force:detailPanel",
+    "Unsupported tab component Pending Approvals: interaction_orchestrator:workGuide",
+    "Tab component Warranties (flowruntime:interview) inferred as X only; inspect flow for additional E/W",
+    "Tab component Related WOs (flowruntime:interview) inferred as X only; inspect flow for additional E/W",
+    "Unsupported tab component Standard.Tab.eduActivities: runtime_sales_activities:activityPanel",
+    "Delegate tab-bound LWCs to lwc-measurer with additional write movement handling: WorkOrderLineItemTable",
+    "Delegate tab-bound Flows to flow-measurer for concrete E/R/W/X movements: SUI_Work_Order_Display_Warranties, SUI_Associations_Show_Work_Order_Associations",
+    "Unable to resolve tab-bound Flow metadata: SUI_Associations_Show_Work_Order_Associations, SUI_Work_Order_Display_Warranties"
+  ]
+}
