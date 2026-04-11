@@ -142,7 +142,7 @@ def test_to_json_string_roundtrip():
     out = build_output("C", [], called_classes_not_found=None)
     s = to_json_string(out, indent=4)
     data = json.loads(s)
-    assert data["artifact"]["name"] == "C"
+    assert data["artifact"]["name"] == "C.apex"
 
 
 def test_count_movement_types():

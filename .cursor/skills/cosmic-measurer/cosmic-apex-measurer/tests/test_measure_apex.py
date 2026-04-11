@@ -48,7 +48,7 @@ def test_BulkSurveyActionsBatch_has_entry_read_write(project_root):
     assert "E" in types
     assert "R" in types
     assert "W" in types
-    assert result["artifact"]["name"] == "BulkSurveyActionsBatch"
+    assert result["artifact"]["name"] == "BulkSurveyActionsBatch.apex"
 
 
 def test_eventbus_publish_detected_as_write(tmp_path):

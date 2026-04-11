@@ -67,7 +67,7 @@ JSON (optional / export-oriented):
 ```json
 {
   "functionalProcessId": "<Id>",
-  "artifact": { "type": "FlexiPage", "name": "cfp_FunctionalProcess_Record_Page" },
+  "artifact": { "type": "FlexiPage", "name": "cfp_FunctionalProcess_Record_Page.flexipage" },
   "dataMovements": [
     { "name": "Read page record (cfp_FunctionalProcess__c)", "order": 1, "movementType": "R", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flexipage", "isApiCall": false },
     { "name": "Read related list cfp_functionalsteps__r", "order": 2, "movementType": "R", "dataGroupRef": "cfp_functionalsteps__c", "implementationType": "flexipage", "isApiCall": false },

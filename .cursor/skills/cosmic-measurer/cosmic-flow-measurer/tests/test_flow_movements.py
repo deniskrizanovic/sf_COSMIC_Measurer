@@ -59,7 +59,7 @@ def test_canonical_exit_with_no_other_exits():
 def test_build_output_artifact_type_is_flow():
     out = build_output("Flow", "TestFlow", [], implementation_type="flow")
     assert out["artifact"]["type"] == "Flow"
-    assert out["artifact"]["name"] == "TestFlow"
+    assert out["artifact"]["name"] == "TestFlow.flow"
 
 
 def test_build_output_implementation_type_is_flow():
@@ -113,7 +113,7 @@ def test_to_table_flow():
         implementation_type="flow",
     )
     text = to_table(out)
-    assert "**MyFlow** (Flow)" in text
+    assert "**MyFlow.flow** (Flow)" in text
     assert "| Order |" in text
 
 

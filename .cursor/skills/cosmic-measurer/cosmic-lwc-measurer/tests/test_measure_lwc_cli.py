@@ -75,5 +75,5 @@ def test_cli_required_types_and_lwc_name(monkeypatch, capsys, tmp_path):
     )
     assert measure_lwc.main() == 0
     payload = json.loads(capsys.readouterr().out)
-    assert payload["artifact"]["name"] == "myCmp"
+    assert payload["artifact"]["name"] == "myCmp.lwc"
     assert payload["requiredMovementTypes"] == ["X", "W"]

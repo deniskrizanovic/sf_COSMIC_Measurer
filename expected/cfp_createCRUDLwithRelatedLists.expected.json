@@ -2,7 +2,7 @@
   "functionalProcessId": "<Id>",
   "artifact": {
     "type": "Flow",
-    "name": "cfp_createCRUDLwithRelatedLists"
+    "name": "cfp_createCRUDLwithRelatedLists.flow"
   },
   "dataMovements": [
     {
@@ -12,7 +12,7 @@
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Screen input (Which_DataGroup) (cfp_DataGroups__c)",
@@ -21,7 +21,7 @@
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Read cfp_DataGroups__c (getDatagroups)",
@@ -30,7 +30,7 @@
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)",
@@ -39,7 +39,7 @@
       "dataGroupRef": "cfp_FunctionalProcess__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Create cfp_Data_Movements__c (createDMs)",
@@ -48,7 +48,7 @@
       "dataGroupRef": "cfp_Data_Movements__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Screen display (Which_DataGroup) (cfp_DataGroups__c)",
@@ -57,7 +57,7 @@
       "dataGroupRef": "cfp_DataGroups__c",
       "implementationType": "flow",
       "isApiCall": false,
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
       "name": "Errors/notifications",
@@ -68,7 +68,7 @@
       "isApiCall": false,
       "tier": 3,
       "tierLabel": "Terminal",
-      "artifactName": "cfp_createCRUDLwithRelatedLists"
+      "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     }
   ]
 }

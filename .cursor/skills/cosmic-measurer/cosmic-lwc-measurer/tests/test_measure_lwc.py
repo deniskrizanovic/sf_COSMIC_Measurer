@@ -19,7 +19,7 @@ def test_measure_lwc_bundle_sample(project_root: Path):
     result = measure_lwc_bundle(bundle_dir, functional_process_id="FP-1")
     assert result["functionalProcessId"] == "FP-1"
     assert result["artifact"]["type"] == "LWC"
-    assert result["artifact"]["name"] == "cfp_FunctionalProcessVisualiser"
+    assert result["artifact"]["name"] == "cfp_FunctionalProcessVisualiser.lwc"
     assert result["dataMovements"][-1]["name"] == "Errors/notifications"
     assert result["dataMovements"][-1]["movementType"] == "X"
     assert result["dataMovements"][-1]["dataGroupRef"] == "status/errors/etc"

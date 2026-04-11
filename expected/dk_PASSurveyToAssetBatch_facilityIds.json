@@ -2,7 +2,7 @@
   "functionalProcessId": "<Id>",
   "artifact": {
     "type": "Apex",
-    "name": "dk_PASSurveyToAssetBatch"
+    "name": "dk_PASSurveyToAssetBatch.apex"
   },
   "dataMovements": [
     {
@@ -13,7 +13,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 35,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Read Facility__c list",
@@ -23,7 +23,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 659,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Read Asset::Facility list",
@@ -33,7 +33,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 674,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Read Survey_Line_Item__c list",
@@ -43,7 +43,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 691,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Read Asset::Location list",
@@ -53,7 +53,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 388,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Read Asset::Component list",
@@ -63,7 +63,7 @@
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 414,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Insert Asset::Location records",
@@ -83,7 +83,7 @@
           "sourceLine": 406
         }
       ],
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Insert Asset::Component records",
@@ -103,7 +103,7 @@
           "sourceLine": 433
         }
       ],
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Upsert Application_Log__c records",
@@ -114,7 +114,7 @@
       "isApiCall": false,
       "sourceLine": 73,
       "viaClass": "ApplicationLogHandler",
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     },
     {
       "name": "Errors/notifications",
@@ -123,7 +123,7 @@
       "dataGroupRef": "status/errors/etc",
       "implementationType": "apex",
       "isApiCall": false,
-      "artifactName": "dk_PASSurveyToAssetBatch"
+      "artifactName": "dk_PASSurveyToAssetBatch.apex"
     }
   ],
   "calledClassesNotFound": [
