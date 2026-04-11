@@ -58,11 +58,38 @@ def _find_text(element: ET.Element, tag: str) -> Optional[str]:
     return None
 
 
-def _normalize_related_list_to_data_group(related_list_api_name: str) -> str:
-    ref = related_list_api_name.strip()
-    if ref.endswith("__r"):
-        return ref[:-3] + "__c"
-    return ref
+def _normalize_related_list(
+    related_list_api_name: str, parent_field_api_name: Optional[str] = None
+) -> tuple[str, str]:
+    """
+    Normalize related list API name to (display_name, data_group_ref).
+    Rule 1: __r -> __c.
+    Rule 2: AttachedContentDocuments -> ContentDocument.
+    Rule 3: Histories -> parentObjectName_History (via parent_field_api_name).
+    """
+    raw_name = related_list_api_name.strip()
+
+    # Rule 2: AttachedContentDocuments -> ContentDocument
+    if raw_name == "AttachedContentDocuments":
+        return "ContentDocument", "ContentDocument"
+
+    # Rule 3: Histories -> parentObjectName_History
+    if raw_name == "Histories" and parent_field_api_name:
+        # Example: WorkOrder.Id -> WorkOrder
+        parent_obj = (
+            parent_field_api_name.split(".")[0]
+            if "." in parent_field_api_name
+            else parent_field_api_name
+        )
+        hist_name = f"{parent_obj}_History"
+        return hist_name, hist_name
+
+    # Rule 1: __r -> __c
+    if raw_name.endswith("__r"):
+        normalized = raw_name[:-3] + "__c"
+        return normalized, normalized
+
+    return raw_name, raw_name
 
 
 def _extract_action_values(component: ET.Element) -> list[str]:
@@ -311,12 +338,16 @@ def extract_tab_bound_component_movements(
                     f"Tab component {binding.tab_title or binding.tab_identifier} ({component_name}) is missing relatedListApiName"
                 )
                 continue
-            data_group = _normalize_related_list_to_data_group(related_list_api_name)
+
+            parent_field_api_name = properties.get("parentFieldApiName", "").strip()
+            display_name, data_group = _normalize_related_list(
+                related_list_api_name, parent_field_api_name
+            )
             movements.append(
                 RawMovement(
                     movement_type="R",
                     data_group_ref=data_group,
-                    name=f"Read related list {related_list_api_name}{suffix}",
+                    name=f"Read related list {display_name}{suffix}",
                     order_hint=movement_order_hint,
                 )
             )
@@ -324,7 +355,7 @@ def extract_tab_bound_component_movements(
                 RawMovement(
                     movement_type="X",
                     data_group_ref=data_group,
-                    name=f"Display related list {related_list_api_name}{suffix}",
+                    name=f"Display related list {display_name}{suffix}",
                     order_hint=movement_order_hint + 1,
                 )
             )
@@ -460,7 +491,9 @@ def find_reads_from_page(
     for rl in related_lists:
         if not rl.related_list_api_name:
             continue
-        data_group = _normalize_related_list_to_data_group(rl.related_list_api_name)
+        display_name, data_group = _normalize_related_list(
+            rl.related_list_api_name, rl.parent_field_api_name
+        )
         if data_group in seen_data_groups:
             continue
         hint += 1
@@ -469,7 +502,7 @@ def find_reads_from_page(
             RawMovement(
                 movement_type="R",
                 data_group_ref=data_group,
-                name=f"Read related list {rl.related_list_api_name}",
+                name=f"Read related list {display_name}",
                 order_hint=hint,
             )
         )
@@ -510,7 +543,9 @@ def find_exits_from_page(
     for rl in related_lists:
         if not rl.related_list_api_name:
             continue
-        data_group = _normalize_related_list_to_data_group(rl.related_list_api_name)
+        display_name, data_group = _normalize_related_list(
+            rl.related_list_api_name, rl.parent_field_api_name
+        )
         if data_group in seen_data_groups:
             continue
         hint += 1
@@ -519,7 +554,7 @@ def find_exits_from_page(
             RawMovement(
                 movement_type="X",
                 data_group_ref=data_group,
-                name=f"Display related list {rl.related_list_api_name}",
+                name=f"Display related list {display_name}",
                 order_hint=hint,
             )
         )

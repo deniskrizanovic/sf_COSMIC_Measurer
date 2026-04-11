@@ -383,6 +383,35 @@ def test_build_synthetic_action_entry():
     assert entry.name == "Trigger action Delete"
 
 
+def test_normalize_related_list():
+    from flexipage_parser import _normalize_related_list
+
+    # Rule 1: __r -> __c
+    name, dg = _normalize_related_list("MyObject__r")
+    assert name == "MyObject__c"
+    assert dg == "MyObject__c"
+
+    # Rule 2: AttachedContentDocuments -> ContentDocument
+    name, dg = _normalize_related_list("AttachedContentDocuments")
+    assert name == "ContentDocument"
+    assert dg == "ContentDocument"
+
+    # Rule 3: Histories -> parentObjectName_History
+    name, dg = _normalize_related_list("Histories", "WorkOrder.Id")
+    assert name == "WorkOrder_History"
+    assert dg == "WorkOrder_History"
+
+    # Rule 3 fallback: Histories without parent_field_api_name
+    name, dg = _normalize_related_list("Histories")
+    assert name == "Histories"
+    assert dg == "Histories"
+
+    # No rule: standard object
+    name, dg = _normalize_related_list("Contacts")
+    assert name == "Contacts"
+    assert dg == "Contacts"
+
+
 def test_extract_tab_bound_component_movements_for_supported_components():
     body = """
     <flexiPageRegions>
