@@ -311,19 +311,7 @@
   ],
   "traversalWarnings": [
     "Unable to resolve Apex class: GlobalConstants (called via AddSORController)",
-    "Unable to resolve Apex class: JSON (called via AddSORController)",
-    "Unable to resolve Apex class: String (called via AddSORController)",
-    "Unable to resolve Apex class: System (called via AddSORController)",
-    "Unable to resolve Apex class: Boolean (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: Date (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: DateTime (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: Decimal (called via WorkOrderLineItemTableController)",
     "Unable to resolve Apex class: InputData (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: Integer (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: JSON (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: OutPutData (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: Schema (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: String (called via WorkOrderLineItemTableController)",
-    "Unable to resolve Apex class: Type (called via WorkOrderLineItemTableController)"
+    "Unable to resolve Apex class: OutPutData (called via WorkOrderLineItemTableController)"
   ]
 }
