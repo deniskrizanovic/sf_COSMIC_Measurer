@@ -130,10 +130,10 @@ def test_build_output_custom_implementation_and_called_not_found():
         "MyClass",
         [m],
         functional_process_id="fp1",
-        called_classes_not_found=["Database"],
+        called_classes_not_found=["MissingClass"],
         implementation_type="custom",
     )
-    assert out["calledClassesNotFound"] == ["Database"]
+    assert out["calledClassesNotFound"] == ["MissingClass"]
     assert out["dataMovements"][-1]["implementationType"] == "custom"
     assert out["dataMovements"][0]["implementationType"] == "apex"
 

@@ -21,6 +21,7 @@ from shared.output import (  # noqa: E402
     DataMovementRow,
     DataMovementRowOptional,
     count_movement_types,
+    filter_traversal_warnings,
     order_movements,
     to_json_string,
 )
@@ -105,7 +106,7 @@ def build_output(
         "dataMovements": data_movements,
     }
     if called_classes_not_found is not None:
-        result["calledClassesNotFound"] = called_classes_not_found
+        result["calledClassesNotFound"] = filter_traversal_warnings(called_classes_not_found)
     if record_type_reads_excluded:
         rows: list[RecordTypeReadExcludedRow] = []
         for m in sorted(

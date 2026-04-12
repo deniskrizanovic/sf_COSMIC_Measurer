@@ -30,6 +30,7 @@ from shared.output import (  # noqa: E402
     CANONICAL_EXIT_NAME,
     build_output,
     cap_movement_name,
+    filter_traversal_warnings,
     to_human_summary,
     to_json_string,
     to_table,
@@ -626,6 +627,10 @@ def measure_file(
             if include_resolution_details:
                 output["resolvedLwcMeasurements"] = resolved_lwc_measurements
             _inline_resolved_lwc_tab_movements(output, resolved_lwc_measurements)
+            
+            # Clean up traversal warnings from LWC resolution if needed
+            if "traversalWarnings" in output:
+                output["traversalWarnings"] = filter_traversal_warnings(output["traversalWarnings"])
     if flow_candidates:
         if include_resolution_details:
             output["flowCandidateMeasurements"] = flow_candidates

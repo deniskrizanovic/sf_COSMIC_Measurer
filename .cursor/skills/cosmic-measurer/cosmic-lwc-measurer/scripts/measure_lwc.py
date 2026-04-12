@@ -28,6 +28,7 @@ from shared.output import (  # noqa: E402
     CANONICAL_EXIT_DATA_GROUP_REF,
     CANONICAL_EXIT_NAME,
     build_output,
+    filter_traversal_warnings,
     to_human_summary,
     to_json_string,
     to_table,
@@ -307,7 +308,7 @@ def measure_lwc_bundle(
             row["dataGroupRef"] = inferred_user_output_group
 
     if warnings:
-        output["traversalWarnings"] = warnings
+        output["traversalWarnings"] = filter_traversal_warnings(warnings)
     if source_artifact:
         output["sourceArtifact"] = source_artifact
     if tab_context:

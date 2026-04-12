@@ -160,10 +160,10 @@
       "triggeringBlock": "row-edit"
     },
     {
-      "name": "Read Master_Data__c list",
+      "name": "Read Master_Data__c::Component list",
       "order": 13,
       "movementType": "R",
-      "dataGroupRef": "Master_Data__c",
+      "dataGroupRef": "Master_Data__c::Component",
       "implementationType": "apex",
       "isApiCall": false,
       "sourceLine": 546,
@@ -174,8 +174,22 @@
       "triggeringBlock": "row-edit"
     },
     {
-      "name": "Read Service_Catalogue__c list",
+      "name": "Read Master_Data__c::unknown RT list",
       "order": 14,
+      "movementType": "R",
+      "dataGroupRef": "Master_Data__c::unknown RT",
+      "implementationType": "apex",
+      "isApiCall": false,
+      "sourceLine": 555,
+      "viaArtifact": "AddSORController",
+      "artifactName": "AddSORController.apex",
+      "tier": 2,
+      "tierLabel": "Interactions",
+      "triggeringBlock": "row-edit"
+    },
+    {
+      "name": "Read Service_Catalogue__c list",
+      "order": 15,
       "movementType": "R",
       "dataGroupRef": "Service_Catalogue__c",
       "implementationType": "apex",
@@ -189,7 +203,7 @@
     },
     {
       "name": "Read Milestone_Metadata__mdt list",
-      "order": 15,
+      "order": 16,
       "movementType": "R",
       "dataGroupRef": "Milestone_Metadata__mdt",
       "implementationType": "apex",
@@ -203,7 +217,7 @@
     },
     {
       "name": "Display LWC output to user",
-      "order": 16,
+      "order": 17,
       "movementType": "X",
       "dataGroupRef": "serviceCatalougeWrapper",
       "implementationType": "lwc",
@@ -214,7 +228,7 @@
     },
     {
       "name": "Upsert Application_Log__c records",
-      "order": 17,
+      "order": 18,
       "movementType": "W",
       "dataGroupRef": "Application_Log__c",
       "implementationType": "apex",
@@ -227,7 +241,7 @@
     },
     {
       "name": "Insert WorkOrderLineItem records",
-      "order": 18,
+      "order": 19,
       "movementType": "W",
       "dataGroupRef": "WorkOrderLineItem",
       "implementationType": "apex",
@@ -246,7 +260,7 @@
     },
     {
       "name": "Update Workorder records",
-      "order": 19,
+      "order": 20,
       "movementType": "W",
       "dataGroupRef": "Workorder",
       "implementationType": "apex",
@@ -259,7 +273,7 @@
     },
     {
       "name": "Update SObject records",
-      "order": 20,
+      "order": 21,
       "movementType": "W",
       "dataGroupRef": "SObject",
       "implementationType": "apex",
@@ -272,7 +286,7 @@
     },
     {
       "name": "Update WorkOrder records",
-      "order": 21,
+      "order": 22,
       "movementType": "W",
       "dataGroupRef": "WorkOrder",
       "implementationType": "apex",
@@ -285,7 +299,7 @@
     },
     {
       "name": "Errors/notifications",
-      "order": 22,
+      "order": 23,
       "movementType": "X",
       "dataGroupRef": "status/errors/etc",
       "implementationType": "lwc",
@@ -294,5 +308,10 @@
       "tierLabel": "Terminal",
       "artifactName": "AddSORs.lwc"
     }
+  ],
+  "traversalWarnings": [
+    "Unable to resolve Apex class: GlobalConstants (called via AddSORController)",
+    "Unable to resolve Apex class: InputData (called via WorkOrderLineItemTableController)",
+    "Unable to resolve Apex class: OutPutData (called via WorkOrderLineItemTableController)"
   ]
 }
