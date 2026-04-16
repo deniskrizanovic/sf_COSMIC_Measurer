@@ -2,6 +2,8 @@
 
 `sf_COSMIC-Measurer` is a Python-based measurement toolkit for extracting COSMIC data movements from Salesforce artifacts.
 
+A primary goal of this project is to provide a seamless automated measurement pipeline that integrates directly with the [sf_CosmicWorkBench](https://github.com/deniskrizanovic/sf_CosmicWorkBench) for visualization and record management.
+
 It analyzes metadata and code, classifies movements as `E` (Entry), `R` (Read), `W` (Write), and `X` (Exit), and outputs structured JSON suitable for posting into a COSMIC data model (for example, `cfp_Data_Movements__c` pipelines).
 
 ## What this project does
