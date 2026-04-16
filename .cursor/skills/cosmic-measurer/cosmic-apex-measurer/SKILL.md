@@ -24,7 +24,9 @@ Inspects Apex `.cls` files, identifies data movements, and produces JSON in the 
 ### Scope (Phase 2+)
 
 - **Single class, single method** — no triggers
-- **Call-chain traversal**: Static calls (`ClassName.methodName`) are traversed when `ClassName.cls` is found in search paths; R/W from callees are merged into the FP
+- **Comment Stripping**: Automatically removes block (`/* ... */`) and line (`//`) comments before analysis to ensure accuracy.
+- **Call-chain traversal**: Static calls (`ClassName.methodName`) are traversed when `ClassName.cls` is found in search paths; R/W from callees are merged into the FP. Standard Salesforce framework classes (e.g., `System`, `Database`, `Schema`, `String`) are filtered out to reduce noise.
+- **Resolution filtering**: Custom objects (`__c`) and metadata types (`__mdt`) are ignored during class resolution in static calls.
 - Focus on public/global methods with `@AuraEnabled`, `@InvocableMethod`, or standard entry points
 
 ### Entry (E)
@@ -58,9 +60,9 @@ Inspects Apex `.cls` files, identifies data movements, and produces JSON in the 
 
 1. **Check for multi-process**: Run `measure_apex.py path/to/Class.cls --list-entry-points`. If the output shows **more than one** entry point (e.g. `facilityIds`, `surveyIds`), **ask the user** which entry point to measure before proceeding.
 2. **Measure**: Run with `--entry-point PARAM` if the user chose one; otherwise run normally.
-3. **Read** the Apex `.cls` file
+3. **Read and pre-parse** the Apex `.cls` file (stripping comments).
 4. **Identify** the primary entry method (e.g. `@AuraEnabled`, `@InvocableMethod`, constructor, or static factory)
-5. **Scan** method body for:
+5. **Scan** method body (clean source) for:
    - Parameters → Entry
    - SOQL / Database.query / getQueryLocator → Read
    - DML / Database.insert|update|delete|upsert → Write
@@ -118,7 +120,7 @@ When reporting measurement results to the user (from script output or synthesize
   - **Canonical exit** — last row is always **Errors/notifications** (after any parser `return` exits)
   - **Merged writes** — multiple DML on the same data group collapsed to one W
   - **Callee traversal** — movements with `viaClass` from traversed `.cls` callees
-  - **Not found** — `calledClassesNotFound` meaning (system types + classes missing from `--search-paths`)
+  - **Not found** — `calledClassesNotFound` lists Apex classes called via static method but not found under `--search-paths` (system types are filtered out)
   - **RecordType reads (excluded from CFP)** — when the code queries `FROM RecordType`, list line(s) and names here; they are not rows in `dataMovements` (see [Read (R)](#read-r))
 
 The CLI prints this automatically: default **table** mode appends the summary after the table; **`-o file.json`** writes JSON and prints the same summary to stdout. **`--json`** to stdout is machine-only (no appended summary, to keep stdout parseable).
@@ -146,4 +148,4 @@ Produce JSON matching the schema in [reference.md](../reference.md):
 
 - **recordTypeReadsExcludedFromCfp**: Present when SOQL `FROM RecordType` was detected; omitted when none. Not part of CFP row count.
 - **viaClass**: When a movement comes from a traversed callee, the callee class name is included
-- **calledClassesNotFound**: Classes called via static method but not found (no `.cls` in search paths). Includes system classes (System, Database, String, etc.) and external/custom classes not in the project
+- **calledClassesNotFound**: Classes called via static method or external constant but not found (no `.cls` in search paths). This list automatically filters out standard Salesforce framework classes and custom object/metadata types to ensure only relevant business logic dependencies are reported.

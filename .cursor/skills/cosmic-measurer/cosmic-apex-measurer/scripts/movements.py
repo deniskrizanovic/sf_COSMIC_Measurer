@@ -131,8 +131,8 @@ def to_human_summary(output: CosmicMeasureOutput) -> str:
     not_found = output.get("calledClassesNotFound") or []
     if not_found:
         extra_notes.append(
-            "**Not found:** `calledClassesNotFound` lists system types (e.g. Database, String) "
-            "and Apex classes not found under `--search-paths`."
+            "**Not found:** `calledClassesNotFound` lists Apex classes called via static "
+            "method but not found under `--search-paths` (system types are filtered out)."
         )
     rt_excluded = output.get("recordTypeReadsExcludedFromCfp") or []
     if rt_excluded:

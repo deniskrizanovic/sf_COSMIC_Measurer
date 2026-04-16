@@ -30,6 +30,9 @@ Implementation sources live under `.cursor/skills/cosmic-measurer/`.
 
 ## Apex Rules
 
+### Pre-parsing
+- **Comment stripping**: Both single-line (`//`) and multi-line (`/* ... */`) comments are removed from the source before movement extraction to prevent false positives from commented-out code.
+
 ### Entry (`E`)
 
 - Count entry parameters from detected entry-point methods:
@@ -63,7 +66,9 @@ Implementation sources live under `.cursor/skills/cosmic-measurer/`.
 ### Traversal
 
 - By default, called class traversal is enabled for static calls and async handoffs (`executeBatch`, `enqueueJob`, `schedule`) when class files resolve.
-- Traversed movements are tagged via `viaArtifact`; unresolved classes appear in `calledClassesNotFound`.
+- **System class exclusion**: Standard Salesforce framework classes (e.g., `System`, `Database`, `Schema`, `String`, `List`, `Map`, `JSON`) are automatically excluded from "missing class" warnings to reduce noise.
+- **Resolution filtering**: Custom objects (`__c`) and metadata types (`__mdt`) are ignored during class resolution in static calls and external constant references.
+- Traversed movements are tagged via `viaArtifact`; unresolved classes (excluding filtered system/custom types) appear in `calledClassesNotFound` or `traversalWarnings`.
 - Traversal contributes `R/W` movements from callees.
 
 ## Flow Rules
