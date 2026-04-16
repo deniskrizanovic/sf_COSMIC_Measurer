@@ -253,6 +253,23 @@ def test_measure_file_relative_search_paths_resolved(project_root, tmp_path):
         shutil.rmtree(search_dir, ignore_errors=True)
 
 
+def test_measure_file_relative_search_paths_fall_back_to_source_repo_root(project_root, tmp_path, monkeypatch):
+    rel_name = "_pytest_traverse_search_from_elsewhere"
+    search_dir = project_root / rel_name
+    search_dir.mkdir(exist_ok=True)
+    try:
+        (search_dir / "TraverseHelper.cls").write_text(HELPER_SRC, encoding="utf-8")
+        (tmp_path / "TraverseCaller.cls").write_text(CALLER_SRC, encoding="utf-8")
+        monkeypatch.chdir(tmp_path)
+        out = measure_file(
+            tmp_path / "TraverseCaller.cls",
+            search_paths=[Path(rel_name)],
+        )
+        assert any(m.get("viaArtifact") == "TraverseHelper" for m in out["dataMovements"])
+    finally:
+        shutil.rmtree(search_dir, ignore_errors=True)
+
+
 def test_measure_file_no_traverse_hides_not_found(tmp_path):
     (tmp_path / "TraverseCaller.cls").write_text(CALLER_SRC, encoding="utf-8")
     out = measure_file(

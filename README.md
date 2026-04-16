@@ -40,6 +40,16 @@ Implementation counting behavior: `COUNTING_RULES.md`
   - `cosmic-lwc-measurer/`
   - `shared/` (common models/output logic)
 
+## Cursor plugin bundle
+
+This repository provides build infrastructure to generate a Cursor plugin bundle. The generated output is intentionally excluded from the repository as it is a build artifact.
+
+- **Source of truth**: `.cursor/skills/cosmic-measurer/`
+- **Build command**: `python3 scripts/build_cursor_plugin.py`
+- **Output location**: `plugin/cursor-cosmic-measurer/` (generated on-demand)
+
+To use the plugin, run the build script to generate the `plugin/` directory.
+
 ## Prerequisites
 
 - Python 3.10+ (3.11+ recommended)

@@ -36,8 +36,33 @@ from movements import (
     to_table,
 )
 
-# Project root: scripts -> cosmic-apex-measurer -> cosmic-measurer -> skills -> .cursor -> project
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
+
+def _find_source_repo_root() -> Optional[Path]:
+    for candidate in _SCRIPT_DIR.parents:
+        if not (candidate / "COUNTING_RULES.md").exists():
+            continue
+        if (candidate / ".cursor" / "skills" / "cosmic-measurer").exists():
+            return candidate
+    return None
+
+
+_SOURCE_REPO_ROOT = _find_source_repo_root()
+
+
+def _resolve_search_path(path_entry: Path) -> Path:
+    if path_entry.is_absolute():
+        return path_entry
+
+    cwd_candidate = (Path.cwd() / path_entry).resolve()
+    if cwd_candidate.exists():
+        return cwd_candidate
+
+    if _SOURCE_REPO_ROOT is not None:
+        repo_candidate = (_SOURCE_REPO_ROOT / path_entry).resolve()
+        if repo_candidate.exists():
+            return repo_candidate
+
+    return cwd_candidate
 
 
 def find_class_file(class_name: str, search_paths: list[Path]) -> Optional[Path]:
@@ -131,22 +156,18 @@ def measure_file(
 ) -> CosmicMeasureOutput:
     """Measure a single Apex file; return output dict."""
     source = path.read_text(encoding="utf-8", errors="replace")
-    
-    # Resolve search_paths relative to project root if needed
+
     resolved_paths = []
     if search_paths:
-        for p in search_paths:
-            if not p.is_absolute():
-                resolved_paths.append(_PROJECT_ROOT / p)
-            else:
-                resolved_paths.append(p)
+        for path_entry in search_paths:
+            resolved_paths.append(_resolve_search_path(path_entry))
 
     # First pass: identify external constant references
     class_name, movements = parse(source, entry_param_filter=entry_param_filter)
-    
+
     external_constants: dict[str, str] = {}
     missing_classes: set[str] = set()
-    
+
     if traverse and resolved_paths:
         provider_classes = find_external_constant_calls(source)
         for provider in provider_classes:
@@ -158,12 +179,12 @@ def measure_file(
                     external_constants[f"{provider}.{cname}"] = cval
             else:
                 missing_classes.add(provider)
-        
+
         # Second pass: re-run with resolved external constants
         if external_constants:
             class_name, movements = parse(
-                source, 
-                entry_param_filter=entry_param_filter, 
+                source,
+                entry_param_filter=entry_param_filter,
                 external_constants=external_constants
             )
 
