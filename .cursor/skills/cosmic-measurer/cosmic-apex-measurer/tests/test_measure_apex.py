@@ -67,3 +67,33 @@ def test_eventbus_publish_detected_as_write(tmp_path):
         m["dataGroupRef"] == "Custom_Event__e" and "EventBus.publish" in m["name"]
         for m in writes
     )
+
+
+def test_relative_search_paths_use_current_working_directory(tmp_path, monkeypatch):
+    """Traversal should honor cwd-relative search paths for plugin-installed usage."""
+    classes_dir = tmp_path / "classes"
+    classes_dir.mkdir()
+
+    caller = tmp_path / "Caller.cls"
+    caller.write_text(
+        """public class Caller {
+    @AuraEnabled
+    public static void go() {
+        Callee.loadAccounts();
+    }
+}""",
+        encoding="utf-8",
+    )
+    (classes_dir / "Callee.cls").write_text(
+        """public class Callee {
+    public static void loadAccounts() {
+        insert new Account(Name = 'Test');
+    }
+}""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = measure_file(caller, search_paths=[classes_dir.relative_to(tmp_path)], traverse=True)
+
+    assert result.get("calledClassesNotFound") == []
