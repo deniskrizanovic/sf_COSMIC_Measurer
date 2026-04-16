@@ -212,6 +212,34 @@ By convention, a canonical final exit row is included:
 
 For FlexiPage output, `dataMovements` is the canonical consumer contract. Candidate/resolution arrays (`lwcCandidateMeasurements`, `flowCandidateMeasurements`, `resolvedLwcMeasurements`, `resolvedFlowMeasurements`) are diagnostics and are only emitted when `--include-resolution-details` is passed.
 
+## Integration with CosmicWorkBench
+
+`sf_COSMIC-Measurer` output JSON is compatible with [sf_CosmicWorkBench](https://github.com/deniskrizanovic/sf_CosmicWorkBench).
+
+### JSON Importer Flow
+
+The [cfp_DataMovementsJSONImporter](https://github.com/deniskrizanovic/sf_CosmicWorkBench/blob/main/src/main/default/flows/cfp_DataMovementsJSONImporter.flow-meta.xml) flow in `sf_CosmicWorkBench` imports measurements into Salesforce records.
+
+#### How to Import:
+
+1.  **Generate JSON**: Run a measurer (e.g., Apex, Flow, LWC) to create a `.json` file in [measurements/](measurements/).
+2.  **Locate Output**: Open the `.json` file and copy its entire content.
+3.  **Run Flow**: In Salesforce, navigate to the `sf_CosmicWorkBench` app or Flow list and run **Import Data Movements JSON** (`cfp_DataMovementsJSONImporter`).
+4.  **Enter Inputs**:
+    *   **Functional Process Id**: Salesforce ID of the target `cfp_Functional_Process__c` record.
+    *   **JSON Payload**: Paste the copied JSON.
+    *   **Replace Existing**: Toggle to delete previous movements for this process before importing.
+5.  **Submit**: Click **Next**. The Flow calls Apex `Run_DataMovements_Importer` to parse and upsert `cfp_Data_Movement__c` records.
+
+#### JSON Structure:
+`sf_COSMIC-Measurer` produces:
+- `functionalProcessId`: Target ID placeholder.
+- `artifact`: Source metadata (type/name).
+- `dataMovements`: List of E/R/X/W movements with line references.
+- `traversalWarnings`: Resolution issues during measurement.
+
+The workbench importer maps these fields to Salesforce Custom Objects.
+
 ## Validation and tests
 
 Run full project test suite:
