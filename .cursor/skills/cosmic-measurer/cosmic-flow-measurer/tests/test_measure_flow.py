@@ -267,3 +267,99 @@ def test_measure_flow_missing_invocable_apex_class_is_non_fatal(tmp_path):
     assert result["artifact"]["name"] == "MissingInvocable.flow"
     assert result.get("invocableApexClassesNotFound") == ["ClassThatDoesNotExist"]
     assert result["dataMovements"][-1]["name"] == CANONICAL_EXIT_NAME
+
+
+DATATABLE_NO_SELECTION_BODY = """
+    <variables>
+        <name>warranties</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>SUI_Warranty__c</objectType>
+    </variables>
+    <screens>
+        <name>ShowWarranties</name>
+        <fields>
+            <name>WarrantyTable</name>
+            <dataTypeMappings>
+                <typeName>T</typeName>
+                <typeValue>SUI_Warranty__c</typeValue>
+            </dataTypeMappings>
+            <extensionName>flowruntime:datatable</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>selectionMode</name>
+                <value><stringValue>NO_SELECTION</stringValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>maxRowSelection</name>
+                <value><numberValue>0.0</numberValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>tableData</name>
+                <value><elementReference>warranties</elementReference></value>
+            </inputParameters>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+        </fields>
+    </screens>
+"""
+
+
+DATATABLE_SINGLE_SELECTION_BODY = """
+    <variables>
+        <name>warranties</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>SUI_Warranty__c</objectType>
+    </variables>
+    <screens>
+        <name>PickWarranty</name>
+        <fields>
+            <name>WarrantyTable</name>
+            <dataTypeMappings>
+                <typeName>T</typeName>
+                <typeValue>SUI_Warranty__c</typeValue>
+            </dataTypeMappings>
+            <extensionName>flowruntime:datatable</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>selectionMode</name>
+                <value><stringValue>SINGLE</stringValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>maxRowSelection</name>
+                <value><numberValue>1.0</numberValue></value>
+            </inputParameters>
+            <inputParameters>
+                <name>tableData</name>
+                <value><elementReference>warranties</elementReference></value>
+            </inputParameters>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+        </fields>
+    </screens>
+"""
+
+
+def test_display_only_datatable_does_not_emit_screen_entry(tmp_path):
+    xml = make_flow_xml(body=DATATABLE_NO_SELECTION_BODY)
+    f = tmp_path / "DisplayOnlyDatatable.flow-meta.xml"
+    f.write_text(xml, encoding="utf-8")
+    result = measure_file(f)
+    entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
+    exits = [m for m in result["dataMovements"] if m["movementType"] == "X"]
+    assert not any("Screen input" in e["name"] for e in entries)
+    assert any("Screen display" in x["name"] and "SUI_Warranty__c" in x["name"] for x in exits)
+
+
+def test_selectable_datatable_still_emits_screen_entry(tmp_path):
+    xml = make_flow_xml(body=DATATABLE_SINGLE_SELECTION_BODY)
+    f = tmp_path / "SelectableDatatable.flow-meta.xml"
+    f.write_text(xml, encoding="utf-8")
+    result = measure_file(f)
+    entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
+    assert any(
+        "Screen input" in e["name"] and "SUI_Warranty__c" in e["name"] for e in entries
+    )

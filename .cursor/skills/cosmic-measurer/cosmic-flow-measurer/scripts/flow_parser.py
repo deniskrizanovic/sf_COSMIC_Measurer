@@ -317,6 +317,44 @@ def _screen_component_table_bindings(
     return bindings
 
 
+def _component_input_param_value(field: ET.Element, param_name: str) -> Optional[str]:
+    """Return the literal value of a ComponentInstance inputParameter by name."""
+    for param in field.findall("sf:inputParameters", NS):
+        if _find_text(param, "name") != param_name:
+            continue
+        value_el = param.find("sf:value", NS)
+        if value_el is None:
+            return None
+        for child in value_el:
+            tag = child.tag.split("}", 1)[-1]
+            if tag in {"stringValue", "numberValue", "booleanValue"} and child.text is not None:
+                return child.text.strip()
+        return None
+    return None
+
+
+def _component_returns_user_data(field: ET.Element) -> bool:
+    """Decide if a ComponentInstance with storeOutputAutomatically actually returns user data.
+
+    Datatables configured for display only (selectionMode=NO_SELECTION or
+    maxRowSelection=0) do not let the user push selections back into flow scope,
+    so they should not produce a screen Entry even though the platform exposes
+    auto-stored output for the component.
+    """
+    selection_mode = (_component_input_param_value(field, "selectionMode") or "").strip().upper()
+    if selection_mode == "NO_SELECTION":
+        return False
+
+    max_rows = _component_input_param_value(field, "maxRowSelection")
+    if max_rows is not None:
+        try:
+            if float(max_rows) == 0:
+                return False
+        except ValueError:
+            pass
+    return True
+
+
 def find_screen_movements(
     root: ET.Element, variables: dict[str, VariableInfo]
 ) -> tuple[list[RawMovement], list[RawMovement]]:
@@ -361,7 +399,7 @@ def find_screen_movements(
                 has_output_storage = (
                     (_find_text(field, "storeOutputAutomatically") or "").lower() == "true"
                 )
-                is_entry_field = has_output_storage
+                is_entry_field = has_output_storage and _component_returns_user_data(field)
 
             is_exit_field = field_type in {"DisplayText", "ComponentInstance"}
 
