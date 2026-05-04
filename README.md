@@ -12,6 +12,7 @@ It analyzes metadata and code, classifies movements as `E` (Entry), `R` (Read), 
 - Measures **Flows** (`.flow-meta.xml`)
 - Measures **FlexiPages** (`.flexipage-meta.xml`)
 - Measures **Lightning Web Components** (bundle directories with `.js` + `.html`)
+- Includes a **COSMIC Rule Coach** skill that answers sizing questions, validates measurer JSON against the source artifact, and looks up rules verbatim from indexed official COSMIC manuals
 - Produces deterministic JSON outputs with ordered movements and consistent schema
 - **Traversal Warning Management**: Automatically filters out standard Salesforce framework classes (e.g., `System`, `Database`, `Schema`, `String`) from traversal warnings to ensure focused results.
 - Supports cross-artifact traversal:
@@ -36,11 +37,13 @@ Implementation counting behavior: `COUNTING_RULES.md`
 
 - `samples/` - sample Apex, Flow, FlexiPage, and LWC inputs used for testing and examples
 - `expected/` - expected JSON fixtures for regression checks
+- `metadata-to-measure/` - scratch directory (gitignored) where you drop retrieved Salesforce metadata to measure; clear it out when done
 - `.cursor/skills/cosmic-measurer/` - artifact-specific measurers and shared modules
   - `cosmic-apex-measurer/`
   - `cosmic-flow-measurer/`
   - `cosmic-flexipage-measurer/`
   - `cosmic-lwc-measurer/`
+  - `cosmic-rule-coach/` (manual-grounded Q&A, validator, rule lookup, tutor)
   - `shared/` (common models/output logic)
 
 ## Cursor plugin bundle
@@ -64,6 +67,10 @@ Minimal install:
 ```bash
 python3 -m pip install -U pytest "coverage[toml]"
 ```
+
+## Measuring your own metadata
+
+For ad-hoc measurement of metadata retrieved from a Salesforce org, use the `metadata-to-measure/` directory at the repo root. It's a gitignored scratch space — drop your `.cls`, `.flow-meta.xml`, `.flexipage-meta.xml` files or LWC bundle directories there, point a measurer at them, and clear the directory out when you're done. This keeps org-specific metadata out of version control while still letting you run the measurers locally.
 
 ## Quick start
 
@@ -184,6 +191,39 @@ Useful flags:
 - `--fp-id <Id>`
 - `--apex-search-paths <csv>`
 - `--required-type E|R|W|X` (repeatable)
+
+## COSMIC Rule Coach
+
+The measurers are deterministic extractors — they produce JSON, not judgement. When a sizing decision is ambiguous or when you need to verify that a measurement faithfully reflects both the source artifact **and** the official COSMIC rules, use the **COSMIC Rule Coach** skill (`.cursor/skills/cosmic-measurer/cosmic-rule-coach/`).
+
+The coach operates in four modes, all grounded exclusively in indexed official COSMIC manuals:
+
+- **Q&A oracle** — answers questions like "Is this a Read or an Entry?"
+- **Validator** — given measurer JSON **plus** the original source artifact, flags movements that violate manual rules
+- **Rule lookup** — returns a section verbatim with citation
+- **Tutor** — walks through related sections with worked examples from the manuals
+
+Every answer includes verbatim citations back to the indexed manual chunks. When the manuals do not address a question, the coach refuses to interpret rather than hallucinate — false confidence is the worst failure mode for a rule oracle.
+
+### Bootstrap
+
+The coach is non-functional until the PDF manuals under `manuals/` have been indexed. Run once per workspace:
+
+```bash
+cd .cursor/skills/cosmic-measurer/cosmic-rule-coach
+python3 -m scripts.index_manuals manuals manuals-indexed
+```
+
+The indexer is heading-aware and idempotent. Re-running skips manuals whose PDF mtime predates the existing index; delete a manual's subfolder under `manuals-indexed/` to force a rebuild.
+
+### Invocation
+
+The coach is **not** invoked automatically by the measurers — those stay deterministic. Invoke it explicitly when:
+
+- A measurer emits a movement you're unsure about
+- You want to validate a measurer's JSON output against its source artifact
+- You need to quote a specific COSMIC rule in a review or discussion
+- You're learning the COSMIC method and want tutor-style walkthroughs
 
 ## Output shape
 
