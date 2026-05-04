@@ -58,6 +58,7 @@ python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-apex-measurer/tests" --
 python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-flow-measurer/scripts" --cov-report=term
 python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-flexipage-measurer/scripts" --cov-report=term
 python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-lwc-measurer/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-lwc-measurer/scripts" --cov-report=term
+python3 -m pytest ".cursor/skills/cosmic-measurer/cosmic-rule-coach/tests" --cov=".cursor/skills/cosmic-measurer/cosmic-rule-coach/scripts" --cov-report=term
 ```
 
 If any coverage run fails, stop the workflow and fix the issue before proceeding.
