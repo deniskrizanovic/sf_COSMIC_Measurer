@@ -921,6 +921,60 @@ def _method_containing_line(boundaries: list[tuple[str, int]], line: int) -> Opt
     return best[0] if best else None
 
 
+def _extract_method_source(source: str, method_name: str) -> Optional[str]:
+    """Return the source text of the named method from its annotation/signature through
+    the matching closing brace, or None if the method is not found.
+
+    Includes any preceding @AuraEnabled / @InvocableMethod annotations so that
+    parse() can detect Entry movements from the method's parameter list.
+
+    Uses METHOD_SIGNATURE first; falls back to a permissive name-only search to
+    handle non-standard return types (e.g. 'List <Type >' with spaces).
+    """
+    def _extract_from_match_start(start: int) -> Optional[str]:
+        # Walk back to include any annotations on preceding lines
+        annotation_start = start
+        lines = source[:start].split("\n")
+        for line in reversed(lines[:-1]):
+            stripped = line.strip()
+            if stripped.startswith("@") or stripped == "":
+                annotation_start -= len(line) + 1
+            else:
+                break
+        brace_pos = source.find("{", start)
+        if brace_pos == -1:
+            return None
+        depth, end = 1, brace_pos + 1
+        while depth and end < len(source):
+            if source[end] == "{":
+                depth += 1
+            elif source[end] == "}":
+                depth -= 1
+            end += 1
+        return source[annotation_start:end]
+
+    # Primary: structured match via METHOD_SIGNATURE
+    for m in METHOD_SIGNATURE.finditer(source):
+        if m.group(2) != method_name:
+            continue
+        result = _extract_from_match_start(m.start())
+        if result is not None:
+            return result
+
+    # Fallback: handles return types with spaces (e.g. 'List <Foo >').
+    fallback = re.compile(
+        rf"(?:public|private|global|protected)\s+(?:static\s+)?"
+        rf"[A-Za-z0-9_<> ,]+\s+{re.escape(method_name)}\s*\(",
+        re.IGNORECASE | re.MULTILINE,
+    )
+    for m in fallback.finditer(source):
+        result = _extract_from_match_start(m.start())
+        if result is not None:
+            return result
+
+    return None
+
+
 def _get_batch_call_order(source: str, class_name: str) -> dict[str, int]:
     """
     For batch classes: return method_name -> first_call_line.

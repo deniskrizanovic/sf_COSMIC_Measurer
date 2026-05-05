@@ -19,6 +19,7 @@ if _SCRIPT_DIR not in sys.path:
 
 from parser import (
     RawMovement,
+    _extract_method_source,
     _parse_record_type_string_constants,
     find_enqueue_job_calls,
     find_execute_batch_calls,
@@ -151,10 +152,16 @@ def measure_file(
     fp_id: str = "<Id>",
     *,
     entry_param_filter: Optional[str] = None,
+    method_filter: Optional[list[str]] = None,
     search_paths: Optional[list[Path]] = None,
     traverse: bool = True,
 ) -> CosmicMeasureOutput:
-    """Measure a single Apex file; return output dict."""
+    """Measure a single Apex file; return output dict.
+
+    When method_filter is set, only movements reachable from the named methods
+    are included. Intra-class helpers are still captured via _traverse_callees.
+    When None, the entire class is measured (original behaviour).
+    """
     source = path.read_text(encoding="utf-8", errors="replace")
 
     resolved_paths = []
@@ -162,39 +169,79 @@ def measure_file(
         for path_entry in search_paths:
             resolved_paths.append(_resolve_search_path(path_entry))
 
-    # First pass: identify external constant references
-    class_name, movements = parse(source, entry_param_filter=entry_param_filter)
-
-    external_constants: dict[str, str] = {}
     missing_classes: set[str] = set()
+    called_classes_not_found: list[str] = []
 
-    if traverse and resolved_paths:
-        provider_classes = find_external_constant_calls(source)
-        for provider in provider_classes:
-            provider_path = find_class_file(provider, resolved_paths)
-            if provider_path:
-                provider_source = provider_path.read_text(encoding="utf-8", errors="replace")
-                constants = _parse_record_type_string_constants(provider_source)
-                for cname, cval in constants.items():
-                    external_constants[f"{provider}.{cname}"] = cval
-            else:
-                missing_classes.add(provider)
+    if method_filter:
+        # Parse each imported method's body in isolation, then union movements.
+        class_name = path.stem
+        all_movements: list[RawMovement] = []
+        method_not_found: list[str] = []
 
-        # Second pass: re-run with resolved external constants
-        if external_constants:
-            class_name, movements = parse(
-                source,
-                entry_param_filter=entry_param_filter,
-                external_constants=external_constants
+        # Resolve external constants once from the full source
+        external_constants: dict[str, str] = {}
+        if traverse and resolved_paths:
+            provider_classes = find_external_constant_calls(source)
+            for provider in provider_classes:
+                provider_path = find_class_file(provider, resolved_paths)
+                if provider_path:
+                    provider_source = provider_path.read_text(encoding="utf-8", errors="replace")
+                    constants = _parse_record_type_string_constants(provider_source)
+                    for cname, cval in constants.items():
+                        external_constants[f"{provider}.{cname}"] = cval
+                else:
+                    missing_classes.add(provider)
+
+        seen_movements: set[tuple] = set()
+        for method_name in method_filter:
+            body = _extract_method_source(source, method_name)
+            if body is None:
+                method_not_found.append(method_name)
+                continue
+            _, body_movements = parse(body, external_constants=external_constants or None)
+            for mv in body_movements:
+                key = (mv.movement_type, mv.data_group_ref, mv.source_line)
+                if key not in seen_movements:
+                    seen_movements.add(key)
+                    all_movements.append(mv)
+
+        if method_not_found:
+            called_classes_not_found.extend(
+                [f"Method not found: {m} in {path.name}" for m in method_not_found]
             )
 
-    called_classes_not_found: list[str] = list(missing_classes)
+        movements: list[RawMovement] = all_movements
+    else:
+        # Original full-class behaviour
+        class_name, movements = parse(source, entry_param_filter=entry_param_filter)
+
+        external_constants = {}
+        if traverse and resolved_paths:
+            provider_classes = find_external_constant_calls(source)
+            for provider in provider_classes:
+                provider_path = find_class_file(provider, resolved_paths)
+                if provider_path:
+                    provider_source = provider_path.read_text(encoding="utf-8", errors="replace")
+                    constants = _parse_record_type_string_constants(provider_source)
+                    for cname, cval in constants.items():
+                        external_constants[f"{provider}.{cname}"] = cval
+                else:
+                    missing_classes.add(provider)
+
+            if external_constants:
+                class_name, movements = parse(
+                    source,
+                    entry_param_filter=entry_param_filter,
+                    external_constants=external_constants,
+                )
+
+    called_classes_not_found.extend(list(missing_classes))
     if traverse and resolved_paths:
         movements, called_not_found = _traverse_callees(
             source, list(movements), resolved_paths, set(), class_name
         )
         called_classes_not_found.extend(list(called_not_found))
-        called_classes_not_found = sorted(list(set(called_classes_not_found)))
+    called_classes_not_found = sorted(list(set(called_classes_not_found)))
 
     return build_output(
         class_name,
