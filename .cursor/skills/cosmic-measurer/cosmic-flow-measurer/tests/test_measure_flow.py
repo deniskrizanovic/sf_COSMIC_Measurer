@@ -164,7 +164,7 @@ def test_measure_flow_includes_screen_entries_and_exits(tmp_path):
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     exits = [m for m in result["dataMovements"] if m["movementType"] == "X"]
     assert any("Screen input" in e["name"] for e in entries)
-    assert any("Screen display" in x["name"] for x in exits)
+    assert any(x["name"].startswith("Display ") for x in exits)
     assert exits[-1]["name"] == CANONICAL_EXIT_NAME
 
 
@@ -241,7 +241,7 @@ def test_measure_flow_trigger_entry_precedes_invocable_apex_entries(project_root
     result = measure_file(flow_path, apex_search_paths=[project_root / "samples" / "classes"])
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     assert entries, "Expected at least one Entry movement"
-    assert entries[0]["name"] == "Trigger record (Program__c)"
+    assert entries[0]["name"] == "Trigger record"
     assert any(
         m["name"] == "Receive programIds (Program__c)" and m.get("viaArtifact")
         for m in entries[1:]
@@ -351,7 +351,7 @@ def test_display_only_datatable_does_not_emit_screen_entry(tmp_path):
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     exits = [m for m in result["dataMovements"] if m["movementType"] == "X"]
     assert not any("Screen input" in e["name"] for e in entries)
-    assert any("Screen display" in x["name"] and "SUI_Warranty__c" in x["name"] for x in exits)
+    assert any(x["name"].startswith("Display ") and x["dataGroupRef"] == "SUI_Warranty__c" for x in exits)
 
 
 def test_selectable_datatable_still_emits_screen_entry(tmp_path):
@@ -361,5 +361,5 @@ def test_selectable_datatable_still_emits_screen_entry(tmp_path):
     result = measure_file(f)
     entries = [m for m in result["dataMovements"] if m["movementType"] == "E"]
     assert any(
-        "Screen input" in e["name"] and "SUI_Warranty__c" in e["name"] for e in entries
+        "Screen input" in e["name"] and e["dataGroupRef"] == "SUI_Warranty__c" for e in entries
     )

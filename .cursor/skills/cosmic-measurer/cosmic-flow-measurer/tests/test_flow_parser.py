@@ -143,7 +143,7 @@ def test_find_reads_extracts_label_as_name():
     xml = make_flow_xml(body=LOOKUP_BODY)
     root = parse_xml(xml)
     reads = find_record_lookups(root)
-    assert "getFunctionalProcess" in reads[0].name
+    assert "cfp_FunctionalProcess__c" in reads[0].name
 
 
 def test_find_reads_multiple_lookups():

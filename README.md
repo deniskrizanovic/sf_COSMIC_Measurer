@@ -90,6 +90,7 @@ For example:
 
 The agent will use the appropriate measurer skill and display the results directly in the chat.
 
+If you want to understand why the measurer counting things in a certain way, and if it is adherent to the COSMIC method, then you can invoke the COSMIC Rule Coach to explain things to you
 
 ### Apex
 

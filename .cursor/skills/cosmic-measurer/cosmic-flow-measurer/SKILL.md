@@ -116,8 +116,8 @@ python3 -m pytest .cursor/skills/cosmic-measurer/cosmic-flow-measurer/tests/ -v
   "artifact": { "type": "Flow", "name": "FlowApiName.flow" },
   "dataMovements": [
     { "name": "Receive recordId", "order": 1, "movementType": "E", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
-    { "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)", "order": 2, "movementType": "R", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
-    { "name": "Create cfp_Data_Movements__c (createDMs)", "order": 3, "movementType": "W", "dataGroupRef": "cfp_Data_Movements__c", "implementationType": "flow", "isApiCall": false },
+    { "name": "Read cfp_FunctionalProcess__c", "order": 2, "movementType": "R", "dataGroupRef": "cfp_FunctionalProcess__c", "implementationType": "flow", "isApiCall": false },
+    { "name": "Create cfp_Data_Movements__c", "order": 3, "movementType": "W", "dataGroupRef": "cfp_Data_Movements__c", "implementationType": "flow", "isApiCall": false },
     { "name": "Errors/notifications", "order": 4, "movementType": "X", "dataGroupRef": "status/errors/etc", "implementationType": "flow", "isApiCall": false }
   ]
 }
