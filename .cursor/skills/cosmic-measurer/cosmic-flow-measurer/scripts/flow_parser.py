@@ -131,7 +131,7 @@ def find_record_lookups(root: ET.Element) -> list[RawMovement]:
         movements.append(RawMovement(
             movement_type="R",
             data_group_ref=obj,
-            name=f"Read {obj} ({label})",
+            name=f"Read {obj}",
             order_hint=i + 1,
         ))
     return movements
@@ -163,7 +163,7 @@ def find_record_mutations(
             movements.append(RawMovement(
                 movement_type="W",
                 data_group_ref=obj,
-                name=f"{verb} {obj} ({label})",
+            name=f"{verb} {obj}",
                 order_hint=hint,
             ))
     return movements
@@ -200,7 +200,7 @@ def find_entries(
         movements.append(RawMovement(
             movement_type="E",
             data_group_ref=metadata.trigger_object,
-            name=f"Trigger record ({metadata.trigger_object})",
+            name=f"Trigger record",
             order_hint=hint,
         ))
 
@@ -212,7 +212,7 @@ def find_entries(
             movements.append(RawMovement(
                 movement_type="E",
                 data_group_ref=var.object_type,
-                name=f"Receive {var.name} ({var.object_type})",
+                name=f"Receive {var.name}",
                 order_hint=hint,
             ))
         elif var.name == "recordId":
@@ -222,7 +222,7 @@ def find_entries(
                 movements.append(RawMovement(
                     movement_type="E",
                     data_group_ref=obj,
-                    name=f"Receive recordId ({obj})",
+                    name=f"Receive recordId",
                     order_hint=hint,
                 ))
 
@@ -241,7 +241,7 @@ def find_exits(variables: dict[str, VariableInfo]) -> list[RawMovement]:
             movements.append(RawMovement(
                 movement_type="X",
                 data_group_ref=var.object_type,
-                name=f"Output {var.name} ({var.object_type})",
+                name=f"Output {var.name}",
                 order_hint=hint,
             ))
     return movements
@@ -413,7 +413,7 @@ def find_screen_movements(
             entries.append(RawMovement(
                 movement_type="E",
                 data_group_ref=dg,
-                name=f"Screen input ({screen_name}) ({dg})",
+                name=f"Screen input",
                 order_hint=entry_hint,
             ))
         for dg in sorted(exit_data_groups):
@@ -421,7 +421,7 @@ def find_screen_movements(
             exits.append(RawMovement(
                 movement_type="X",
                 data_group_ref=dg,
-                name=f"Screen display ({screen_name}) ({dg})",
+                name=f"Display {dg}",
                 order_hint=exit_hint,
             ))
 

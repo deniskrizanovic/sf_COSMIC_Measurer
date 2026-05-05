@@ -6,7 +6,7 @@
   },
   "dataMovements": [
     {
-      "name": "Receive recordId (cfp_FunctionalProcess__c)",
+      "name": "Receive recordId",
       "order": 1,
       "movementType": "E",
       "dataGroupRef": "cfp_FunctionalProcess__c",
@@ -15,7 +15,7 @@
       "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
-      "name": "Screen input (Which_DataGroup) (cfp_DataGroups__c)",
+      "name": "Screen input",
       "order": 2,
       "movementType": "E",
       "dataGroupRef": "cfp_DataGroups__c",
@@ -24,7 +24,7 @@
       "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
-      "name": "Read cfp_DataGroups__c (getDatagroups)",
+      "name": "Read cfp_DataGroups__c",
       "order": 3,
       "movementType": "R",
       "dataGroupRef": "cfp_DataGroups__c",
@@ -33,7 +33,7 @@
       "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
-      "name": "Read cfp_FunctionalProcess__c (getFunctionalProcess)",
+      "name": "Read cfp_FunctionalProcess__c",
       "order": 4,
       "movementType": "R",
       "dataGroupRef": "cfp_FunctionalProcess__c",
@@ -42,7 +42,7 @@
       "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
-      "name": "Create cfp_Data_Movements__c (createDMs)",
+      "name": "Create cfp_Data_Movements__c",
       "order": 5,
       "movementType": "W",
       "dataGroupRef": "cfp_Data_Movements__c",
@@ -51,7 +51,7 @@
       "artifactName": "cfp_createCRUDLwithRelatedLists.flow"
     },
     {
-      "name": "Screen display (Which_DataGroup) (cfp_DataGroups__c)",
+      "name": "Display cfp_DataGroups__c",
       "order": 6,
       "movementType": "X",
       "dataGroupRef": "cfp_DataGroups__c",
