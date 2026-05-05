@@ -22,6 +22,8 @@ from lwc_parser import (  # noqa: E402
     extract_handler_apex_calls,
     infer_bundle_name,
     parse_lwc_native_movements,
+    detect_custom_child_components,
+    kebab_to_component_name,
 )
 from shared.models import LwcRawMovement, RawMovement  # noqa: E402
 from shared.output import (  # noqa: E402
@@ -98,6 +100,15 @@ def _is_canonical_exit_row(row: dict[str, Any]) -> bool:
         and row.get("name") == CANONICAL_EXIT_NAME
         and row.get("dataGroupRef") == CANONICAL_EXIT_DATA_GROUP_REF
     )
+
+
+def find_lwc_bundle_dir(component_name: str, base_dir: Path) -> Path | None:
+    """Search for the LWC bundle directory in the same parent directory as the current bundle."""
+    parent = base_dir.parent
+    candidate = parent / component_name
+    if candidate.exists() and candidate.is_dir():
+        return candidate
+    return None
 
 
 def _build_class_to_block_map(
@@ -223,6 +234,7 @@ def measure_lwc_bundle(
     required_movement_types: list[MovementType] | None = None,
     source_artifact: ArtifactRef | None = None,
     tab_context: TabContext | None = None,
+    visited_lwcs: set[str] | None = None,
 ) -> LwcMeasureResult:
     bundle_dir = Path(lwc_bundle_dir)
     if not bundle_dir.exists():
@@ -231,6 +243,18 @@ def measure_lwc_bundle(
         raise ValueError(f"{bundle_dir} is not a directory")
 
     bundle_name = lwc_name or infer_bundle_name(bundle_dir)
+
+    visited = visited_lwcs if visited_lwcs is not None else set()
+    if bundle_name in visited:
+        # Return empty result to prevent infinite recursion
+        return {
+            "functionalProcessId": functional_process_id or "<Id>",
+            "artifact": {"type": "LWC", "name": f"{bundle_name}.lwc"},
+            "dataMovements": [],
+            "traversalWarnings": [f"Circular dependency detected: {bundle_name}"],
+        }
+    visited.add(bundle_name)
+
     js_path = bundle_dir / f"{bundle_name}.js"
     html_path = bundle_dir / f"{bundle_name}.html"
     if not js_path.exists() or not html_path.exists():
@@ -294,6 +318,51 @@ def measure_lwc_bundle(
             )
             order_hint_start += 10000
 
+    # Detect and traverse child LWCs
+    child_tags = detect_custom_child_components(html_source)
+    for tag in child_tags:
+        child_name = kebab_to_component_name(tag)
+        child_dir = find_lwc_bundle_dir(child_name, bundle_dir)
+        if child_dir:
+            child_result = measure_lwc_bundle(
+                child_dir,
+                lwc_name=child_name,
+                functional_process_id=functional_process_id or "<Id>",
+                apex_search_paths=apex_search_paths,
+                visited_lwcs=visited,
+            )
+            # Merge child movements
+            for row in child_result.get("dataMovements", []):
+                if _is_canonical_exit_row(row):
+                    continue
+
+                # We append them as LwcRawMovement to allow _assign_tiers to work on them
+                m = LwcRawMovement(
+                    movement_type=row["movementType"],
+                    data_group_ref=row["dataGroupRef"],
+                    name=row["name"],
+                    order_hint=order_hint_start + row.get("order", 0),
+                    via_artifact=child_name,
+                    artifact_name=row.get("artifactName"),
+                )
+                # Preserve tier info if present
+                if "tier" in row:
+                    m.tier = row["tier"]
+                if "tierLabel" in row:
+                    m.tier_label = row["tierLabel"]
+
+                movements.append(m)
+
+            # Merge warnings
+            for w in child_result.get("traversalWarnings", []):
+                if w not in warnings:
+                    warnings.append(w)
+            order_hint_start += 10000
+        else:
+            # Only warn if it's not a standard lightning component
+            if not tag.startswith("lightning-"):
+                warnings.append(f"Unable to resolve child LWC: {child_name} (tag: {tag})")
+
     _assign_tiers(movements, js_source)
 
     output = build_output(
@@ -303,9 +372,15 @@ def measure_lwc_bundle(
         functional_process_id or "<Id>",
         implementation_type="lwc",
     )
+    apex_classes = {name for name, method in imports}
     for row in output["dataMovements"]:
-        if row.get("viaArtifact"):
-            row["implementationType"] = "apex"
+        via = row.get("viaArtifact")
+        if via:
+            if via in apex_classes:
+                row["implementationType"] = "apex"
+            else:
+                row["implementationType"] = "lwc"
+
         if (
             inferred_user_output_group
             and row.get("movementType") == "X"
