@@ -6,6 +6,8 @@ A primary goal of this project is to provide a seamless automated measurement pi
 
 It analyzes metadata and code, classifies movements as `E` (Entry), `R` (Read), `W` (Write), and `X` (Exit), and outputs structured JSON suitable for posting into a COSMIC data model (for example, `cfp_Data_Movements__c` pipelines).
 
+It also helps you learn the rules of COSMIC measurement through the Rule Coach.
+
 ## What this project does
 
 - Measures **Apex classes** (`.cls`)
@@ -75,6 +77,19 @@ For ad-hoc measurement of metadata retrieved from a Salesforce org, use the `met
 ## Quick start
 
 Run a measurer directly from repo root.
+
+### Measuring with an Agent
+
+You can also ask the Cursor agent to measure artifacts for you. Use prompts like:
+
+> "Please measure <name the artifact> with full output to the chat"
+
+For example:
+
+> "Please measure `samples/classes/cfp_getDataMovements.cls` with full output to the chat"
+
+The agent will use the appropriate measurer skill and display the results directly in the chat.
+
 
 ### Apex
 
