@@ -222,7 +222,7 @@ def test_measure_lwc_bundle_apex_import_dedup_and_group_inference(tmp_path: Path
         class_calls.append(class_name)
         return Path(f"/tmp/{class_name}.cls")
 
-    def fake_measure_apex_file(class_file, _fp_id, search_paths, traverse):
+    def fake_measure_apex_file(class_file, _fp_id, search_paths, traverse, **kwargs):
         assert search_paths
         assert traverse is True
         class_name = Path(class_file).stem
@@ -321,7 +321,7 @@ def test_interaction_linked_apex_r_gets_interactions_tier(tmp_path: Path, monkey
         from pathlib import Path as P
         return P(f"/tmp/{class_name}.cls")
 
-    def fake_measure_apex(cls_file, _fp, search_paths, traverse):
+    def fake_measure_apex(cls_file, _fp, search_paths, traverse, **kwargs):
         return {"dataMovements": [
             {"movementType": "R", "name": "Read SOR list", "dataGroupRef": "SOR__c", "sourceLine": 10},
             {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
@@ -359,7 +359,7 @@ def test_w_movements_get_terminal_tier(tmp_path: Path, monkeypatch):
         from pathlib import Path as P
         return P(f"/tmp/{class_name}.cls")
 
-    def fake_measure_apex(cls_file, _fp, search_paths, traverse):
+    def fake_measure_apex(cls_file, _fp, search_paths, traverse, **kwargs):
         return {"dataMovements": [
             {"movementType": "W", "name": "Update Record", "dataGroupRef": "Record__c", "sourceLine": 5},
             {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
@@ -410,7 +410,7 @@ def test_display_x_follows_first_interaction_cluster_with_r(tmp_path: Path, monk
         from pathlib import Path as P
         return P(f"/tmp/{cn}.cls")
 
-    def fake_measure(f, _fp, search_paths, traverse):
+    def fake_measure(f, _fp, search_paths, traverse, **kwargs):
         return {"dataMovements": [
             {"movementType": "R", "name": "Read Data", "dataGroupRef": "Data__c", "sourceLine": 5},
             {"movementType": "X", "name": "Errors/notifications", "dataGroupRef": "status/errors/etc"},
@@ -459,7 +459,7 @@ def _make_bundle_with_filter_and_save(tmp_path: Path, monkeypatch) -> list[dict]
         from pathlib import Path as P
         return P(f"/tmp/{cn}.cls")
 
-    def fake_measure(f, _fp, search_paths, traverse):
+    def fake_measure(f, _fp, search_paths, traverse, **kwargs):
         call_count[0] += 1
         name = str(f)
         if "LoadCtrl" in name:

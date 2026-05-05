@@ -248,11 +248,14 @@ def measure_lwc_bundle(
     order_hint_start = 10000
     if imports:
         find_class_file, measure_apex_file = _load_apex_measurer_helpers()
-        seen_classes: set[str] = set()
-        for class_name, _method_name in imports:
-            if class_name in seen_classes:
-                continue
-            seen_classes.add(class_name)
+
+        # Collect all imported method names per class so we can scope the Apex
+        # traversal to only the methods this LWC actually calls.
+        class_methods: dict[str, list[str]] = {}
+        for class_name, method_name in imports:
+            class_methods.setdefault(class_name, []).append(method_name)
+
+        for class_name, method_names in class_methods.items():
             class_file = find_class_file(class_name, search_paths)
             if class_file is None:
                 warnings.append(f"Unable to resolve Apex class for LWC import: {class_name}")
@@ -260,13 +263,17 @@ def measure_lwc_bundle(
             apex_output = measure_apex_file(
                 class_file,
                 functional_process_id or "<Id>",
+                method_filter=method_names,
                 search_paths=search_paths,
                 traverse=True,
             )
             # Propagate traversal warnings from Apex measurement
             for missing in apex_output.get("calledClassesNotFound", []):
                 if missing not in warnings:
-                    warnings.append(f"Unable to resolve Apex class: {missing} (called via {class_name})")
+                    if missing.startswith("Method not found:"):
+                        warnings.append(missing)
+                    else:
+                        warnings.append(f"Unable to resolve Apex class: {missing} (called via {class_name})")
 
             apex_rows = apex_output.get("dataMovements", [])
             for row in apex_rows:
