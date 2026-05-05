@@ -435,3 +435,35 @@ def parse_lwc_native_movements(
 
 def infer_bundle_name(bundle_dir: Path) -> str:
     return bundle_dir.name
+
+
+def detect_custom_child_components(html_source: str) -> list[str]:
+    """Extract all custom child component tags (starting with c-) from HTML."""
+    # LWC custom components start with 'c-'
+    tags = re.findall(r"<c-([a-z0-9_-]+)", html_source)
+    # Deduplicate while preserving order
+    unique_tags = []
+    for t in tags:
+        full_tag = f"c-{t}"
+        if full_tag not in unique_tags:
+            unique_tags.append(full_tag)
+    return unique_tags
+
+
+def kebab_to_component_name(kebab: str) -> str:
+    """Convert LWC kebab-case tags to component names.
+    e.g., sui_-upload-evidence -> sui_UploadEvidence
+    e.g., c-my-component -> myComponent
+    """
+    if kebab.startswith("c-"):
+        kebab = kebab[2:]
+
+    parts = kebab.split("-")
+    if not parts:
+        return ""
+
+    result = parts[0]
+    for part in parts[1:]:
+        if part:
+            result += part.capitalize()
+    return result
