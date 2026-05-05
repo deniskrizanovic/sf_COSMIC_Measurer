@@ -2,6 +2,9 @@
 
 Detailed counting rules for the LWC measurer. For a summary and the data flow diagram, see [COUNTING_RULES.md](COUNTING_RULES.md#lwc-rules).
 
+> [!WARNING]
+> Very complex LWCs are best counted by hand. They tend to get quite abstract and difficult for parsing.
+
 ## The 3-tier model
 
 LWC measurement replaces the flat `E → R → W → X` ordering with a 3-tier interaction-driven model. Each tier groups movements by when they occur in the component lifecycle.
