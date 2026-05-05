@@ -921,21 +921,25 @@ def _method_containing_line(boundaries: list[tuple[str, int]], line: int) -> Opt
     return best[0] if best else None
 
 
-def _extract_method_source(source: str, method_name: str) -> Optional[str]:
-    """Return the source text of the named method from its annotation/signature through
-    the matching closing brace, or None if the method is not found.
+def _extract_method_source(source: str, method_name: str) -> Optional[tuple[str, int]]:
+    """Return (method_source_text, line_offset) for the named method, or None if not found.
 
-    Includes any preceding @AuraEnabled / @InvocableMethod annotations so that
-    parse() can detect Entry movements from the method's parameter list.
+    method_source_text spans from any preceding annotations through the matching
+    closing brace. line_offset is the 0-based line number of the first character
+    of the returned substring within the original source, so callers can restore
+    absolute source_line values after parsing the substring.
 
-    Uses METHOD_SIGNATURE first; falls back to a permissive name-only search to
-    handle non-standard return types (e.g. 'List <Type >' with spaces).
+    Includes annotations so parse() detects Entry movements from the method's
+    parameter list.
+
+    Uses METHOD_SIGNATURE first; falls back to a permissive regex for non-standard
+    return types (e.g. 'List <Type >' with spaces).
     """
-    def _extract_from_match_start(start: int) -> Optional[str]:
+    def _extract_from_match_start(start: int) -> Optional[tuple[str, int]]:
         # Walk back to include any annotations on preceding lines
         annotation_start = start
-        lines = source[:start].split("\n")
-        for line in reversed(lines[:-1]):
+        lines_before = source[:start].split("\n")
+        for line in reversed(lines_before[:-1]):
             stripped = line.strip()
             if stripped.startswith("@") or stripped == "":
                 annotation_start -= len(line) + 1
@@ -951,7 +955,8 @@ def _extract_method_source(source: str, method_name: str) -> Optional[str]:
             elif source[end] == "}":
                 depth -= 1
             end += 1
-        return source[annotation_start:end]
+        line_offset = source[:annotation_start].count("\n")
+        return source[annotation_start:end], line_offset
 
     # Primary: structured match via METHOD_SIGNATURE
     for m in METHOD_SIGNATURE.finditer(source):

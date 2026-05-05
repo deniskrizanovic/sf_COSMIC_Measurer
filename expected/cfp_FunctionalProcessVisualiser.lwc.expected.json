@@ -49,9 +49,9 @@
       "dataGroupRef": "status/errors/etc",
       "implementationType": "lwc",
       "isApiCall": false,
-      "artifactName": "cfp_FunctionalProcessVisualiser.lwc",
       "tier": 3,
-      "tierLabel": "Terminal"
+      "tierLabel": "Terminal",
+      "artifactName": "cfp_FunctionalProcessVisualiser.lwc"
     }
   ],
   "requiredMovementTypes": [

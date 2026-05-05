@@ -194,12 +194,16 @@ def measure_file(
 
         seen_movements: set[tuple] = set()
         for method_name in method_filter:
-            body = _extract_method_source(source, method_name)
-            if body is None:
+            extracted = _extract_method_source(source, method_name)
+            if extracted is None:
                 method_not_found.append(method_name)
                 continue
-            _, body_movements = parse(body, external_constants=external_constants or None)
+            method_src, line_offset = extracted
+            _, body_movements = parse(method_src, external_constants=external_constants or None)
             for mv in body_movements:
+                # Restore absolute line numbers (body substring is 0-based from method start)
+                if mv.source_line is not None:
+                    mv = dataclasses.replace(mv, source_line=mv.source_line + line_offset)
                 key = (mv.movement_type, mv.data_group_ref, mv.source_line)
                 if key not in seen_movements:
                     seen_movements.add(key)
