@@ -1,0 +1,9 @@
+# Core testing dependencies
+pytest>=7.0.0
+coverage[toml]>=7.0.0
+
+# PDF processing for COSMIC Rule Coach
+PyMuPDF>=1.23.0
+
+# Type checking (optional but recommended for development)
+mypy>=1.0.0
