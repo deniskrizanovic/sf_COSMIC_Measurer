@@ -603,3 +603,74 @@ def test_related_record_data_group_uses_lookup_target_object():
     root = parse_xml(xml)
     movements, _ = extract_tab_bound_component_movements(root, "WorkOrder")
     assert [movement.data_group_ref for movement in movements] == ["Case", "Case"]
+
+
+def test_related_record_with_update_quick_action_emits_update_fp_warning():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>NCAT Details</value></componentInstanceProperties>
+                <componentInstanceProperties><name>updateQuickActionName</name><value>WorkOrder.SUI_Access_Issue_NCAT_Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord1</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>Access Issue</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabAccessIssue</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    movements, warnings = extract_tab_bound_component_movements(root, "WorkOrder")
+
+    assert any("updateQuickActionName" in w and "WorkOrder.SUI_Access_Issue_NCAT_Details" in w for w in warnings)
+    assert any("separate Update FP" in w and "E + R(WorkOrder) + W(WorkOrder) + X" in w for w in warnings)
+    assert any("NCAT Details" in w and "Access Issue" in w for w in warnings)
+    # R/X view movements are still emitted
+    movement_names = [m.name for m in movements]
+    assert "Read related record NCAT Details | tab:Access Issue" in movement_names
+    assert "Display related record NCAT Details | tab:Access Issue" in movement_names
+
+
+def test_related_record_without_update_quick_action_emits_no_update_fp_warning():
+    body = """
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>lookupFieldName</name><value>WorkOrder.Id</value></componentInstanceProperties>
+                <componentInstanceProperties><name>titleFieldName</name><value>Access Issue Details</value></componentInstanceProperties>
+                <componentName>console:relatedRecord</componentName>
+                <identifier>relatedRecord2</identifier>
+            </componentInstance>
+        </itemInstances>
+        <name>Facet-related</name>
+        <type>Facet</type>
+    </flexiPageRegions>
+    <flexiPageRegions>
+        <itemInstances>
+            <componentInstance>
+                <componentInstanceProperties><name>body</name><value>Facet-related</value></componentInstanceProperties>
+                <componentInstanceProperties><name>title</name><value>Access Issue</value></componentInstanceProperties>
+                <componentName>flexipage:tab</componentName>
+                <identifier>tabAccessIssue</identifier>
+            </componentInstance>
+        </itemInstances>
+    </flexiPageRegions>
+    """
+    xml = make_flexipage_xml(body=body, sobject_type="WorkOrder")
+    root = parse_xml(xml)
+    _, warnings = extract_tab_bound_component_movements(root, "WorkOrder")
+
+    assert not any("separate Update FP" in w for w in warnings)
