@@ -4,6 +4,7 @@ from parser import (
     _apply_execution_order,
     _collect_entry_point_params,
     _extract_bracket_block,
+    _extract_method_source,
     _get_entry_point_method_names,
     _infer_record_type_from_method_name,
     _infer_record_type_from_soql_body,
@@ -719,3 +720,20 @@ public class SUI_AddSORController {
 """
     reads = find_reads(src)
     assert any(r.data_group_ref == "SUI_Service_Catalogue__c" for r in reads)
+
+
+def test_extract_method_source_blank_line_before_annotation():
+    source = """
+public class AuraClass {
+
+    @AuraEnabled
+    public static List<Account__c> getAccounts(Id recordId) {
+        return [SELECT Id FROM Account__c WHERE Id = :recordId];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "@AuraEnabled" in text
+    assert text.strip().startswith("@AuraEnabled")

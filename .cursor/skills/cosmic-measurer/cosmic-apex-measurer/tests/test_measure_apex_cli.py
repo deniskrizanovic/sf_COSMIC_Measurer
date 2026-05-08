@@ -467,4 +467,23 @@ public class DedupClass {
         m for m in out["dataMovements"]
         if m["movementType"] == "R" and "Order__c" in m["dataGroupRef"]
     ]
-    assert len(order_reads) >= 1
+    # Both methods produce a Read with the same name/data_group_ref,
+    # so order_movements deduplicates them to 1 in the output.
+    assert len(order_reads) == 1
+
+
+def test_measure_file_method_filter_deduplicates_same_method_twice(tmp_path):
+    src = """
+public class DedupClass2 {
+    public static void methodA() {
+        List<Order__c> rows = [SELECT Id FROM Order__c WHERE Id != null];
+    }
+}
+"""
+    (tmp_path / "DedupClass2.cls").write_text(src, encoding="utf-8")
+    out = measure_file(tmp_path / "DedupClass2.cls", method_filter=["methodA", "methodA"])
+    order_reads = [
+        m for m in out["dataMovements"]
+        if m["movementType"] == "R" and "Order__c" in m["dataGroupRef"]
+    ]
+    assert len(order_reads) == 1
