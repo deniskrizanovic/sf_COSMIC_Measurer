@@ -4,7 +4,9 @@ from parser import (
     _apply_execution_order,
     _collect_entry_point_params,
     _extract_bracket_block,
+    _extract_method_source,
     _get_entry_point_method_names,
+    _infer_record_type_from_bind,
     _infer_record_type_from_method_name,
     _infer_record_type_from_soql_body,
     _infer_object_from_param,
@@ -719,3 +721,86 @@ public class SUI_AddSORController {
 """
     reads = find_reads(src)
     assert any(r.data_group_ref == "SUI_Service_Catalogue__c" for r in reads)
+
+
+def test_extract_method_source_blank_line_before_annotation():
+    source = """
+public class AuraClass {
+
+    @AuraEnabled
+    public static List<Account__c> getAccounts(Id recordId) {
+        return [SELECT Id FROM Account__c WHERE Id = :recordId];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "@AuraEnabled" in text
+    assert text.strip().startswith("@AuraEnabled")
+
+
+def test_infer_record_type_from_bind_skips_short_stem_constant():
+    # A_RT stripped of _rt and underscores gives stem 'a' (len 1 < 3) → continue.
+    # With no other matching constant, the function must return None.
+    src = "public class X { private static final String A_RT = 'TooShort'; }"
+    result = _infer_record_type_from_bind("aRecordTypeId", src)
+    assert result is None
+
+
+def test_infer_record_type_from_soql_record_type_developer_name_custom_single_quote():
+    soql = "SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = 'ServiceRequest'"
+    result = _infer_record_type_from_soql_body(soql, source="")
+    assert result == "ServiceRequest"
+
+
+def test_infer_record_type_from_soql_record_type_developer_name_custom_double_quote():
+    soql = 'SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = "Complaint"'
+    result = _infer_record_type_from_soql_body(soql, source="")
+    assert result == "Complaint"
+
+
+def test_infer_record_type_from_soql_custom_bind():
+    source = """
+public class MyClass {
+    private static final String SERVICE_REQUEST_RT = 'ServiceRequest';
+    public static void run() {
+        String serviceRequestRecordTypeId = SERVICE_REQUEST_RT;
+        List<Case__c> rows = [SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = :serviceRequestRecordTypeId];
+    }
+}
+"""
+    soql = "SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = :serviceRequestRecordTypeId"
+    result = _infer_record_type_from_soql_body(soql, source=source)
+    assert result == "ServiceRequest"
+
+
+def test_extract_method_source_with_annotation():
+    source = """
+public class AuraClass {
+    @AuraEnabled
+    public static List<Account__c> getAccounts(Id recordId) {
+        return [SELECT Id FROM Account__c WHERE Id = :recordId];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "@AuraEnabled" in text
+    assert "Account__c" in text
+    assert offset >= 0
+
+
+def test_extract_method_source_fallback_spaced_return_type():
+    source = """
+public class SpacedClass {
+    public static List <Account__c > getAccounts() {
+        return [SELECT Id FROM Account__c];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "Account__c" in text

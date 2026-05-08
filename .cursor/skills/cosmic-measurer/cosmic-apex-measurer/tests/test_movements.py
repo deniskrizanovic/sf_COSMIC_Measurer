@@ -252,3 +252,53 @@ def test_to_table_with_via_merged_and_not_found():
     assert "Helper" in text
     assert "u (L6)" in text
     assert "Functional size" in text
+
+
+def test_to_table_with_called_classes_not_found_and_record_type():
+    out: CosmicMeasureOutput = {
+        "functionalProcessId": "fp1",
+        "artifact": {"type": "Apex", "name": "MyClass"},
+        "dataMovements": [
+            {
+                "name": "Errors/notifications",
+                "order": 1,
+                "movementType": "X",
+                "dataGroupRef": "status/errors/etc",
+                "implementationType": "apex",
+                "isApiCall": False,
+            }
+        ],
+        "calledClassesNotFound": ["MissingHelper"],
+        "recordTypeReadsExcludedFromCfp": [
+            {"name": "Read RecordType list", "sourceLine": 12}
+        ],
+    }
+    text = to_table(out)
+    assert "Called classes not found: MissingHelper" in text
+    assert "RecordType reads (excluded from CFP)" in text
+    assert "L12" in text
+
+
+def test_to_human_summary_called_classes_not_found_and_bare_record_type_name():
+    out: CosmicMeasureOutput = {
+        "functionalProcessId": "fp1",
+        "artifact": {"type": "Apex", "name": "MyClass"},
+        "dataMovements": [
+            {
+                "name": "Errors/notifications",
+                "order": 1,
+                "movementType": "X",
+                "dataGroupRef": "status/errors/etc",
+                "implementationType": "apex",
+                "isApiCall": False,
+            }
+        ],
+        "calledClassesNotFound": ["MissingHelper"],
+        "recordTypeReadsExcludedFromCfp": [
+            {"name": "Read RecordType list"}  # no sourceLine -> bare name fallback
+        ],
+    }
+    text = to_human_summary(out)
+    assert "Not found" in text
+    assert "calledClassesNotFound" in text
+    assert "Read RecordType list" in text
