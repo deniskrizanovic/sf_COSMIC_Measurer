@@ -402,6 +402,13 @@ def extract_tab_bound_component_movements(
                 warnings.append(
                     f"Tab component {binding.tab_title or binding.tab_identifier} (console:relatedRecord) fell back to dataGroupRef {sobject_type}"
                 )
+            update_action = properties.get("updateQuickActionName", "").strip()
+            if update_action:
+                tab_label = binding.tab_title or binding.tab_identifier
+                warnings.append(
+                    f"Panel '{record_title}'{(' (' + tab_label + ')') if tab_label else ''} has updateQuickActionName '{update_action}'"
+                    f" — model as a separate Update FP: E + R({data_group_ref}) + W({data_group_ref}) + X"
+                )
             continue
 
         warnings.append(
