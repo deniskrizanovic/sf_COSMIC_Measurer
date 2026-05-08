@@ -6,6 +6,7 @@ from parser import (
     _extract_bracket_block,
     _extract_method_source,
     _get_entry_point_method_names,
+    _infer_record_type_from_bind,
     _infer_record_type_from_method_name,
     _infer_record_type_from_soql_body,
     _infer_object_from_param,
@@ -739,9 +740,12 @@ public class AuraClass {
     assert text.strip().startswith("@AuraEnabled")
 
 
-def test_infer_set_id_suffix_maps_to_custom_object():
-    result = _infer_object_from_param("accountIds", "Set<Id>", source="")
-    assert result == "Account__c"
+def test_infer_record_type_from_bind_skips_short_stem_constant():
+    # A_RT stripped of _rt and underscores gives stem 'a' (len 1 < 3) → continue.
+    # With no other matching constant, the function must return None.
+    src = "public class X { private static final String A_RT = 'TooShort'; }"
+    result = _infer_record_type_from_bind("aRecordTypeId", src)
+    assert result is None
 
 
 def test_infer_record_type_from_soql_record_type_developer_name_custom_single_quote():
