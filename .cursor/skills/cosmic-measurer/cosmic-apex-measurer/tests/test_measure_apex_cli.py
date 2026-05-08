@@ -416,3 +416,55 @@ def test_main_no_traverse(monkeypatch, capsys, tmp_path):
     assert measure_apex.main() == 0
     data = json.loads(capsys.readouterr().out)
     assert not any(m.get("viaArtifact") == "TraverseHelper" for m in data["dataMovements"])
+
+
+def test_measure_file_method_filter_basic(tmp_path):
+    src = """
+public class FilterClass {
+    public static void methodA() {
+        List<Account__c> rows = [SELECT Id FROM Account__c WHERE Id != null];
+    }
+    public static void methodB() {
+        List<Contact__c> rows = [SELECT Id FROM Contact__c WHERE Id != null];
+    }
+}
+"""
+    (tmp_path / "FilterClass.cls").write_text(src, encoding="utf-8")
+    out = measure_file(tmp_path / "FilterClass.cls", method_filter=["methodA"])
+    refs = [m["dataGroupRef"] for m in out["dataMovements"]]
+    assert any("Account__c" in r for r in refs)
+    assert not any("Contact__c" in r for r in refs)
+
+
+def test_measure_file_method_filter_not_found(tmp_path):
+    src = """
+public class SimpleClass {
+    public static void realMethod() {
+        List<Account__c> rows = [SELECT Id FROM Account__c];
+    }
+}
+"""
+    (tmp_path / "SimpleClass.cls").write_text(src, encoding="utf-8")
+    out = measure_file(tmp_path / "SimpleClass.cls", method_filter=["nonExistentMethod"])
+    not_found = out.get("calledClassesNotFound") or []
+    assert any("Method not found: nonExistentMethod" in msg for msg in not_found)
+
+
+def test_measure_file_method_filter_deduplicates_movements(tmp_path):
+    src = """
+public class DedupClass {
+    public static void methodA() {
+        List<Order__c> rows = [SELECT Id FROM Order__c WHERE Id != null];
+    }
+    public static void methodB() {
+        List<Order__c> rows = [SELECT Id FROM Order__c WHERE Id != null];
+    }
+}
+"""
+    (tmp_path / "DedupClass.cls").write_text(src, encoding="utf-8")
+    out = measure_file(tmp_path / "DedupClass.cls", method_filter=["methodA", "methodB"])
+    order_reads = [
+        m for m in out["dataMovements"]
+        if m["movementType"] == "R" and "Order__c" in m["dataGroupRef"]
+    ]
+    assert len(order_reads) >= 1

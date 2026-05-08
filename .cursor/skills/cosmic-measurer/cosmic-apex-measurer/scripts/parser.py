@@ -936,13 +936,20 @@ def _extract_method_source(source: str, method_name: str) -> Optional[tuple[str,
     return types (e.g. 'List <Type >' with spaces).
     """
     def _extract_from_match_start(start: int) -> Optional[tuple[str, int]]:
-        # Walk back to include any annotations on preceding lines
+        # Walk back to include any annotations on preceding lines.
+        # Blank lines are buffered and only committed when an annotation (@)
+        # is found above them; blank lines alone do not extend annotation_start
+        # (which would incorrectly include the class-body opening brace).
         annotation_start = start
         lines_before = source[:start].split("\n")
+        pending_blank_chars = 0
         for line in reversed(lines_before[:-1]):
             stripped = line.strip()
-            if stripped.startswith("@") or stripped == "":
-                annotation_start -= len(line) + 1
+            if stripped == "":
+                pending_blank_chars += len(line) + 1
+            elif stripped.startswith("@"):
+                annotation_start -= pending_blank_chars + len(line) + 1
+                pending_blank_chars = 0
             else:
                 break
         brace_pos = source.find("{", start)
