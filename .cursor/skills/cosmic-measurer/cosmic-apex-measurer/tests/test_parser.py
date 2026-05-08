@@ -737,3 +737,35 @@ public class AuraClass {
     text, offset = result
     assert "@AuraEnabled" in text
     assert text.strip().startswith("@AuraEnabled")
+
+
+def test_infer_set_id_suffix_maps_to_custom_object():
+    result = _infer_object_from_param("accountIds", "Set<Id>", source="")
+    assert result == "Account__c"
+
+
+def test_infer_record_type_from_soql_record_type_developer_name_custom_single_quote():
+    soql = "SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = 'ServiceRequest'"
+    result = _infer_record_type_from_soql_body(soql, source="")
+    assert result == "ServiceRequest"
+
+
+def test_infer_record_type_from_soql_record_type_developer_name_custom_double_quote():
+    soql = 'SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = "Complaint"'
+    result = _infer_record_type_from_soql_body(soql, source="")
+    assert result == "Complaint"
+
+
+def test_infer_record_type_from_soql_custom_bind():
+    source = """
+public class MyClass {
+    private static final String SERVICE_REQUEST_RT = 'ServiceRequest';
+    public static void run() {
+        String serviceRequestRecordTypeId = SERVICE_REQUEST_RT;
+        List<Case__c> rows = [SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = :serviceRequestRecordTypeId];
+    }
+}
+"""
+    soql = "SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = :serviceRequestRecordTypeId"
+    result = _infer_record_type_from_soql_body(soql, source=source)
+    assert result == "ServiceRequest"
