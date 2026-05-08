@@ -773,3 +773,34 @@ public class MyClass {
     soql = "SELECT Id FROM Case__c WHERE Record_Type_Developer_Name__c = :serviceRequestRecordTypeId"
     result = _infer_record_type_from_soql_body(soql, source=source)
     assert result == "ServiceRequest"
+
+
+def test_extract_method_source_with_annotation():
+    source = """
+public class AuraClass {
+    @AuraEnabled
+    public static List<Account__c> getAccounts(Id recordId) {
+        return [SELECT Id FROM Account__c WHERE Id = :recordId];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "@AuraEnabled" in text
+    assert "Account__c" in text
+    assert offset >= 0
+
+
+def test_extract_method_source_fallback_spaced_return_type():
+    source = """
+public class SpacedClass {
+    public static List <Account__c > getAccounts() {
+        return [SELECT Id FROM Account__c];
+    }
+}
+"""
+    result = _extract_method_source(source, "getAccounts")
+    assert result is not None
+    text, offset = result
+    assert "Account__c" in text
